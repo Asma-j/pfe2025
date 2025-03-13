@@ -1,0 +1,34 @@
+const express = require('express');
+const cors = require('cors');
+const { connectDB, sequelize } = require('./db');
+
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const roleRoutes = require('./routes/roleRoutes');
+const coursRoutes = require('./routes/coursRoutes');
+const planningRoutes = require('./routes/planningRoutes');
+const matiereRoutes = require('./routes/matiereRoutes');
+const classeRoutes = require('./routes/classeRoutes');
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Connexion et synchronisation de la base de données
+connectDB().then(() => {
+    sequelize.sync()
+        .then(() => console.log("Base de données synchronisée"))
+        .catch(err => console.error("Erreur de synchronisation :", err));
+});
+
+// Utilisation des routes
+app.use('/api/matieres', matiereRoutes);
+app.use('/api/classes', classeRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/roles', roleRoutes);
+app.use('/api/cours', coursRoutes);
+app.use('/api/plannings', planningRoutes);
+// Démarrage du serveur
+app.listen(5000, () => {
+    console.log('Serveur démarré sur le port 5000');
+});
