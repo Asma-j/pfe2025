@@ -47,8 +47,7 @@ const transporter = nodemailer.createTransport({
       const user = await Utilisateur.create({
         prenom, nom, email, mot_de_passe: hashedPassword, id_role
       });
-  
-      // Variable pour indiquer si l'email a été envoyé ou non
+
       let emailSent = false;
       if (role.nom_role !== 'admin') {
         const mailOptions = {
@@ -60,8 +59,7 @@ const transporter = nodemailer.createTransport({
         await transporter.sendMail(mailOptions);
         emailSent = true;
       }
-  
-      // Renvoyer le résultat avec un flag
+
       res.json({ message: 'Utilisateur inscrit avec succès', data: user, emailSent });
     } catch (err) {
       console.error("Erreur lors de l'inscription :", err);

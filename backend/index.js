@@ -28,6 +28,17 @@ app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/cours', coursRoutes);
 app.use('/api/plannings', planningRoutes);
+
+app.get('/api/items', async (req, res) => {
+    try {
+      const pool = await sql.connect(dbConfig);
+      const result = await pool.request().query('SELECT * FROM items');
+      res.json(result.recordset);
+    } catch (error) {
+      console.error('Error fetching data from DB:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
 // Démarrage du serveur
 app.listen(5000, () => {
     console.log('Serveur démarré sur le port 5000');

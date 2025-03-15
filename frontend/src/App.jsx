@@ -4,6 +4,7 @@ import Home from './components/Home';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import StudentDashboard from './components/Etudiant/StudentDashboard';
+import AdminDashboard from './components/Admin/AdminDashboard';
 
 function App() {
   const location = useLocation();
@@ -15,6 +16,7 @@ function App() {
       <Routes location={state.backgroundLocation || location}>
       <Route path="/" element={<Home />} />
       <Route path="/student" element={<StudentDashboard />} />
+      <Route path="/admin" element={<AdminDashboard/>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register onClose={() => {}} />} />
 

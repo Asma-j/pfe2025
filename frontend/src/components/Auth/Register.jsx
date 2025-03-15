@@ -78,7 +78,7 @@ function Register({ show = true, onClose }) {
               <form onSubmit={handleSubmit}>
                 <div className="name-row">
                   <div className="name-input">
-                    <label>First Name</label>
+                    <label>Prénom</label>
                     <input
                       type="text"
                       placeholder="Enter your first name"
@@ -89,7 +89,7 @@ function Register({ show = true, onClose }) {
                   </div>
 
                   <div className="name-input">
-                    <label>Last Name</label>
+                    <label>Nom</label>
                     <input
                       type="text"
                       placeholder="Enter your last name"
@@ -100,7 +100,7 @@ function Register({ show = true, onClose }) {
                   </div>
                 </div>
 
-                <label>Email Address</label>
+                <label>Email</label>
                 <input
                   type="email"
                   placeholder="Enter your Email Address"
@@ -109,7 +109,7 @@ function Register({ show = true, onClose }) {
                   required
                 />
 
-                <label>Password</label>
+                <label>Mot de passe</label>
                 <input
                   type="password"
                   placeholder="Enter your Password"

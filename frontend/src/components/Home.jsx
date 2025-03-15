@@ -91,19 +91,19 @@ function Home() {
           <Row className="align-items-center gy-4">
             <Col md={6}>
               <h1 className="display-5 fw-bold text-dark mb-4">
-                Unlock Your Potential with
-                <span className="text-primary"> Online Learning</span>
+              Libérez votre potentiel avec
+                <span className="text-primary"> Apprentissage en ligne</span>
               </h1>
               <p className="lead text-muted mb-4">
-                Access world-class education from anywhere. Learn at your own pace
-                with our comprehensive courses designed for everyone.
+              Accédez à une éducation de classe mondiale où que vous soyez.
+              Apprenez à votre propre rythme avec nos cours complets conçus pour tous.
               </p>
               <div className="d-flex gap-3">
                 <Button variant="primary" className="px-4 py-2">
-                  Get Started
+                Commencer
                 </Button>
                 <Button variant="outline-secondary" className="px-4 py-2">
-                  Browse Courses
+                Parcourir les cours
                 </Button>
               </div>
             </Col>
@@ -196,12 +196,12 @@ function Home() {
         </Container>
       </section>
 
-      <section className="py-5">
+     <section className="py-5">
         <Container>
           <div className="text-center mb-5">
-            <h2 className="fw-bold">Popular Courses</h2>
+            <h2 className="fw-bold">Liste des cours</h2>
             <p className="text-muted mx-auto" style={{ maxWidth: '600px' }}>
-              Explore our most popular courses and start your learning journey today.
+            Découvrez nos cours les plus populaires et commencez votre parcours d'apprentissage dès aujourd'hui.
             </p>
           </div>
           <Row className="g-4">
