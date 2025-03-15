@@ -79,11 +79,11 @@
   opacity: 0.9;
 }
 
-/* Cards */
 .card-custom {
-  border-radius: 15px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease-out;
+  z-index: 1;
 }
+
 
 /* Profile Image */
 .profile-img {
