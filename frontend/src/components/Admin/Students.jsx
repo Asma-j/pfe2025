@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaPlus, FaEllipsisV } from 'react-icons/fa';
-import { Button, Table } from 'react-bootstrap';
+import { Button, Table, ProgressBar } from 'react-bootstrap';
 
 const students = [
   {
@@ -34,68 +34,60 @@ const students = [
 
 function Students() {
   return (
-    <div className="bg-white rounded-2xl shadow-soft border border-gray-100 animate-fade-in">
-      <div className="p-6 border-b border-gray-100">
-        <div className="d-flex justify-content-between align-items-center">
-          <h2 className="text-xl font-semibold text-gray-900">Students</h2>
-          <Button variant="gradient-primary" className="d-flex align-items-center">
-            <FaPlus className="me-2" /> Add Student
-          </Button>
-        </div>
+    <div className="bg-white rounded-3 shadow-sm p-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="fw-bold text-dark">Students</h4>
+        <Button className="btn btn-primary rounded-pill d-flex align-items-center">
+          <FaPlus className="me-2" /> Add Student
+        </Button>
       </div>
-      <div className="overflow-x-auto">
-        <Table responsive hover>
-          <thead>
-            <tr>
-              <th>Student</th>
-              <th>Email</th>
-              <th>Courses</th>
-              <th>Progress</th>
-              <th>Last Active</th>
-              <th>Actions</th>
+      <Table hover responsive className="align-middle">
+        <thead className="bg-light">
+          <tr>
+            <th>STUDENT</th>
+            <th>EMAIL</th>
+            <th>COURSES</th>
+            <th>PROGRESS</th>
+            <th>LAST ACTIVE</th>
+            <th className="text-end">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.map((student) => (
+            <tr key={student.id}>
+              <td>
+                <div className="d-flex align-items-center">
+                  <img
+                    src={student.image}
+                    alt={student.name}
+                    className="rounded-circle me-3"
+                    width="40"
+                    height="40"
+                  />
+                  <span className="fw-semibold text-dark">{student.name}</span>
+                </div>
+              </td>
+              <td className="text-muted">{student.email}</td>
+              <td>{student.enrolledCourses}</td>
+              <td>
+                <ProgressBar
+                  now={student.progress}
+                  variant="primary"
+                  className="rounded-pill bg-light"
+                  style={{ height: '6px' }}
+                />
+                <span className="ms-2 text-muted">{student.progress}%</span>
+              </td>
+              <td className="text-muted">{student.lastActive}</td>
+              <td className="text-end">
+                <Button variant="link" className="text-muted">
+                  <FaEllipsisV />
+                </Button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student.id}>
-                <td>
-                  <div className="d-flex align-items-center gap-4">
-                    <img
-                      src={student.image}
-                      alt={student.name}
-                      className="h-10 w-10 rounded-circle ring-2 ring-white shadow-sm"
-                    />
-                    <div>
-                      <p className="font-medium text-gray-900">{student.name}</p>
-                    </div>
-                  </div>
-                </td>
-                <td>{student.email}</td>
-                <td>{student.enrolledCourses}</td>
-                <td>
-                  <div className="d-flex align-items-center gap-3">
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="progress-bar"
-                        style={{ width: `${student.progress}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      {student.progress}%
-                    </span>
-                  </div>
-                </td>
-                <td>{student.lastActive}</td>
-                <td className="text-end">
-                  <Button variant="link" className="text-muted">
-                    <FaEllipsisV />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
+          ))}
+        </tbody>
+      </Table>
     </div>
   );
 }

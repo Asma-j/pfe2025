@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Nav, Button, Form, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Button, Form, Badge, Image } from 'react-bootstrap';
 import { People, Book, Calendar, BarChart, Gear, Search, Bell, Clock, Star, MortarboardFill, Speedometer } from 'react-bootstrap-icons';
 import Students from './Students';
 import Courses from './Courses';
@@ -11,19 +11,107 @@ import Background3D from './Background3D';
 const AdminDashboard = () => {
   const [currentView, setCurrentView] = useState('dashboard');
 
+  const students = [
+    { name: 'Emma Wilson', email: 'emma.w@example.com', courses: 3, time: '2 hours ago', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+    { name: 'James Rodriguez', email: 'james.r@example.com', courses: 4, time: '1 day ago', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80' },
+  ];
+
+  const courses = [
+    { title: 'Advanced JavaScript Development', instructor: 'Dr. Alan Smith', students: 156, duration: '12 weeks', image: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=300&q=80' },
+    { title: 'UX/UI Design Fundamentals', instructor: 'Maria Garcia', students: 89, duration: '8 weeks', image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&h=300&q=80' },
+  ];
+
+  const views = {
+    students: <Students />,
+    courses: <Courses />,
+    schedule: <Schedule />,
+    dashboard: (
+      <>
+        <Row>
+          {[
+            { icon: People, label: 'Total Students', value: '1,234' },
+            { icon: Book, label: 'Active Courses', value: '42' },
+            { icon: Calendar, label: 'Completion Rate', value: '87%' },
+            { icon: People, label: 'New Enrollments', value: '+28' },
+          ].map(({ icon: Icon, label, value }) => (
+            <Col key={label} md={3}>
+              <Card className="mb-4 shadow-sm text-center p-3 card-custom">
+                <Icon size={30} className="text-primary" />
+                <Card.Text className="text-muted mb-0 mt-2">{label}</Card.Text>
+                <Card.Title className="mb-0">{value}</Card.Title>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        <Row className="mt-4">
+          <Col md={6}>
+            <Card className="p-3 shadow-sm">
+              <Card.Title className="d-flex justify-content-between align-items-center">
+                <span>Recent Students</span>
+                <Button variant="link" className="text-primary">View All</Button>
+              </Card.Title>
+              {students.map(({ name, email, courses, time, image }) => (
+                <Row key={name} className="align-items-center p-2 border-bottom">
+                  <Col xs="auto">
+                    <Image src={image} roundedCircle width={40} height={40} />
+                  </Col>
+                  <Col>
+                    <div className="fw-bold">{name}</div>
+                    <small className="text-muted">{email}</small>
+                  </Col>
+                  <Col xs="auto" className="text-end">
+                    <Badge bg="primary">{courses} courses</Badge>
+                    <div className="text-muted small">
+                      <Clock size={14} className="me-1" /> {time}
+                    </div>
+                  </Col>
+                </Row>
+              ))}
+            </Card>
+          </Col>
+
+          <Col md={6}>
+            <Card className="p-3 shadow-sm">
+              <Card.Title className="d-flex justify-content-between align-items-center">
+                <span>Popular Courses</span>
+                <Button variant="link" className="text-primary">View All</Button>
+              </Card.Title>
+              {courses.map(({ title, instructor, students, duration, image }) => (
+                <Row key={title} className="align-items-center p-2 border-bottom">
+                  <Col xs="auto">
+                    <Image src={image} rounded width={50} height={40} />
+                  </Col>
+                  <Col>
+                    <div className="fw-bold">{title}</div>
+                    <small className="text-muted">{instructor}</small>
+                  </Col>
+                  <Col xs="auto" className="text-end">
+                    <small className="text-muted">
+                      <MortarboardFill size={14} className="me-1" /> {students} students
+                    </small>
+                    <div className="text-muted small">{duration}</div>
+                  </Col>
+                </Row>
+              ))}
+            </Card>
+          </Col>
+        </Row>
+      </>
+    ),
+  };
+
   return (
     <div className="dashboard-container">
-      {/* Background 3D en arrière-plan */}
       <Background3D />
-
       <Container fluid className="min-vh-100 d-flex p-0">
         {/* Sidebar */}
         <Nav className="flex-column bg-light shadow-sm p-3 sidebar">
           <div className="d-flex align-items-center p-3">
-            <MortarboardFill style={{ width: '32px', height: '32px' }} className="text-White me-2" />
-            <span className="fw-bold fs-4 text-White">EduAdmin</span>
+            <MortarboardFill style={{ width: '32px', height: '32px' }} className="text-white me-2" />
+            <span className="fw-bold fs-4 text-white">EduAdmin</span>
           </div>
-          {[ 
+          {[
             { icon: Speedometer, label: 'Dashboard', view: 'dashboard' },
             { icon: People, label: 'Students', view: 'students' },
             { icon: Book, label: 'Courses', view: 'courses' },
@@ -38,98 +126,20 @@ const AdminDashboard = () => {
           ))}
         </Nav>
 
-        {/* Main content */}
+        {/* Main Content */}
         <div className="main-content flex-grow-1 p-4">
-          {/* Navbar */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             <Form className="d-flex">
               <Form.Control type="text" placeholder="Search..." className="me-2" />
-              <Button variant="outline-secondary">
-                <Search />
-              </Button>
+              <Button variant="outline-secondary"><Search /></Button>
             </Form>
             <div className="d-flex align-items-center">
-              <Bell className="me-4 " />
-              <img src={profil} alt="Profile" className="profile-img rounded-circle " />
+              <Bell className="me-4" />
+              <img src={profil} alt="Profile" className="profile-img rounded-circle" />
             </div>
           </div>
 
-          {/* Render Content */}
-          {currentView === 'students' ? <Students /> :
-            currentView === 'courses' ? <Courses /> :
-              currentView === 'schedule' ? <Schedule /> :
-                <>
-           <Row>
-  {[
-    { icon: People, label: 'Total Students', value: '1,234' },
-    { icon: Book, label: 'Active Courses', value: '42' },
-    { icon: Calendar, label: 'Completion Rate', value: '87%' },
-    { icon: People, label: 'New Enrollments', value: '+28' },
-  ].map(({ icon: Icon, label, value }) => (
-    <Col key={label} md={3}>
-      <Card className="mb-4 shadow-sm text-center p-3 card-custom">
-        <Icon size={30} className="text-primary" />
-        <Card.Text className="text-muted mb-0 mt-2">{label}</Card.Text>
-        <Card.Title className="mb-0">{value}</Card.Title>
-      </Card>
-    </Col>
-  ))}
-</Row>
-
-
-                  <Row className="mt-4">
-                    {[{
-                      title: 'Recent Students',
-                      data: [
-                        { name: 'Emma Wilson', email: 'emma.w@example.com', courses: 3, time: '2 hours ago' },
-                        { name: 'James Rodriguez', email: 'james.r@example.com', courses: 4, time: '1 day ago' },
-                      ],
-                      render: ({ name, email, courses, time }) => (
-                        <Row key={name} className="align-items-center border-bottom p-2">
-                          <Col>
-                            <div>{name}</div>
-                            <small className="text-muted">{email}</small>
-                          </Col>
-                          <Col xs="auto">
-                            <Badge bg="primary">{courses} courses</Badge>
-                          </Col>
-                          <Col xs="auto">
-                            <Clock size={16} className="me-1" />
-                            <small className="text-muted">{time}</small>
-                          </Col>
-                        </Row>
-                      )
-                    }, {
-                      title: 'Popular Courses',
-                      data: [
-                        { title: 'Advanced JavaScript Development', instructor: 'Dr. Alan Smith', students: 156, duration: '12 weeks' },
-                      ],
-                      render: ({ title, instructor, students, duration }) => (
-                        <Row key={title} className="align-items-center border-bottom p-2">
-                          <Col>
-                            <div>{title}</div>
-                            <small className="text-muted">{instructor}</small>
-                          </Col>
-                          <Col xs="auto">
-                            <Star size={16} className="me-1" />
-                            <small className="text-muted">{students} students</small>
-                          </Col>
-                          <Col xs="auto">
-                            <small className="text-muted">{duration}</small>
-                          </Col>
-                        </Row>
-                      )
-                    }].map(({ title, data, render }) => (
-                      <Col key={title} md={6}>
-                        <Card className="p-3">
-                          <Card.Title>{title}</Card.Title>
-                          {data.map(render)}
-                        </Card>
-                      </Col>
-                    ))}
-                  </Row>
-                </>
-          }
+          {views[currentView]}
         </div>
       </Container>
     </div>
