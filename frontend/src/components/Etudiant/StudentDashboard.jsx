@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
 Container, 
@@ -9,30 +9,14 @@ Container,
 
 } from 'react-bootstrap';
 import {
-  MortarboardFill,
   StarFill,
-  EnvelopeFill,
-  TelephoneFill,
-  GeoAltFill,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Youtube
 } from 'react-bootstrap-icons';
-import Login from '../Auth/Login';
-import Register from '../Auth/Register';
 import './student.css';
 import StudentNavbar from './StudentNavbar';
+import Footer from './Footer';
 
 function StudentDashboard() {
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
- 
 
-  const closeLoginModal = () => setShowLoginModal(false);
-
-  const closeRegisterModal = () => setShowRegisterModal(false);
 
   return (
     <div className="bg-light" style={{ minHeight: '100vh' }}>
@@ -70,11 +54,9 @@ function StudentDashboard() {
   </Container>
 </section>
 
-
-
-<section className="py-5">
+<section className="mb-4">
   <Container>
-    <div className="text-center mb-5">
+    <div className="text-center mb-3">
       <h2 className="fw-bold">Liste des Matières</h2>
       <p className="text-muted mx-auto" style={{ maxWidth: '600px' }}>
         Découvrez nos cours les plus populaires et commencez votre parcours d'apprentissage dès aujourd'hui.
@@ -144,114 +126,9 @@ function StudentDashboard() {
   </Container>
 </section>
 
-  
 
+  <Footer/>
 
-      {/* FOOTER */}
-      <footer className="bg-dark text-light pt-5">
-        <Container>
-          <Row className="gy-4">
-            {/* Company Info */}
-            <Col md={4}>
-              <div className="d-flex align-items-center mb-3">
-                <MortarboardFill size={32} className="text-primary me-2" />
-                <h5 className="m-0 fw-bold">EduLearn</h5>
-              </div>
-              <p className="small text-muted">
-                Empowering individuals through quality education and lifelong learning opportunities.
-              </p>
-              <div className="d-flex gap-3 mt-3">
-                <Facebook className="text-muted fs-5 cursor-pointer" />
-                <Twitter className="text-muted fs-5 cursor-pointer" />
-                <Instagram className="text-muted fs-5 cursor-pointer" />
-                <Linkedin className="text-muted fs-5 cursor-pointer" />
-                <Youtube className="text-muted fs-5 cursor-pointer" />
-              </div>
-            </Col>
-
-            {/* Quick Links */}
-            <Col md={2}>
-              <h6 className="fw-bold text-white mb-3">Quick Links</h6>
-              <ul className="list-unstyled">
-                {['About Us', 'Courses', 'Instructors', 'Pricing', 'Career', 'Blog'].map((link, i) => (
-                  <li key={i} className="mb-2">
-                    <a href="#!" className="text-muted text-decoration-none small">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </Col>
-
-            {/* Support */}
-            <Col md={2}>
-              <h6 className="fw-bold text-white mb-3">Support</h6>
-              <ul className="list-unstyled">
-                {[
-                  'Help Center',
-                  'Terms of Service',
-                  'Privacy Policy',
-                  'Cookie Policy',
-                  'FAQs',
-                  'Contact Us'
-                ].map((link, i) => (
-                  <li key={i} className="mb-2">
-                    <a href="#!" className="text-muted text-decoration-none small">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </Col>
-
-            {/* Contact Info */}
-            <Col md={4}>
-              <h6 className="fw-bold text-white mb-3">Contact Us</h6>
-              <div className="d-flex align-items-start mb-2">
-                <GeoAltFill className="text-primary me-2 mt-1" />
-                <small className="text-muted">
-                  123 Learning Street, Education City, 10001
-                </small>
-              </div>
-              <div className="d-flex align-items-center mb-2">
-                <TelephoneFill className="text-primary me-2" />
-                <small className="text-muted">+1 (555) 123-4567</small>
-              </div>
-              <div className="d-flex align-items-center">
-                <EnvelopeFill className="text-primary me-2" />
-                <small className="text-muted">support@edulearn.com</small>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-
-        <div className="border-top border-secondary mt-5">
-          <Container className="py-3">
-            <Row className="justify-content-between align-items-center">
-              <Col md={6}>
-                <small className="text-muted">
-                  © 2025 EduLearn. All rights reserved.
-                </small>
-              </Col>
-              <Col md={6} className="text-md-end">
-                <a href="#!" className="text-muted small me-3 text-decoration-none">
-                  Terms
-                </a>
-                <a href="#!" className="text-muted small me-3 text-decoration-none">
-                  Privacy
-                </a>
-                <a href="#!" className="text-muted small text-decoration-none">
-                  Cookies
-                </a>
-              </Col>
-            </Row>
-          </Container>
-        </div>
-      </footer>
-
-
-      <Login show={showLoginModal} onClose={closeLoginModal} />
-      <Register show={showRegisterModal} onClose={closeRegisterModal} />
 
     </div>
   );

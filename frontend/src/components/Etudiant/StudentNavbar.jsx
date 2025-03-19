@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';  // Import hooks
-import { Link } from 'react-router-dom';  // Import Link for navigation
+import React, { useState, useEffect } from 'react'; 
+import { Link } from 'react-router-dom';  
 import {
-  Navbar as BootstrapNavbar,  // Rename the imported Navbar to avoid conflict
+  Navbar as BootstrapNavbar, 
   Nav, 
   Container, 
   Dropdown
-} from 'react-bootstrap';  // Import required Bootstrap components
-import { MortarboardFill, Gear, BoxArrowRight } from 'react-bootstrap-icons';  // Import icons
-import profil from '../images/aupair-2380047_1920.png';  // Profile image import
-import './student.css';  // Your custom CSS file
+} from 'react-bootstrap';  
+import { MortarboardFill, Gear, BoxArrowRight } from 'react-bootstrap-icons';
+import profil from '../images/aupair-2380047_1920.png'; 
+import './student.css'; 
 
-// Rename the custom Navbar component to StudentNavbar
+
 function StudentNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -21,7 +21,6 @@ function StudentNavbar() {
 
     window.addEventListener('scroll', handleScroll);
     
-    // Cleanup the event listener on unmount
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

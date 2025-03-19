@@ -9,7 +9,7 @@ const students = [
     email: 'emma.w@example.com',
     enrolledCourses: 3,
     progress: 78,
-    lastActive: '2 hours ago',
+    lastActive: 'Il y a 2 heures',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
   },
   {
@@ -18,7 +18,7 @@ const students = [
     email: 'james.r@example.com',
     enrolledCourses: 4,
     progress: 92,
-    lastActive: '1 day ago',
+    lastActive: 'Il y a 1 jour',
     image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
   },
   {
@@ -27,7 +27,7 @@ const students = [
     email: 'sarah.c@example.com',
     enrolledCourses: 2,
     progress: 45,
-    lastActive: '3 hours ago',
+    lastActive: 'Il y a 3 heures',
     image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
   },
 ];
@@ -36,19 +36,19 @@ function Students() {
   return (
     <div className="bg-white rounded-3 shadow-sm p-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="fw-bold text-dark">Students</h4>
+        <h4 className="fw-bold text-dark">Étudiants</h4>
         <Button className="btn btn-primary rounded-pill d-flex align-items-center">
-          <FaPlus className="me-2" /> Add Student
+          <FaPlus className="me-2" /> Ajouter un étudiant
         </Button>
       </div>
       <Table hover responsive className="align-middle">
         <thead className="bg-light">
           <tr>
-            <th>STUDENT</th>
-            <th>EMAIL</th>
-            <th>COURSES</th>
-            <th>PROGRESS</th>
-            <th>LAST ACTIVE</th>
+            <th>ÉTUDIANT</th>
+            <th>Email</th>
+            <th>COURS</th>
+            <th>PROGRÈS</th>
+            <th>DERNIÈRE ACTIVITÉ</th>
             <th className="text-end">ACTIONS</th>
           </tr>
         </thead>
