@@ -1,0 +1,22 @@
+.app {
+    font-family: Arial, sans-serif;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+  }
+  
+
+  
+  .main-content {
+    flex: 1;
+    background-color: #f8f9fa;
+  }
+  
+  .card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }

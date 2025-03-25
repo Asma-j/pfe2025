@@ -95,3 +95,31 @@
 Form{
   width: 600px;
 }
+.chart-container {
+  height: 400px;
+  margin: 20px 0;
+}
+
+.page-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 2rem;
+}
+
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: white;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.icon {
+  color: #0d6efd;
+}
+
+.footer-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+}

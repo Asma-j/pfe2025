@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { Card, Button, ListGroup, Badge, Modal, Form, Row, Col } from "react-bootstrap";
 import { FaCheckCircle, FaShareAlt, FaStar, FaCcVisa, FaPaypal } from "react-icons/fa";
 import StudentNavbar from "./StudentNavbar";
-import Footer from "./Footer";
+
 
 const CourseDetail = () => {
-  const [activeTab, setActiveTab] = useState("Overview");
+
   const [showModal, setShowModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("credit");
 

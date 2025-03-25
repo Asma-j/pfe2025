@@ -23,8 +23,8 @@ const Cours = sequelize.define('Cours', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    niveau: {
-        type: DataTypes.ENUM('Débutant', 'Intermédiaire', 'Avancé'),
+    status: {
+        type: DataTypes.ENUM('Payé', 'Gratuit'),
         allowNull: false,
     },
     date_creation: {
