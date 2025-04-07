@@ -118,8 +118,35 @@ Form{
 .icon {
   color: #0d6efd;
 }
+.notifications {
+  margin-top: 20px;
+}
 
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
 .footer-text {
   color: #6c757d;
   font-size: 0.875rem;
+}
+#formStatus{
+  width: 350px;
+}
+.card:hover {
+  transform: scale(1.01);
+  transition: 0.3s ease-in-out;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+
+.modal-content {
+  border-radius: 12px;
+}
+
+button:focus, input:focus, textarea:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }

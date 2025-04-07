@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const { connectDB, sequelize } = require('./db');
+const path = require('path');
+
 
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -9,6 +11,12 @@ const coursRoutes = require('./routes/coursRoutes');
 const planningRoutes = require('./routes/planningRoutes');
 const matiereRoutes = require('./routes/matiereRoutes');
 const classeRoutes = require('./routes/classeRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const paiementRoutes = require('./routes/paiementRoutes');
+
+
+
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -21,14 +29,16 @@ connectDB().then(() => {
 });
 
 // Utilisation des routes
+app.use('/api/paiements', paiementRoutes);
 app.use('/api/matieres', matiereRoutes);
 app.use('/api/classes', classeRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/cours', coursRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/plannings', planningRoutes);
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/api/items', async (req, res) => {
     try {
       const pool = await sql.connect(dbConfig);

@@ -1,5 +1,17 @@
-import React, { useState } from "react";
-import { Container, Row, Col, Card, Nav, Button, Form } from "react-bootstrap";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Nav,
+  Button,
+  Form,
+  Modal,
+  Badge,
+  ListGroup,
+} from "react-bootstrap";
 import {
   People,
   Book,
@@ -27,14 +39,7 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const teacherData = [
   { name: "Prof. Sarah Miller", students: 156 },
@@ -46,6 +51,30 @@ const teacherData = [
 
 const AdminDashboard = () => {
   const [currentView, setCurrentView] = useState("dashboard");
+  const [notifications, setNotifications] = useState([]);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+
+  useEffect(() => {
+    // Fetch notifications (backend already filters for pending users)
+    axios
+      .get("http://localhost:5000/api/notifications")
+      .then((response) => {
+        setNotifications(response.data);
+      })
+      .catch((error) => console.error("Erreur notifications :", error));
+  }, []);
+
+  const handleApprove = async (userId) => {
+    try {
+      await axios.post("http://localhost:5000/api/auth/approve", { userId });
+      // Clear all notifications after approval
+      setNotifications([]);
+      alert("Utilisateur approuvé et email envoyé.");
+    } catch (error) {
+      console.error("Erreur approbation :", error);
+      alert("Erreur lors de l'approbation.");
+    }
+  };
 
   const chartOptions = {
     indexAxis: "y",
@@ -126,7 +155,7 @@ const AdminDashboard = () => {
           <Card>
             <Card.Header>
               <div className="d-flex align-items-center gap-2">
-                <People size={24} /> {/* Replaced Users with bootstrap icon */}
+                <People size={24} />
                 <h4 className="mb-0">Top Teachers by Student Count</h4>
               </div>
             </Card.Header>
@@ -137,7 +166,7 @@ const AdminDashboard = () => {
             </Card.Body>
             <Card.Footer>
               <div className="d-flex align-items-center gap-2 footer-text">
-                <People size={16} /> {/* Replaced Users with bootstrap icon */}
+                <People size={16} />
                 <span>Number of enrolled students per teacher</span>
               </div>
             </Card.Footer>
@@ -193,7 +222,21 @@ const AdminDashboard = () => {
               </Button>
             </Form>
             <div className="d-flex align-items-center">
-              <Bell className="me-4" />
+              {/* Notification Icon with Badge */}
+              <div
+                className="position-relative me-4"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowNotificationsModal(true)}
+              >
+                <Bell size={24} />
+                <Badge
+                  bg={notifications.length > 0 ? "danger" : "secondary"}
+                  className="position-absolute top-0 start-100 translate-middle"
+                  pill
+                >
+                  {notifications.length}
+                </Badge>
+              </div>
               <img
                 src={profil}
                 alt="Profil"
@@ -205,6 +248,54 @@ const AdminDashboard = () => {
           {views[currentView] || <div>View not found</div>}
         </div>
       </Container>
+
+      {/* Notifications Modal */}
+      <Modal
+        show={showNotificationsModal}
+        onHide={() => setShowNotificationsModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Notifications</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {notifications.length > 0 ? (
+            <ListGroup>
+              {notifications.map((notif) => (
+                <ListGroup.Item
+                  key={notif.id}
+                  className="d-flex justify-content-between align-items-center"
+                >
+                  <div className="d-flex align-items-center">
+                    <img
+                      src={notif.Utilisateur?.photo || profil} // Use user's photo if available
+                      alt="User"
+                      className="rounded-circle me-2"
+                      style={{ width: "40px", height: "40px" }}
+                    />
+                    <div>
+                      <p className="mb-0">
+                        Nouvelle inscription en attente: {notif.Utilisateur?.prenom} {notif.Utilisateur?.nom}
+                      </p>
+                      <small className="text-muted">
+                        ({notif.Utilisateur?.email})
+                      </small>
+                    </div>
+                  </div>
+                  <Button
+                    variant="primary"
+                    onClick={() => handleApprove(notif.userId)}
+                  >
+                    Approuver
+                  </Button>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          ) : (
+            <p>Aucune notification</p>
+          )}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

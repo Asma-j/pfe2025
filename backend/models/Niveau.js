@@ -1,8 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
-const Niveau = require('./Niveau');
 
-const Classe = sequelize.define('Classe', {
+const Niveau = sequelize.define('Niveau', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -12,14 +11,12 @@ const Classe = sequelize.define('Classe', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    niveau_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
     }
 }, {
     timestamps: false
 });
 
-Classe.belongsTo(Niveau, { foreignKey: 'niveau_id' });
-
-module.exports = Classe;
+module.exports = Niveau;

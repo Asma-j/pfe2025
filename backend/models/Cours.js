@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
+const Matiere = require('./Matiere');
 
 const Cours = sequelize.define('Cours', {
     id: {
@@ -29,10 +30,21 @@ const Cours = sequelize.define('Cours', {
     },
     date_creation: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW, 
+        defaultValue: DataTypes.NOW,
     },
+    matiere_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    image: {  
+        type: DataTypes.STRING,
+        allowNull: true
+    }
+    
 }, {
     timestamps: false
 });
+
+Cours.belongsTo(Matiere, { foreignKey: 'matiere_id' });
 
 module.exports = Cours;

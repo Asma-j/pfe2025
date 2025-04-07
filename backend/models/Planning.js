@@ -23,7 +23,7 @@ const Planning = sequelize.define('Planning', {
     cours_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-    }
+    },
 }, {
     timestamps: false
 });

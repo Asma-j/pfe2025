@@ -21,31 +21,7 @@
     align-items: center;
     z-index: 999; /* au-dessus du reste */
   }
-  .name-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  
-  .name-input {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .name-input label {
-    font-weight: 600;
-    margin-bottom: 5px;
-  }
-  
-  .name-input input {
-    padding: 5px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-size: 15px;
-  }
-  
+ 
   /* Custom Select Styling */
   .custom-select {
     position: relative;
@@ -134,10 +110,10 @@
   
   .auth-form {
     background: #fff;
-    padding: 1rem;
+    padding: 0.3rem;
     border-radius: 8px;
     width: 100%;
-    max-width: 450px;
+    max-width: 400px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
   
@@ -192,7 +168,9 @@
     border-radius: 4px;
     outline: none;
   }
-  
+ #email,#motDePasse,#idRole{
+    width: 350px;
+  }
   .auth-form input:focus {
     border-color: #4f46e5;
   }
@@ -217,13 +195,15 @@
   
   /* Bouton submit */
   .auth-submit {
-    padding: 0.75rem 1rem;
+    padding: 0.4rem 0.5rem;
+    margin-left: 100px;
     border: none;
     background: #4f46e5;
     color: #fff;
-    font-weight: 600;
+    font-weight: 200;
     cursor: pointer;
     border-radius: 4px;
+    width: 150px;
     transition: background 0.2s ease;
   }
   

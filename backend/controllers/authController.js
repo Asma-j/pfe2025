@@ -4,6 +4,7 @@ require('dotenv').config();
 const Utilisateur = require('../models/Utilisateur');
 const Role = require('../models/Role');
 const nodemailer = require('nodemailer');
+const Notification = require('../models/Notification');
 
 const SECRET_KEY = 'secret'; 
 
@@ -23,50 +24,73 @@ const transporter = nodemailer.createTransport({
 
 
   exports.register = async (req, res) => {
-    console.log("Requête reçue :", req.body);
     const { prenom, nom, email, mot_de_passe, id_role } = req.body;
   
     if (!prenom || !nom || !email || !mot_de_passe || !id_role) {
-      return res.status(400).json({ error: "Tous les champs sont requis" });
+      return res.status(400).json({ error: 'Tous les champs sont requis' });
     }
   
     try {
       const utilisateurExiste = await Utilisateur.findOne({ where: { email } });
       if (utilisateurExiste) {
-        return res.status(400).json({ error: "Cet email est déjà utilisé." });
+        return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
       }
   
       const role = await Role.findByPk(id_role);
-      if (!role) return res.status(400).json({ error: "Rôle invalide" });
-      console.log("Rôle trouvé :", role);
+      if (!role) return res.status(400).json({ error: 'Rôle invalide' });
   
-      console.log("Mot de passe avant hashage :", mot_de_passe);
       const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-      console.log("Mot de passe après hashage :", hashedPassword);
   
       const user = await Utilisateur.create({
-        prenom, nom, email, mot_de_passe: hashedPassword, id_role
+        prenom,
+        nom,
+        email,
+        mot_de_passe: hashedPassword,
+        id_role,
+        status: 'pending',
       });
-
-      let emailSent = false;
-      if (role.nom_role !== 'admin') {
-        const mailOptions = {
-          from: 'asmabenbrahem09@gmail.com',
-          to: email,
-          subject: 'Votre compte a été créé',
-          text: `Bonjour ${prenom},\n\nVotre compte a été créé avec succès.\n\nEmail: ${email}\nMot de passe: ${mot_de_passe}\n\nMerci de vous connecter.\n\nCordialement,`
-        };
-        await transporter.sendMail(mailOptions);
-        emailSent = true;
-      }
-
-      res.json({ message: 'Utilisateur inscrit avec succès', data: user, emailSent });
+  
+      await Notification.create({
+        message: `Nouvelle inscription en attente: ${prenom} ${nom} (${email})`,
+        userId: user.id,
+      });
+  
+      res.json({ message: 'Inscription en attente d’approbation par l’admin.' });
     } catch (err) {
-      console.error("Erreur lors de l'inscription :", err);
+      console.error('Erreur lors de l’inscription :', err);
       res.status(500).json({ error: err.message });
     }
   };
   
+  exports.approveRegistration = async (req, res) => {
+    const { userId } = req.body;
+  
+    try {
+      const user = await Utilisateur.findByPk(userId);
+      if (!user || user.status !== 'pending') {
+        return res.status(400).json({ error: 'Utilisateur invalide ou déjà approuvé' });
+      }
+  
+      user.status = 'approved';
+      await user.save();
+  
+      const role = await Role.findByPk(user.id_role);
+  
+      const mailOptions = {
+        from: 'asmabenbrahem09@gmail.com',
+        to: user.email,
+        subject: 'Votre compte a été approuvé',
+        text: `Bonjour ${user.prenom},\n\nVotre compte a été approuvé.\n\nEmail: ${user.email}\nMot de passe: [le mot de passe choisi lors de l'inscription]\nRôle: ${role.nom_role}\n\nMerci de vous connecter.\n\nCordialement,`,
+      };
+      await transporter.sendMail(mailOptions);
+  
+      res.json({ message: 'Utilisateur approuvé et email envoyé.' });
+    } catch (err) {
+      console.error('Erreur lors de l’approbation :', err);
+      res.status(500).json({ error: err.message });
+    }
+  };
+
 exports.login = async (req, res) => {
     const { email, mot_de_passe } = req.body;
 

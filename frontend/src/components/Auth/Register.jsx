@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Modal, Button, Form, Row, Col, Image } from "react-bootstrap";
 import image from "../images/auth.jpg";
 import "./auth.css";
 
@@ -16,15 +16,9 @@ function Register({ show = true, onClose }) {
     axios
       .get("http://localhost:5000/api/roles")
       .then((response) => {
-        if (Array.isArray(response.data)) {
-          setRoles(response.data);
-        } else {
-          console.error("Données reçues incorrectes :", response.data);
-        }
+        if (Array.isArray(response.data)) setRoles(response.data);
       })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération des rôles :", error);
-      });
+      .catch((error) => console.error("Erreur rôles :", error));
   }, []);
 
   const handleSubmit = async (e) => {
@@ -37,104 +31,119 @@ function Register({ show = true, onClose }) {
         mot_de_passe: motDePasse,
         id_role: idRole,
       });
-
-      if (response.data.emailSent) {
-        alert("Inscription réussie ! Veuillez consulter votre boîte email.");
-      } else {
-        alert("Inscription réussie !");
-      }
-
-      if (onClose) {
-        onClose();
-      }
+      alert(response.data.message);
+      if (onClose) onClose();
     } catch (error) {
-      console.error("Erreur lors de l'inscription :", error.response?.data || error);
+      console.error("Erreur inscription :", error.response?.data || error);
       alert("Erreur lors de l'inscription.");
     }
   };
 
-
-
-  if (!show) return null;
-
   return (
-    <div className="modal-overlay">
-      <div className="modal-container">
-        <button className="modal-close" onClick={() => onClose && onClose()}>
-          ✕
-        </button>
+    <Modal
+      show={show}
+      onHide={onClose}
+      centered
+      size="lg"
+      dialogClassName="custom-modal"
+    >
+      {/* Modal Header with Title and Close Button */}
+      <Modal.Header closeButton >
+        <modal-close>Register</modal-close>
+      </Modal.Header>
 
-
+      {/* Modal Body */}
+      <Modal.Body className="p-0">
         <div className="auth-container">
+          {/* Left Side: Image */}
           <div className="auth-left">
-            <img src={image} alt="Classroom" className="auth-image" />
+            <Image src={image} alt="Classroom" fluid className="auth-image" />
           </div>
 
+          {/* Right Side: Form */}
           <div className="auth-right">
             <div className="auth-form">
+              <Form onSubmit={handleSubmit}>
+                {/* Prénom and Nom in a Row */}
+                <Row className="mb-3">
+                  <Col md={4}>
+                    <Form.Group controlId="prenom">
+                      <Form.Label>Prénom</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter your first name"
+                        value={prenom}
+                        onChange={(e) => setPrenom(e.target.value)}
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="nom">
+                      <Form.Label>Nom</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter your last name"
+                        value={nom}
+                        onChange={(e) => setNom(e.target.value)}
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
 
+                {/* Email */}
+                <Form.Group controlId="email" className="mb-3">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="Enter your Email Address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </Form.Group>
 
+                {/* Mot de passe */}
+                <Form.Group controlId="motDePasse" className="mb-3">
+                  <Form.Label>Mot de passe</Form.Label>
+                  <Form.Control
+                    type="password"
+                    placeholder="Enter your Password"
+                    value={motDePasse}
+                    onChange={(e) => setMotDePasse(e.target.value)}
+                    required
+                  />
+                </Form.Group>
 
-              <form onSubmit={handleSubmit}>
-                <div className="name-row">
-                  <div className="name-input">
-                    <label>Prénom</label>
-                    <input
-                      type="text"
-                      placeholder="Enter your first name"
-                      value={prenom}
-                      onChange={(e) => setPrenom(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="name-input">
-                    <label>Nom</label>
-                    <input
-                      type="text"
-                      placeholder="Enter your last name"
-                      value={nom}
-                      onChange={(e) => setNom(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <label>Email</label>
-                <input
-                  type="email"
-                  placeholder="Enter your Email Address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-
-                <label>Mot de passe</label>
-                <input
-                  type="password"
-                  placeholder="Enter your Password"
-                  value={motDePasse}
-                  onChange={(e) => setMotDePasse(e.target.value)}
-                  required
-                />
-
-                <label>Role</label>
-                <div className="custom-select">
-                  <select value={idRole} onChange={(e) => setIdRole(e.target.value)} required>
+                {/* Role */}
+                <Form.Group controlId="idRole" className="mb-3">
+                  <Form.Label>Role</Form.Label>
+                  <Form.Select
+                    value={idRole}
+                    onChange={(e) => setIdRole(e.target.value)}
+                    required
+                  >
                     <option value="">Select a role</option>
                     {roles.map((role) => (
-                      <option key={role.id} value={role.id}>{role.nom_role}</option>
+                      <option key={role.id} value={role.id}>
+                        {role.nom_role}
+                      </option>
                     ))}
-                  </select>
-                </div>
+                  </Form.Select>
+                </Form.Group>
 
-                <button type="submit" className="auth-submit">Register</button>
-              </form>
+            
+                  <Button type="submit" className="auth-submit">
+                    Register
+                  </Button>
+             
+              </Form>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 }
 

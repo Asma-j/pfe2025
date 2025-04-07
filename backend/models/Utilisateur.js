@@ -28,6 +28,7 @@ const Utilisateur = sequelize.define('Utilisateur', {
         type: DataTypes.INTEGER,
         allowNull: false, 
     },
+    status: { type: DataTypes.STRING, defaultValue: "pending" },
     photo: {
         type: DataTypes.STRING, 
         allowNull: true,         
