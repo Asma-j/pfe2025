@@ -263,9 +263,10 @@ function Courses() {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId="formStatus">
               <Form.Label>Nom de la matière</Form.Label>
               <Form.Control
+              
                 type="text"
                 name="nom"
                 value={newMatiere.nom}
@@ -273,7 +274,7 @@ function Courses() {
                 required
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId="formStatus">
               <Form.Label>Description</Form.Label>
               <Form.Control
                 as="textarea"
@@ -282,7 +283,7 @@ function Courses() {
                 onChange={handleInputChange}
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId="formStatus">
               <Form.Label>Image</Form.Label>
               <Form.Control type="file" name="image" onChange={handleImageChange} />
             </Form.Group>
@@ -300,7 +301,7 @@ function Courses() {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleEditSubmit}>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId="formStatus">
               <Form.Label>Nom de la matière</Form.Label>
               <Form.Control
                 type="text"
@@ -310,7 +311,7 @@ function Courses() {
                 required
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId="formStatus">
               <Form.Label>Description</Form.Label>
               <Form.Control
                 as="textarea"
@@ -319,7 +320,7 @@ function Courses() {
                 onChange={handleEditInputChange}
               />
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3" controlId="formStatus">
               <Form.Label>Image</Form.Label>
               <Form.Control type="file" name="image" onChange={handleEditImageChange} />
             </Form.Group>

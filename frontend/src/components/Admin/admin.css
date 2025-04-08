@@ -134,7 +134,7 @@ Form{
   font-size: 0.875rem;
 }
 #formStatus{
-  width: 350px;
+  width: 400px;
 }
 .card:hover {
   transform: scale(1.01);

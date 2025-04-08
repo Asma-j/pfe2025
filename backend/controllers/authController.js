@@ -41,26 +41,36 @@ const transporter = nodemailer.createTransport({
   
       const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
   
+      // Si le rôle est admin, on valide directement sans notification ni email
+      const isAdmin = role.nom_role.toLowerCase() === 'admin';
+  
       const user = await Utilisateur.create({
         prenom,
         nom,
         email,
         mot_de_passe: hashedPassword,
         id_role,
-        status: 'pending',
+        status: isAdmin ? 'approved' : 'pending',
       });
   
-      await Notification.create({
-        message: `Nouvelle inscription en attente: ${prenom} ${nom} (${email})`,
-        userId: user.id,
-      });
+      // Si ce n'est pas un admin, on crée une notification
+      if (!isAdmin) {
+        await Notification.create({
+          message: `Nouvelle inscription en attente: ${prenom} ${nom} (${email})`,
+          userId: user.id,
+        });
+      }
   
-      res.json({ message: 'Inscription en attente d’approbation par l’admin.' });
+      res.json({ message: isAdmin 
+        ? 'Compte administrateur créé avec succès.' 
+        : 'Inscription en attente d’approbation par l’admin.' 
+      });
     } catch (err) {
       console.error('Erreur lors de l’inscription :', err);
       res.status(500).json({ error: err.message });
     }
   };
+  
   
   exports.approveRegistration = async (req, res) => {
     const { userId } = req.body;
@@ -91,24 +101,33 @@ const transporter = nodemailer.createTransport({
     }
   };
 
-exports.login = async (req, res) => {
+  exports.login = async (req, res) => {
     const { email, mot_de_passe } = req.body;
-
+  
     if (!email || !mot_de_passe) {
-        return res.status(400).json({ error: "Email et mot de passe sont requis" });
+      return res.status(400).json({ error: "Email et mot de passe sont requis" });
     }
-
+  
     try {
-        const user = await Utilisateur.findOne({ where: { email } });
-        if (!user) return res.status(401).json({ error: "Utilisateur non trouvé" });
-
-        const isMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
-        if (!isMatch) return res.status(401).json({ error: "Mot de passe incorrect" });
-
-        const token = jwt.sign({ id: user.id, role: user.id_role }, SECRET_KEY, { expiresIn: '1h' });
-
-        res.json({ message: "Connexion réussie", token });
+      const user = await Utilisateur.findOne({
+        where: { email },
+        include: [{ model: Role, attributes: ['nom_role'] }],
+      });
+  
+      if (!user) return res.status(401).json({ error: "Utilisateur non trouvé" });
+  
+      const isMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
+      if (!isMatch) return res.status(401).json({ error: "Mot de passe incorrect" });
+  
+      const token = jwt.sign({ id: user.id, role: user.id_role }, SECRET_KEY, { expiresIn: '1h' });
+  
+      res.json({
+        message: "Connexion réussie",
+        token,
+        role: user.Role.nom_role, // ✅ ici on renvoie le nom du rôle
+      });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
-};
+  };
+  

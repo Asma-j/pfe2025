@@ -15,19 +15,31 @@ function Login({ show = true, onClose }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-
+  
     try {
       const response = await axios.post('http://localhost:5000/api/auth/login', {
         email,
         mot_de_passe: motDePasse
       });
-      
-      localStorage.setItem('token', response.data.token);
-      navigate('/student');
+  
+      const { token, role } = response.data;
+  
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role); 
+  
+      // Redirection selon le rôle
+      if (role === 'admin') {
+        navigate('/admin');
+      } else if (role === 'Etudiant') {
+        navigate('/student');
+      } else {
+        navigate('/teacher');
+      }
     } catch (err) {
       setError(err.response?.data?.error || "Une erreur s'est produite");
     }
   };
+  
 
   return (
     <div className="modal-overlay">
