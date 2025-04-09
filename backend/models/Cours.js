@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 const Matiere = require('./Matiere');
 
+
 const Cours = sequelize.define('Cours', {
     id: {
         type: DataTypes.INTEGER,

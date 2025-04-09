@@ -8,6 +8,7 @@ import AdminDashboard from './components/Admin/AdminDashboard';
 import Courses from './components/Etudiant/Courses';
 import CourseDetail from './components/Etudiant/CourseDetail';
 import TeacherDashboard from './components/Enseignant/TeacherDashboard';
+import CourseContent from './components/Etudiant/CourseContent';
 function App() {
   const location = useLocation();
   const state = location.state || {}; 
@@ -20,6 +21,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/cours/:title" element={<Courses />} />
       <Route path="/course/:courseName" element={<CourseDetail/>} />
+      <Route path="/course/:id/content" element={<CourseContent />} />
       <Route path="/student" element={<StudentDashboard />} />
       <Route path="/admin" element={<AdminDashboard/>} />
       <Route path="/teacher" element={<TeacherDashboard/>} />

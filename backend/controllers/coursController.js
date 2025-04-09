@@ -50,20 +50,17 @@ exports.getAllCourses = async (req, res) => {
 };
   
 
-// Récupérer un cours par ID
 exports.getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const course = await Course.findOne({ where: { id: req.params.id } }); // Use findOne instead of findById
     if (!course) {
       return res.status(404).json({ message: 'Cours non trouvé' });
     }
-    res.status(200).json(course);
+    res.status(200).json(course); // Returns a single object
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la récupération du cours', error });
   }
 };
-
-// Mettre à jour un cours
 
 
 

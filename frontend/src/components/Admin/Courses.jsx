@@ -1,52 +1,65 @@
 import React, { useEffect, useState } from 'react';
 import { FaUsers, FaClock, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { Button, Card, ProgressBar, Modal, Form } from 'react-bootstrap';
+import { Button, Card, ProgressBar, Modal, Form  } from 'react-bootstrap';
 import axios from 'axios';
+import'./Course.css'
 
-// CourseCard Component to display each course
 function CourseCard({ course }) {
   return (
-    <Card className="shadow-sm border-0 rounded-3 mb-3">
-      <Card.Img variant="top" src={course.image || 'https://via.placeholder.com/400'} alt={course.titre} />
-      <Card.Body>
-        <Card.Title>{course.titre}</Card.Title>
-        <Card.Subtitle className="mb-2 text-muted">{course.instructor || 'Instructor not available'}</Card.Subtitle>
-        <div className="d-flex justify-content-between">
-          <div className="d-flex align-items-center">
-            <FaUsers className="text-primary me-2" />
+    <Card className="course-card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+      <Card.Img 
+        variant="top" 
+        src={`http://localhost:5000/uploads/${course.image}`} 
+        alt={course.titre} 
+        className="course-card-img"
+      />
+
+      <Card.Body className="p-4">
+        <Card.Title className="mb-1 fw-bold fs-4">{course.titre}</Card.Title>
+        <Card.Subtitle className="mb-3 text-muted">{course.instructor || 'Instructeur inconnu'}</Card.Subtitle>
+
+        <div className="d-flex justify-content-between mb-3 text-secondary small">
+          <div className="d-flex align-items-center gap-2">
+            <FaUsers className="text-info" />
             <span>{course.students || 0} étudiants</span>
           </div>
-          <div className="d-flex align-items-center">
-            <FaClock className="text-primary me-2" />
-            <span>{course.duration || 'N/A'}</span>
+          <div className="d-flex align-items-center gap-2">
+            <FaClock className="text-info" />
+            <span>{course.duration || 'Durée inconnue'}</span>
           </div>
         </div>
-        <div className="mt-3">
-          <div className="d-flex justify-content-between">
-            <span>Progression du cours</span>
+
+        <div className="mb-3">
+          <div className="d-flex justify-content-between small text-muted mb-1">
+            <span>Progression</span>
             <span>{course.progress || 0}%</span>
           </div>
-          <ProgressBar now={course.progress || 0} variant="info" />
+          <ProgressBar 
+            now={course.progress || 0} 
+            variant="info" 
+            className="progress-bar-rounded" 
+          />
         </div>
-        <div className="mt-4 d-flex justify-content-end gap-2">
-          <Button variant="outline-primary">Voir les détails</Button>
-          <Button variant="primary">Modifier le cours</Button>
+
+        <div className="d-flex justify-content-end gap-2">
+          <Button variant="outline-info" size="sm">Voir les détails</Button>
+          <Button variant="info" size="sm">Modifier</Button>
         </div>
       </Card.Body>
     </Card>
   );
 }
 
-// Main Component for Subjects and Courses
-function Courses() {
-  const [matieres, setMatieres] = useState([]); // State for subjects
-  const [loading, setLoading] = useState(true); // Loading state
-  const [showModal, setShowModal] = useState(false); // Modal visibility for adding
-  const [editModal, setEditModal] = useState(false); // Modal visibility for editing
-  const [newMatiere, setNewMatiere] = useState({ nom: '', description: '', image: null }); // New subject form data
-  const [editMatiere, setEditMatiere] = useState({ id: '', nom: '', description: '', image: null }); // Edit subject form data
 
-  // Fetch all subjects and their courses
+
+function Courses() {
+  const [matieres, setMatieres] = useState([]); 
+  const [loading, setLoading] = useState(true); 
+  const [showModal, setShowModal] = useState(false); 
+  const [editModal, setEditModal] = useState(false); 
+  const [newMatiere, setNewMatiere] = useState({ nom: '', description: '', image: null });
+  const [editMatiere, setEditMatiere] = useState({ id: '', nom: '', description: '', image: null }); 
+
   useEffect(() => {
     axios
       .get('http://localhost:5000/api/matieres')
@@ -55,8 +68,8 @@ function Courses() {
         const matieresData = response.data;
         const matieresWithCourses = await Promise.all(
           matieresData.map(async (matiere) => {
-            const coursResponse = await axios.get(`http://localhost:5000/api/cours?matiereId=${matiere.id}`);
-            return { ...matiere, courses: coursResponse.data, isCoursesCollapsed: false }; // Add collapse state
+            const coursResponse = await axios.get(`http://localhost:5000/api/cours?matiere_id=${matiere.id}`);
+            return { ...matiere, courses: coursResponse.data, isCoursesCollapsed: false };
           })
         );
         setMatieres(matieresWithCourses);

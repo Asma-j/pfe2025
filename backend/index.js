@@ -13,7 +13,7 @@ const matiereRoutes = require('./routes/matiereRoutes');
 const classeRoutes = require('./routes/classeRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const paiementRoutes = require('./routes/paiementRoutes');
-
+const quizRoutes = require('./routes/quizRoutes');
 
 
 
@@ -29,6 +29,7 @@ connectDB().then(() => {
 });
 
 // Utilisation des routes
+app.use('/api/quiz', quizRoutes);
 app.use('/api/paiements', paiementRoutes);
 app.use('/api/matieres', matiereRoutes);
 app.use('/api/classes', classeRoutes);

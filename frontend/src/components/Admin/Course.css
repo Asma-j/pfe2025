@@ -1,0 +1,28 @@
+.course-card {
+    transition: transform 0.25s ease, box-shadow 0.3s ease;
+  }
+  
+  .course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 1rem 1.5rem rgba(0, 0, 0, 0.08);
+  }
+  
+  .course-card-img {
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .progress-bar-rounded .progress-bar {
+    border-radius: 50px;
+  }
+  
+  button.btn-outline-info,
+  button.btn-info {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  button.btn-outline-info:hover {
+    background-color: #0dcaf0;
+    color: white;
+  }
+  
