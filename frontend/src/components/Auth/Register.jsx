@@ -16,6 +16,7 @@ function Register({ show = true, onClose }) {
     axios
       .get("http://localhost:5000/api/roles")
       .then((response) => {
+        console.log("Response data:", response.data);
         if (Array.isArray(response.data)) setRoles(response.data);
       })
       .catch((error) => console.error("Erreur rôles :", error));

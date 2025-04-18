@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 const Matiere = require('./Matiere');
-
+const Utilisateur = require('./Utilisateur');
 
 const Cours = sequelize.define('Cours', {
     id: {
@@ -37,15 +37,19 @@ const Cours = sequelize.define('Cours', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    image: {  
+    created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    image: {
         type: DataTypes.STRING,
-        allowNull: true
-    }
-    
+        allowNull: true,
+    },
 }, {
-    timestamps: false
+    timestamps: false,
 });
 
 Cours.belongsTo(Matiere, { foreignKey: 'matiere_id' });
+Cours.belongsTo(Utilisateur, { foreignKey: 'created_by', as: 'Creator' });
 
 module.exports = Cours;

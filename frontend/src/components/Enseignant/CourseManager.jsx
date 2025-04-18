@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Form, Modal } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import axios from 'axios';
 
 const CourseManager = () => {
   const [courses, setCourses] = useState([]);
@@ -15,46 +16,44 @@ const CourseManager = () => {
     module: '',
     status: 'Gratuit',
     matiere_id: '',
-    image: null, // Initialiser comme null pour un fichier
+    image: null,
   });
   const [editCourse, setEditCourse] = useState(null);
   const [error, setError] = useState(null);
 
-  // Récupérer les matières au chargement
+  // Set axios default headers
+  const token = localStorage.getItem('token');
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
+
+  // Fetch matières
   useEffect(() => {
     const fetchMatieres = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/matieres');
-        if (!response.ok) {
-          throw new Error('Erreur lors de la récupération des matières');
-        }
-        const data = await response.json();
-        setMatieres(data);
+        const response = await axios.get('http://localhost:5000/api/matieres');
+        setMatieres(response.data);
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.message || err.message);
       }
     };
     fetchMatieres();
   }, []);
 
-  // Récupérer les cours en fonction de la matière sélectionnée
+  // Fetch courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const url = selectedMatiereId
           ? `http://localhost:5000/api/cours?matiere_id=${selectedMatiereId}`
           : 'http://localhost:5000/api/cours';
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error('Erreur lors de la récupération des cours');
-        }
-        const data = await response.json();
-        setCourses(data);
+        const response = await axios.get(url);
+        setCourses(response.data);
 
         const selectedMatiere = matieres.find((matiere) => matiere.id === parseInt(selectedMatiereId));
         setSelectedMatiereName(selectedMatiere ? selectedMatiere.nom : '');
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.message || err.message);
       }
     };
 
@@ -63,12 +62,12 @@ const CourseManager = () => {
     }
   }, [selectedMatiereId, matieres]);
 
-  // Gérer le changement de fichier image
+  // Handle image change
   const handleImageChange = (e) => {
     setNewCourse((prev) => ({ ...prev, image: e.target.files[0] }));
   };
 
-  // Ajouter un cours
+  // Add course
   const handleAddCourse = async () => {
     try {
       const formData = new FormData();
@@ -79,21 +78,14 @@ const CourseManager = () => {
       formData.append('status', newCourse.status);
       formData.append('matiere_id', newCourse.matiere_id);
       if (newCourse.image) {
-        formData.append('image', newCourse.image); // Ajouter le fichier image
+        formData.append('image', newCourse.image);
       }
 
-      const response = await fetch('http://localhost:5000/api/cours/courses', {
-        method: 'POST',
-        body: formData, // Envoyer FormData au lieu de JSON
+      const response = await axios.post('http://localhost:5000/api/cours', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la création du cours');
-      }
-
-      const data = await response.json();
-      setCourses([...courses, data.course]);
+      setCourses([...courses, response.data.course]);
       setNewCourse({
         titre: '',
         description: '',
@@ -105,11 +97,11 @@ const CourseManager = () => {
       });
       setShowModal(false);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     }
   };
 
-  // Modifier un cours
+  // Edit course
   const handleEditCourse = (course) => {
     setEditCourse(course);
     setNewCourse({
@@ -124,6 +116,7 @@ const CourseManager = () => {
     setShowModal(true);
   };
 
+  // Update course
   const handleUpdateCourse = async () => {
     try {
       const formData = new FormData();
@@ -134,23 +127,16 @@ const CourseManager = () => {
       formData.append('status', newCourse.status);
       formData.append('matiere_id', newCourse.matiere_id);
       if (newCourse.image && typeof newCourse.image !== 'string') {
-        formData.append('image', newCourse.image); // Ajouter la nouvelle image si elle a été modifiée
+        formData.append('image', newCourse.image);
       }
 
-      const response = await fetch(`http://localhost:5000/api/cours/${editCourse.id}`, {
-        method: 'PUT',
-        body: formData, // Envoyer FormData au lieu de JSON
+      const response = await axios.put(`http://localhost:5000/api/cours/${editCourse.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la mise à jour du cours');
-      }
-
-      const data = await response.json();
       setCourses(
         courses.map((course) =>
-          course.id === editCourse.id ? data.course : course
+          course.id === editCourse.id ? response.data.course : course
         )
       );
       setNewCourse({
@@ -165,33 +151,40 @@ const CourseManager = () => {
       setEditCourse(null);
       setShowModal(false);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     }
   };
 
-  // Supprimer un cours
+  // Delete course
   const handleDeleteCourse = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/cours/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la suppression du cours');
-      }
-
+      await axios.delete(`http://localhost:5000/api/cours/${id}`);
       setCourses(courses.filter((course) => course.id !== id));
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     }
+  };
+
+  // Reset modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setNewCourse({
+      titre: '',
+      description: '',
+      prix: '',
+      module: '',
+      status: 'Gratuit',
+      matiere_id: '',
+      image: null,
+    });
+    setEditCourse(null);
+    setError(null);
   };
 
   return (
     <div className="card p-3">
       <h5>Gestion des cours</h5>
 
-      {/* Menu déroulant pour sélectionner une matière */}
       <Form.Group className="mb-3">
         <Form.Label>Sélectionner une matière</Form.Label>
         <Form.Select
@@ -207,26 +200,22 @@ const CourseManager = () => {
         </Form.Select>
       </Form.Group>
 
-      {/* Bouton pour ajouter un cours */}
       <Button variant="primary" onClick={() => setShowModal(true)} className="mb-3">
         <FaPlus /> Ajouter un cours
       </Button>
 
-      {/* Afficher le nom de la matière sélectionnée */}
       {selectedMatiereId && (
         <h6 className="mb-3">
           Cours pour la matière : <strong>{selectedMatiereName}</strong>
         </h6>
       )}
 
-      {/* Afficher les erreurs */}
       {error && (
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
       )}
 
-      {/* Tableau des cours */}
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -237,6 +226,7 @@ const CourseManager = () => {
             <th>Module</th>
             <th>Statut</th>
             <th>Matière</th>
+            <th>Créateur</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -250,6 +240,9 @@ const CourseManager = () => {
               <td>{course.module}</td>
               <td>{course.status}</td>
               <td>{course.Matiere ? course.Matiere.nom : 'N/A'}</td>
+              <td>
+                {course.Creator ? `${course.Creator.prenom} ${course.Creator.nom}` : 'N/A'}
+              </td>
               <td>
                 <Button
                   variant="warning"
@@ -270,8 +263,7 @@ const CourseManager = () => {
         </tbody>
       </Table>
 
-      {/* Modal pour ajouter/modifier un cours */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+      <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>{editCourse ? 'Modifier le cours' : 'Ajouter un cours'}</Modal.Title>
         </Modal.Header>
@@ -285,6 +277,7 @@ const CourseManager = () => {
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, titre: e.target.value })
                 }
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -296,6 +289,7 @@ const CourseManager = () => {
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, description: e.target.value })
                 }
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -306,6 +300,7 @@ const CourseManager = () => {
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, prix: e.target.value })
                 }
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -316,6 +311,7 @@ const CourseManager = () => {
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, module: e.target.value })
                 }
+                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -337,6 +333,7 @@ const CourseManager = () => {
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, matiere_id: e.target.value })
                 }
+                required
               >
                 <option value="">Sélectionner une matière</option>
                 {matieres.map((matiere) => (
@@ -346,14 +343,19 @@ const CourseManager = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-            <Form.Group className="mb-3" controlId="formImage">
+            <Form.Group className="mb-3">
               <Form.Label>Image</Form.Label>
-              <Form.Control type="file" name="image" onChange={handleImageChange} />
+              <Form.Control
+                type="file"
+                name="image"
+                onChange={handleImageChange}
+                accept="image/*"
+              />
               {editCourse && newCourse.image && typeof newCourse.image === 'string' && (
                 <div className="mt-2">
                   <p>Image actuelle :</p>
                   <img
-                    src={`http://localhost:5000/uploads/${newCourse.image}`}
+                    src={`http://localhost:5000/Uploads/${newCourse.image}`}
                     alt="Aperçu"
                     style={{ maxWidth: '100px', maxHeight: '100px' }}
                   />
@@ -363,13 +365,13 @@ const CourseManager = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
+          <Button variant="secondary" onClick={handleCloseModal}>
             Annuler
           </Button>
           <Button
             variant="primary"
             onClick={editCourse ? handleUpdateCourse : handleAddCourse}
-            disabled={!newCourse.matiere_id}
+            disabled={!newCourse.matiere_id || !newCourse.titre || !newCourse.description}
           >
             {editCourse ? 'Modifier' : 'Ajouter'}
           </Button>

@@ -119,7 +119,7 @@ const transporter = nodemailer.createTransport({
       const isMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
       if (!isMatch) return res.status(401).json({ error: "Mot de passe incorrect" });
   
-      const token = jwt.sign({ id: user.id, role: user.id_role }, SECRET_KEY, { expiresIn: '1h' });
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
   
       res.json({
         message: "Connexion réussie",
