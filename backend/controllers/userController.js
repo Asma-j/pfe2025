@@ -1,5 +1,7 @@
 const Utilisateur = require('../models/Utilisateur');
 const Role = require('../models/Role');
+const UtilisateurClasse = require('../models/UtilisateurClasse');
+const Classe = require('../models/Classe');
 
 //  Liste des utilisateurs avec leur rôle
 exports.getUsers = async (req, res) => {
@@ -9,6 +11,60 @@ exports.getUsers = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+};
+// Récupérer les étudiants
+exports.getStudents = async (req, res) => {
+  try {
+      const students = await Utilisateur.findAll({
+          include: [
+              { model: Role, where: { id: 2 } }, 
+              { model: Classe },
+          ],
+      });
+      res.json(students);
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+};
+exports.getStudentsByClasse = async (req, res) => {
+  try {
+      const { classeId } = req.params;
+      const students = await Utilisateur.findAll({
+          include: [
+              { model: Role, where: { id: 2 } }, 
+              {
+                  model: Classe,
+                  where: { id: classeId },
+              },
+          ],
+      });
+      res.json(students);
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+};
+exports.addStudentToClasse = async (req, res) => {
+  try {
+      const { utilisateur_id, classe_id } = req.body;
+      const utilisateurClasse = await UtilisateurClasse.create({ utilisateur_id, classe_id });
+      res.status(201).json({ message: 'Étudiant ajouté à la classe', utilisateurClasse });
+  } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de l\'ajout de l\'étudiant à la classe', error });
+  }
+};
+// Récupérer les enseignants
+exports.getTeachers = async (req, res) => {
+  try {
+      const teachers = await Utilisateur.findAll({
+          include: Role,
+          where: {
+              id_role: 1003
+          }
+      });
+      res.json(teachers);
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
 };
 // Récupérer uniquement les utilisateurs approuvés
 exports.getApprovedUsers = async (req, res) => {

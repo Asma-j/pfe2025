@@ -23,6 +23,7 @@ import {
   Speedometer,
 } from "react-bootstrap-icons";
 import Students from "./Students";
+import Teachers from "./Teachers";
 import Courses from "./Courses";
 import Schedule from "./Schedule";
 import "./admin.css";
@@ -133,6 +134,7 @@ const AdminDashboard = () => {
     students: <Students />,
     courses: <Courses />,
     schedule: <Schedule />,
+    teachers: <Teachers/>,
     dashboard: (
       <>
         <Row>
@@ -192,6 +194,7 @@ const AdminDashboard = () => {
           {[
             { icon: Speedometer, label: "Tableau de bord", view: "dashboard" },
             { icon: People, label: "Étudiants", view: "students" },
+            { icon: People, label: "Enseignant", view: "teachers" },
             { icon: Book, label: "Cours", view: "courses" },
             { icon: Calendar, label: "Emploi du temps", view: "schedule" },
             { icon: Gear, label: "Paramètres", view: "settings" },

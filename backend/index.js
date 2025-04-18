@@ -14,8 +14,7 @@ const classeRoutes = require('./routes/classeRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const paiementRoutes = require('./routes/paiementRoutes');
 const quizRoutes = require('./routes/quizRoutes');
-
-
+const niveauRoutes = require('./routes/niveauRoutes');
 
 const app = express();
 app.use(cors());
@@ -39,6 +38,7 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/cours', coursRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/plannings', planningRoutes);
+app.use('/api/niveaux', niveauRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/api/items', async (req, res) => {
     try {
