@@ -20,8 +20,8 @@ function App() {
       <Routes location={state.backgroundLocation || location}>
       <Route path="/" element={<Home />} />
       <Route path="/cours/:title" element={<Courses />} />
-      <Route path="/course/:courseName" element={<CourseDetail/>} />
-      <Route path="/course/:id/content" element={<CourseContent />} />
+      <Route path="/course/:id" element={<CourseDetail/>} />
+      <Route path="/course/:id/content" element={<CourseContent />} />     
       <Route path="/student" element={<StudentDashboard />} />
       <Route path="/admin" element={<AdminDashboard/>} />
       <Route path="/teacher" element={<TeacherDashboard/>} />

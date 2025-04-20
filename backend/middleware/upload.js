@@ -4,22 +4,42 @@ const path = require('path');
 // Configuration de stockage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Stocke les fichiers dans le dossier uploads
+        cb(null, 'Uploads/'); // Stocke les fichiers dans le dossier uploads
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); 
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 
-// Filtrer les fichiers acceptés (uniquement images)
+// Filtrer les fichiers acceptés (images, PDFs, Word, PowerPoint, vidéos)
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'video/mp4',
+        'video/mpeg',
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Format de fichier invalide (seules les images sont autorisées).'), false);
+        cb(new Error('Format de fichier invalide. Formats autorisés : images, PDFs, Word, PowerPoint, vidéos.'), false);
     }
 };
 
-const upload = multer({ storage, fileFilter });
+// Configuration pour accepter plusieurs types de fichiers
+const upload = multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: 500 * 1024 * 1024 }, // Increase limit to 500MB per file
+}).fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'files', maxCount: 10 },
+    { name: 'video', maxCount: 1 },
+]);
 
 module.exports = upload;

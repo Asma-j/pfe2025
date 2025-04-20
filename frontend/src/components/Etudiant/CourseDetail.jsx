@@ -31,8 +31,14 @@ const CourseDetail = () => {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
+        const token = localStorage.getItem('token'); 
         const response = await axios.get(
-          `http://localhost:5000/api/cours/?${id}`
+          `http://localhost:5000/api/cours/?${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         console.log("Course Data:", response.data);
         setCourse(response.data[0]);
@@ -110,14 +116,14 @@ const CourseDetail = () => {
               </h4>
               <p className="text-danger">Il reste 11 heures à ce prix</p>
               <Button
-                variant="primary"
-                className="w-100 mb-2"
-                onClick={() => navigate(`/course/${id}/content`)}
-              >
-                {course.status === "Gratuit"
-                  ? "Accéder au cours"
-                  : "Acheter maintenant"}
-              </Button>
+  variant="primary"
+  className="w-100 mb-2"
+  onClick={() => navigate(`/course/${id}/content`)}
+>
+  {course.status === "Gratuit"
+    ? "Accéder au cours"
+    : "Acheter maintenant"}
+</Button>
               <h5>Ce cours inclut :</h5>
               <ListGroup variant="flush">
                 {(course.status === "Gratuit"

@@ -3,24 +3,25 @@ import "./cours.css";
 import StudentNavbar from "./StudentNavbar";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
+import axios from "axios";
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);
   const [matieres, setMatieres] = useState([]);
   const [selectedMatiereId, setSelectedMatiereId] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMatieres = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/matieres");
-        if (!response.ok) {
-          throw new Error("Erreur lors de la récupération des matières");
-        }
-        const data = await response.json();
-        setMatieres(data);
+        setLoading(true);
+        const response = await axios.get("http://localhost:5000/api/matieres");
+        setMatieres(response.data);
       } catch (err) {
         setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchMatieres();
@@ -29,20 +30,18 @@ const Courses = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        setLoading(true);
         const url = selectedMatiereId
           ? `http://localhost:5000/api/cours?matiere_id=${selectedMatiereId}`
           : "http://localhost:5000/api/cours";
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error("Erreur lors de la récupération des cours");
-        }
-        const data = await response.json();
-        setCourses(data);
+        const response = await axios.get(url);
+        setCourses(response.data);
       } catch (err) {
         setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchCourses();
   }, [selectedMatiereId]);
 
@@ -73,7 +72,7 @@ const Courses = () => {
             </div>
             <div className="hero-image-container">
               <img
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/1d0971fc31c8fa194a5af0d0b3d6d7b0dd552d92"
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/1d0971fc31c8fa194a5af0d0b3d6d7b0dd552d92?apiKey=94620a1500a3473894a74b620cac940d"
                 alt="Illustration du développement Swift UI"
                 className="hero-image"
               />
@@ -110,13 +109,13 @@ const Courses = () => {
             </div>
           )}
 
-          {courses.length === 0 && !error && (
+          {loading && (
             <div className="text-center">
               <p>Chargement des cours...</p>
             </div>
           )}
 
-          {courses.length === 0 && matieres.length > 0 && !error && (
+          {!loading && courses.length === 0 && !error && (
             <div className="text-center">
               <p>Aucun cours disponible pour cette matière.</p>
             </div>
@@ -125,13 +124,17 @@ const Courses = () => {
           <div className="categories-grid">
             {courses.map((course, index) => (
               <Link
-                to={`/course/${course.titre.toLowerCase()}`}
+                to={`/course/${course.id}`} // Use course.id
                 key={index}
                 className="category-card-link"
               >
                 <article className="category-card">
                   <img
-                    src={`http://localhost:5000/uploads/${course.image}`}
+                    src={
+                      course.image
+                        ? `http://localhost:5000/Uploads/${course.image}`
+                        : "https://cdn.builder.io/api/v1/image/assets/TEMP/1d0971fc31c8fa194a5af0d0b3d6d7b0dd552d92?apiKey=94620a1500a3473894a74b620cac940d"
+                    }
                     alt={`${course.titre} catégorie`}
                     style={{
                       height: "350px",

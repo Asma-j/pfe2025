@@ -39,7 +39,13 @@ app.use('/api/cours', coursRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/plannings', planningRoutes);
 app.use('/api/niveaux', niveauRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/Uploads', express.static('Uploads', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.mp4')) {
+      res.setHeader('Content-Type', 'video/mp4');
+    }
+  }
+}));
 app.get('/api/items', async (req, res) => {
     try {
       const pool = await sql.connect(dbConfig);

@@ -6,6 +6,7 @@ import axios from 'axios';
 const CourseManager = () => {
   const [courses, setCourses] = useState([]);
   const [matieres, setMatieres] = useState([]);
+  const [niveaux, setNiveaux] = useState([]);
   const [selectedMatiereId, setSelectedMatiereId] = useState('');
   const [selectedMatiereName, setSelectedMatiereName] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -16,7 +17,12 @@ const CourseManager = () => {
     module: '',
     status: 'Gratuit',
     matiere_id: '',
+    niveau_id: '',
     image: null,
+    files: [],
+    video: null,
+    clearFiles: false,
+    clearVideo: false,
   });
   const [editCourse, setEditCourse] = useState(null);
   const [error, setError] = useState(null);
@@ -27,17 +33,21 @@ const CourseManager = () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
 
-  // Fetch matières
+  // Fetch matières and niveaux
   useEffect(() => {
-    const fetchMatieres = async () => {
+    const fetchMatieresAndNiveaux = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/matieres');
-        setMatieres(response.data);
+        const [matieresResponse, niveauxResponse] = await Promise.all([
+          axios.get('http://localhost:5000/api/matieres'),
+          axios.get('http://localhost:5000/api/niveaux'),
+        ]);
+        setMatieres(matieresResponse.data);
+        setNiveaux(niveauxResponse.data);
       } catch (err) {
         setError(err.response?.data?.message || err.message);
       }
     };
-    fetchMatieres();
+    fetchMatieresAndNiveaux();
   }, []);
 
   // Fetch courses
@@ -62,9 +72,17 @@ const CourseManager = () => {
     }
   }, [selectedMatiereId, matieres]);
 
-  // Handle image change
+  // Handle file changes
   const handleImageChange = (e) => {
     setNewCourse((prev) => ({ ...prev, image: e.target.files[0] }));
+  };
+
+  const handleFilesChange = (e) => {
+    setNewCourse((prev) => ({ ...prev, files: Array.from(e.target.files) }));
+  };
+
+  const handleVideoChange = (e) => {
+    setNewCourse((prev) => ({ ...prev, video: e.target.files[0] }));
   };
 
   // Add course
@@ -77,8 +95,15 @@ const CourseManager = () => {
       formData.append('module', newCourse.module);
       formData.append('status', newCourse.status);
       formData.append('matiere_id', newCourse.matiere_id);
+      formData.append('niveau_id', newCourse.niveau_id);
       if (newCourse.image) {
         formData.append('image', newCourse.image);
+      }
+      if (newCourse.files) {
+        newCourse.files.forEach((file) => formData.append('files', file));
+      }
+      if (newCourse.video) {
+        formData.append('video', newCourse.video);
       }
 
       const response = await axios.post('http://localhost:5000/api/cours', formData, {
@@ -93,7 +118,12 @@ const CourseManager = () => {
         module: '',
         status: 'Gratuit',
         matiere_id: '',
+        niveau_id: '',
         image: null,
+        files: [],
+        video: null,
+        clearFiles: false,
+        clearVideo: false,
       });
       setShowModal(false);
     } catch (err) {
@@ -103,15 +133,38 @@ const CourseManager = () => {
 
   // Edit course
   const handleEditCourse = (course) => {
+    console.log('Editing course:', course); // Debug log
     setEditCourse(course);
+    // Ensure files is an array
+    let filesArray = [];
+    if (course.files) {
+      if (Array.isArray(course.files)) {
+        filesArray = course.files;
+      } else if (typeof course.files === 'string') {
+        try {
+          filesArray = JSON.parse(course.files);
+          if (!Array.isArray(filesArray)) {
+            filesArray = [];
+          }
+        } catch (e) {
+          console.error('Error parsing course.files:', e);
+          filesArray = [];
+        }
+      }
+    }
     setNewCourse({
       titre: course.titre,
       description: course.description,
       prix: course.prix,
       module: course.module,
       status: course.status,
-      matiere_id: course.matiere_id,
+      matiere_id: course.matiere_id || '',
+      niveau_id: course.niveau_id || '',
       image: course.image,
+      files: filesArray,
+      video: course.video,
+      clearFiles: false,
+      clearVideo: false,
     });
     setShowModal(true);
   };
@@ -126,8 +179,21 @@ const CourseManager = () => {
       formData.append('module', newCourse.module);
       formData.append('status', newCourse.status);
       formData.append('matiere_id', newCourse.matiere_id);
+      formData.append('niveau_id', newCourse.niveau_id);
+      formData.append('clearFiles', newCourse.clearFiles ? 'true' : 'false');
+      formData.append('clearVideo', newCourse.clearVideo ? 'true' : 'false');
       if (newCourse.image && typeof newCourse.image !== 'string') {
         formData.append('image', newCourse.image);
+      }
+      if (newCourse.files && newCourse.files.length > 0) {
+        newCourse.files.forEach((file) => {
+          if (typeof file !== 'string') {
+            formData.append('files', file);
+          }
+        });
+      }
+      if (newCourse.video && typeof newCourse.video !== 'string') {
+        formData.append('video', newCourse.video);
       }
 
       const response = await axios.put(`http://localhost:5000/api/cours/${editCourse.id}`, formData, {
@@ -146,12 +212,19 @@ const CourseManager = () => {
         module: '',
         status: 'Gratuit',
         matiere_id: '',
+        niveau_id: '',
         image: null,
+        files: [],
+        video: null,
+        clearFiles: false,
+        clearVideo: false,
       });
       setEditCourse(null);
       setShowModal(false);
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      const errorMessage = err.response?.data?.message || err.message;
+      setError(errorMessage);
+      console.error('Error updating course:', err);
     }
   };
 
@@ -175,7 +248,12 @@ const CourseManager = () => {
       module: '',
       status: 'Gratuit',
       matiere_id: '',
+      niveau_id: '',
       image: null,
+      files: [],
+      video: null,
+      clearFiles: false,
+      clearVideo: false,
     });
     setEditCourse(null);
     setError(null);
@@ -226,6 +304,7 @@ const CourseManager = () => {
             <th>Module</th>
             <th>Statut</th>
             <th>Matière</th>
+            <th>Niveau</th>
             <th>Créateur</th>
             <th>Actions</th>
           </tr>
@@ -240,6 +319,7 @@ const CourseManager = () => {
               <td>{course.module}</td>
               <td>{course.status}</td>
               <td>{course.Matiere ? course.Matiere.nom : 'N/A'}</td>
+              <td>{course.Niveau ? course.Niveau.nom : 'N/A'}</td>
               <td>
                 {course.Creator ? `${course.Creator.prenom} ${course.Creator.nom}` : 'N/A'}
               </td>
@@ -296,6 +376,7 @@ const CourseManager = () => {
               <Form.Label>Prix</Form.Label>
               <Form.Control
                 type="number"
+                step="0.01"
                 value={newCourse.prix}
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, prix: e.target.value })
@@ -344,6 +425,23 @@ const CourseManager = () => {
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
+              <Form.Label>Niveau</Form.Label>
+              <Form.Select
+                value={newCourse.niveau_id}
+                onChange={(e) =>
+                  setNewCourse({ ...newCourse, niveau_id: e.target.value })
+                }
+                required
+              >
+                <option value="">Sélectionner un niveau</option>
+                {niveaux.map((niveau) => (
+                  <option key={niveau.id} value={niveau.id}>
+                    {niveau.nom}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Image</Form.Label>
               <Form.Control
                 type="file"
@@ -362,6 +460,63 @@ const CourseManager = () => {
                 </div>
               )}
             </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Fichiers (PDF, Word, etc.)</Form.Label>
+              <Form.Control
+                type="file"
+                name="files"
+                multiple
+                onChange={handleFilesChange}
+                accept=".pdf,.doc,.docx"
+              />
+              {editCourse && Array.isArray(newCourse.files) && newCourse.files.length > 0 && (
+                <div className="mt-2">
+                  <p>Fichiers actuels :</p>
+                  <ul>
+                    {newCourse.files.map((file, index) => (
+                      <li key={index}>
+                        {typeof file === 'string' ? file : file.name}
+                      </li>
+                    ))}
+                  </ul>
+                  <Form.Check
+                    type="checkbox"
+                    label="Supprimer les fichiers existants"
+                    checked={newCourse.clearFiles}
+                    onChange={(e) =>
+                      setNewCourse({ ...newCourse, clearFiles: e.target.checked })
+                    }
+                  />
+                </div>
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Vidéo</Form.Label>
+              <Form.Control
+                type="file"
+                name="video"
+                onChange={handleVideoChange}
+                accept="video/*"
+              />
+              {editCourse && newCourse.video && typeof newCourse.video === 'string' && (
+                <div className="mt-2">
+                  <p>Vidéo actuelle :</p>
+                  <video
+                    src={`http://localhost:5000/Uploads/${newCourse.video}`}
+                    controls
+                    style={{ maxWidth: '100px', maxHeight: '100px' }}
+                  />
+                  <Form.Check
+                    type="checkbox"
+                    label="Supprimer la vidéo existante"
+                    checked={newCourse.clearVideo}
+                    onChange={(e) =>
+                      setNewCourse({ ...newCourse, clearVideo: e.target.checked })
+                    }
+                  />
+                </div>
+              )}
+            </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
@@ -371,7 +526,17 @@ const CourseManager = () => {
           <Button
             variant="primary"
             onClick={editCourse ? handleUpdateCourse : handleAddCourse}
-            disabled={!newCourse.matiere_id || !newCourse.titre || !newCourse.description}
+            disabled={
+              editCourse
+                ? newCourse.matiere_id == null || newCourse.matiere_id === '' ||
+                  newCourse.niveau_id == null || newCourse.niveau_id === ''
+                : newCourse.matiere_id == null || newCourse.matiere_id === '' ||
+                  newCourse.niveau_id == null || newCourse.niveau_id === '' ||
+                  !newCourse.titre ||
+                  !newCourse.description ||
+                  !newCourse.prix ||
+                  !newCourse.module
+            }
           >
             {editCourse ? 'Modifier' : 'Ajouter'}
           </Button>
