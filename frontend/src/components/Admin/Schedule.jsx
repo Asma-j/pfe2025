@@ -19,10 +19,12 @@ function ScheduleEvent({ event, onEdit, onDelete }) {
           <div className="d-flex justify-content-between align-items-start">
             <div>
               <h6 className="fw-bold mb-1">{event.titre}</h6>
-              <p className="text-muted small mb-2">Cours: {event.Cours ? event.Cours.titre : 'N/A'}</p>
+              <p className="text-muted small mb-2">Cours: {event.Cour ? event.Cour.titre : 'N/A'}</p> {/* Correction : Cours -> Cour */}
+              <p className="text-muted small mb-2">Classe: {event.Classe ? event.Classe.nom : 'N/A'}</p>
+              <p className="text-muted small mb-2">Enseignant: {event.Cour && event.Cour.Creator ? event.Cour.Creator.nom : 'N/A'}</p> {/* Ajout du nom de l'enseignant */}
             </div>
-            <span className="badge rounded-pill px-3 py-1 bg-primary bg-opacity-10 text-primary">
-              Planning
+            <span className={`badge rounded-pill px-3 py-1 ${event.statut === 'Planifié' ? 'bg-primary bg-opacity-10 text-primary' : event.statut === 'En cours' ? 'bg-warning bg-opacity-10 text-warning' : event.statut === 'Terminé' ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'}`}>
+              {event.statut}
             </span>
           </div>
           <div className="mt-2 d-flex">
@@ -58,6 +60,7 @@ function ScheduleEvent({ event, onEdit, onDelete }) {
 function Schedule() {
   const [plannings, setPlannings] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     id: null,
@@ -65,19 +68,22 @@ function Schedule() {
     date_debut: '',
     date_fin: '',
     cours_id: '',
+    classe_id: '',
+    statut: 'Planifié',
   });
   const [error, setError] = useState(null);
 
-  // Fetch plannings and courses on mount
+  // Fetch plannings, courses, and classes on mount
   useEffect(() => {
     fetchPlannings();
     fetchCourses();
+    fetchClasses();
   }, []);
 
   const fetchPlannings = async () => {
     try {
       const response = await axios.get('http://localhost:5000/api/plannings', {
-        params: { include: 'Cours' }, // Ensure Cours data is included if needed
+        params: { include: 'Cours,Classe' }, // Inclure Cours et Classe
       });
       setPlannings(response.data);
     } catch (err) {
@@ -93,6 +99,16 @@ function Schedule() {
     } catch (err) {
       console.error('Erreur lors de la récupération des cours:', err);
       setError('Impossible de charger les cours.');
+    }
+  };
+
+  const fetchClasses = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/classes');
+      setClasses(response.data);
+    } catch (err) {
+      console.error('Erreur lors de la récupération des classes:', err);
+      setError('Impossible de charger les classes.');
     }
   };
 
@@ -126,6 +142,8 @@ function Schedule() {
       date_debut: new Date(event.date_debut).toISOString().slice(0, 16),
       date_fin: new Date(event.date_fin).toISOString().slice(0, 16),
       cours_id: event.cours_id,
+      classe_id: event.classe_id,
+      statut: event.statut,
     });
     setShowModal(true);
   };
@@ -144,7 +162,7 @@ function Schedule() {
 
   const handleClose = () => {
     setShowModal(false);
-    setFormData({ id: null, titre: '', date_debut: '', date_fin: '', cours_id: '' });
+    setFormData({ id: null, titre: '', date_debut: '', date_fin: '', cours_id: '', classe_id: '', statut: 'Planifié' });
     setError(null);
   };
 
@@ -232,6 +250,36 @@ function Schedule() {
                     {course.titre}
                   </option>
                 ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Classe</Form.Label>
+              <Form.Select
+                name="classe_id"
+                value={formData.classe_id}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Sélectionner une classe</option>
+                {classes.map((classe) => (
+                  <option key={classe.id} value={classe.id}>
+                    {classe.nom}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Statut</Form.Label>
+              <Form.Select
+                name="statut"
+                value={formData.statut}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="Planifié">Planifié</option>
+                <option value="En cours">En cours</option>
+                <option value="Terminé">Terminé</option>
+                <option value="Annulé">Annulé</option>
               </Form.Select>
             </Form.Group>
             <Button variant="primary" type="submit">
