@@ -136,11 +136,25 @@ function Schedule() {
   };
 
   const handleEdit = (event) => {
+    // Create a Date object from event.date_debut
+    const startDate = new Date(event.date_debut);
+    const endDate = new Date(event.date_fin);
+  
+    // Format dates for datetime-local input (YYYY-MM-DDTHH:mm)
+    const formatDateForInput = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+  
     setFormData({
       id: event.id,
       titre: event.titre,
-      date_debut: new Date(event.date_debut).toISOString().slice(0, 16),
-      date_fin: new Date(event.date_fin).toISOString().slice(0, 16),
+      date_debut: formatDateForInput(startDate),
+      date_fin: formatDateForInput(endDate),
       cours_id: event.cours_id,
       classe_id: event.classe_id,
       statut: event.statut,
@@ -210,6 +224,7 @@ function Schedule() {
               <Form.Label>Titre</Form.Label>
               <Form.Control
                 type="text"
+                className='w-50'
                 name="titre"
                 value={formData.titre}
                 onChange={handleInputChange}
@@ -219,6 +234,7 @@ function Schedule() {
             <Form.Group className="mb-3">
               <Form.Label>Date de début</Form.Label>
               <Form.Control
+               className='w-50'
                 type="datetime-local"
                 name="date_debut"
                 value={formData.date_debut}
@@ -231,6 +247,7 @@ function Schedule() {
               <Form.Control
                 type="datetime-local"
                 name="date_fin"
+                 className='w-50'
                 value={formData.date_fin}
                 onChange={handleInputChange}
                 required
@@ -239,6 +256,7 @@ function Schedule() {
             <Form.Group className="mb-3">
               <Form.Label>Nom du Cours</Form.Label>
               <Form.Select
+               className='w-50'
                 name="cours_id"
                 value={formData.cours_id}
                 onChange={handleInputChange}
@@ -255,6 +273,7 @@ function Schedule() {
             <Form.Group className="mb-3">
               <Form.Label>Classe</Form.Label>
               <Form.Select
+               className='w-50'
                 name="classe_id"
                 value={formData.classe_id}
                 onChange={handleInputChange}
@@ -271,6 +290,7 @@ function Schedule() {
             <Form.Group className="mb-3">
               <Form.Label>Statut</Form.Label>
               <Form.Select
+               className='w-50'
                 name="statut"
                 value={formData.statut}
                 onChange={handleInputChange}

@@ -2,6 +2,7 @@ const Planning = require('../models/Planning');
 const Cours = require('../models/Cours');
 const Classe = require('../models/Classe');
 const Utilisateur = require('../models/Utilisateur');
+const UtilisateurClasse = require('../models/UtilisateurClasse');
 
 // 📌 Créer un planning
 exports.createPlanning = async (req, res) => {
@@ -50,26 +51,62 @@ exports.createPlanning = async (req, res) => {
 // 📌 Récupérer tous les plannings
 exports.getAllPlannings = async (req, res) => {
   try {
+    const { cours_id, utilisateur_id } = req.query;
+
+    const where = {};
+    if (cours_id) {
+      where.cours_id = cours_id;
+    }
+
+    const include = [
+      {
+        model: Cours,
+        attributes: ['id', 'titre'],
+        include: [
+          {
+            model: Utilisateur,
+            as: 'Creator',
+            attributes: ['id', 'nom'],
+          },
+        ],
+      },
+      {
+        model: Classe,
+        attributes: ['id', 'nom'],
+      },
+    ];
+
+    if (utilisateur_id) {
+      const userClasses = await UtilisateurClasse.findAll({
+        where: { utilisateur_id },
+        attributes: ['classe_id'],
+      });
+      const classeIds = userClasses.map((uc) => uc.classe_id);
+      console.log('Classes de l\'utilisateur:', classeIds);
+
+      if (classeIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      include[1].where = { id: classeIds };
+    }
+
     const plannings = await Planning.findAll({
-      include: [
-        {
-          model: Cours,
-          attributes: ['id', 'titre'], // Inclure uniquement les champs nécessaires
-          include: [
-            {
-              model: Utilisateur,
-              as: 'Creator', // Utiliser l'alias défini dans l'association
-              attributes: ['id', 'nom'], // Récupérer le nom de l'enseignant
-            },
-          ],
-        },
-        {
-          model: Classe,
-          attributes: ['id', 'nom'], // Inclure uniquement les champs nécessaires
-        },
+      where,
+      include,
+      attributes: [
+        'id',
+        'titre',
+        'date_debut',
+        'date_fin',
+        'statut',
+        'meetingNumber',
+        'joinUrl',
+        'password',
       ],
-      attributes: ['id', 'titre', 'date_debut', 'date_fin', 'statut'],
     });
+
+    console.log('Plannings récupérés:', plannings);
     res.status(200).json(plannings);
   } catch (error) {
     console.error("Erreur lors de la récupération des plannings:", error);
@@ -103,7 +140,25 @@ exports.getPlanningById = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la récupération du planning", error: error.message });
   }
 };
+exports.updatePlanningStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { statut } = req.body;
 
+    const planning = await Planning.findByPk(id);
+    if (!planning) {
+      return res.status(404).json({ message: "Planning non trouvé" });
+    }
+
+    planning.statut = statut;
+    await planning.save();
+
+    res.status(200).json({ message: "Statut du planning mis à jour", planning });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du statut du planning:", error);
+    res.status(500).json({ message: "Erreur lors de la mise à jour du statut", error: error.message });
+  }
+};
 // 📌 Mettre à jour un planning
 exports.updatePlanning = async (req, res) => {
   try {
@@ -130,6 +185,8 @@ exports.updatePlanning = async (req, res) => {
         return res.status(404).json({ message: "Classe non trouvée" });
       }
     }
+   
+
 
     // Vérifier la cohérence des dates (si fournies)
     if (date_debut && date_fin && new Date(date_debut) >= new Date(date_fin)) {
