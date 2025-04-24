@@ -31,7 +31,7 @@ function Login({ show = true, onClose }) {
       if (role === 'admin') {
         navigate('/admin');
       } else if (role === 'Etudiant') {
-        navigate('/student');
+        navigate('/cours');
       } else {
         navigate('/teacher');
       }

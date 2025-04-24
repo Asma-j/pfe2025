@@ -1,29 +1,70 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
   ListGroup,
   Row,
   Col,
   Spinner,
+  Button,
 } from "react-bootstrap";
-import { FaPlayCircle, FaCalendarAlt, FaFilePdf, FaFileAlt } from "react-icons/fa";
+import { FaPlayCircle, FaCalendarAlt, FaFilePdf, FaFileAlt, FaVideo } from "react-icons/fa";
 import StudentNavbar from "./StudentNavbar";
 import axios from "axios";
 import "./content.css";
 
 const CourseContent = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
+  const [plannings, setPlannings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [planningsLoading, setPlanningsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [planningsError, setPlanningsError] = useState(null);
   const [videoLoading, setVideoLoading] = useState(true);
   const [videoError, setVideoError] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setPlanningsError("Utilisateur non authentifié. Veuillez vous connecter.");
+          setPlanningsLoading(false);
+          return;
+        }
+        const response = await axios.get('http://localhost:5000/api/users/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUserId(response.data.id);
+        setUserRole(response.data.role);
+        if (response.data.role !== 'Etudiant') {
+          navigate('/teacher-dashboard');
+        }
+      } catch (err) {
+        console.error("Fetch User Profile Error:", err);
+        setPlanningsError("Erreur lors de la récupération du profil utilisateur: " + err.message);
+        setPlanningsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [navigate]);
 
   useEffect(() => {
     const fetchCourseContent = async () => {
       try {
-        const token = localStorage.getItem('token'); 
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError("Utilisateur non authentifié. Veuillez vous connecter.");
+          setLoading(false);
+          return;
+        }
         const response = await axios.get(
           `http://localhost:5000/api/cours/${id}`,
           {
@@ -32,7 +73,7 @@ const CourseContent = () => {
             },
           }
         );
-        console.log('Course data:', response.data); // Debug log
+        console.log('Course data:', response.data);
         setCourse(response.data);
         setLoading(false);
       } catch (err) {
@@ -41,18 +82,40 @@ const CourseContent = () => {
         setLoading(false);
       }
     };
+
     fetchCourseContent();
   }, [id]);
+
+  useEffect(() => {
+    if (!userId || userRole !== 'Etudiant') return;
+
+    const fetchPlannings = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(
+          `http://localhost:5000/api/plannings?cours_id=${id}&utilisateur_id=${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log('Plannings data:', response.data);
+        setPlannings(response.data);
+        setPlanningsLoading(false);
+      } catch (err) {
+        console.error("Fetch Plannings Error:", err);
+        setPlanningsError("Erreur lors de la récupération des plannings: " + err.message);
+        setPlanningsLoading(false);
+      }
+    };
+
+    fetchPlannings();
+  }, [id, userId, userRole]);
 
   if (loading) return <div className="text-center mt-5">Chargement...</div>;
   if (error) return <div className="text-center mt-5 text-danger">{error}</div>;
   if (!course) return <div className="text-center mt-5">Cours non trouvé</div>;
-
-  const schedule = [
-    { date: "2025-04-10", topic: "Introduction aux composants React" },
-    { date: "2025-04-12", topic: "Gestion de l'état avec useState" },
-    { date: "2025-04-14", topic: "Props et communication entre composants" },
-  ];
 
   const baseUploadUrl = "http://localhost:5000/Uploads/";
 
@@ -75,19 +138,36 @@ const CourseContent = () => {
     return <FaFileAlt className="me-2" />;
   };
 
+  const isMeetingActive = (planning) => {
+    if (planning.statut !== 'En cours') return false;
+    const now = new Date().getTime();
+    const start = new Date(planning.date_debut).getTime();
+    const end = new Date(planning.date_fin).getTime();
+    console.log('Current time (UTC ms):', now);
+    console.log('Start time (UTC ms):', start);
+    console.log('End time (UTC ms):', end);
+    console.log('Is active:', now >= start && now <= end);
+    return now >= start && now <= end;
+  };
+
+  const joinMeeting = (joinUrl) => {
+    if (joinUrl) {
+      window.open(joinUrl, '_blank');
+    } else {
+      alert("Lien de réunion non disponible.");
+    }
+  };
+
   return (
     <div className="course-content-container">
       <StudentNavbar />
 
-      {/* Course Title */}
       <div className="course-header">
         <h2>{course.titre || "Titre non disponible"}</h2>
       </div>
 
       <Row>
-        {/* Main Content (Video and Description) */}
         <Col md={8}>
-          {/* Video Section */}
           <Card className="video-card mb-4">
             <Card.Body>
               <h4 className="section-title">
@@ -130,14 +210,12 @@ const CourseContent = () => {
             </Card.Body>
           </Card>
 
-          {/* Description Section */}
           <Card className="description-card mb-4">
             <Card.Body>
               <h4 className="section-title">Description du cours</h4>
               <p>
                 {course.description || "Aucune description disponible pour ce cours."}
               </p>
-              {/* PDF Attachments */}
               <div className="attachment-section">
                 <h5>Pièces jointes</h5>
                 {course.files && ensureArray(course.files).length > 0 ? (
@@ -163,21 +241,55 @@ const CourseContent = () => {
           </Card>
         </Col>
 
-        {/* Sidebar (Schedule) */}
         <Col md={4}>
           <Card className="schedule-card">
             <Card.Body>
               <h4 className="section-title">
                 <FaCalendarAlt className="me-2" /> Planning du cours
               </h4>
-              <ListGroup variant="flush">
-                {schedule.map((item, index) => (
-                  <ListGroup.Item key={index} className="schedule-item">
-                    <span className="schedule-date">{item.date}</span>:{" "}
-                    {item.topic}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
+              {planningsLoading ? (
+                <div className="text-center">
+                  <Spinner animation="border" variant="primary" />
+                  <p>Chargement des plannings...</p>
+                </div>
+              ) : planningsError ? (
+                <p className="text-danger">{planningsError}</p>
+              ) : plannings.length > 0 ? (
+                <ListGroup variant="flush">
+                  {plannings.map((planning, index) => (
+                    <ListGroup.Item key={index} className="schedule-item">
+                      <span className="schedule-date">
+                        {new Date(planning.date_debut).toLocaleDateString()}
+                      </span>
+                      : {planning.titre} (Classe: {planning.Classe?.nom || 'Inconnue'})
+                      <br />
+                      <small>
+                        {new Date(planning.date_debut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{' '}
+                        {new Date(planning.date_fin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </small>
+                      {isMeetingActive(planning) ? (
+                        planning.joinUrl ? (
+                          <div className="mt-2">
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => joinMeeting(planning.joinUrl)}
+                            >
+                              <FaVideo className="me-2" /> Rejoindre la réunion
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="mt-2 text-danger">
+                            Réunion en cours, mais le lien de réunion n'est pas disponible.
+                          </div>
+                        )
+                      ) : null}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              ) : (
+                <p className="text-muted">Aucun planning disponible pour votre classe.</p>
+              )}
             </Card.Body>
           </Card>
         </Col>

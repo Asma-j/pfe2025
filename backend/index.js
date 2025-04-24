@@ -3,7 +3,7 @@ const cors = require('cors');
 const { connectDB, sequelize } = require('./db');
 const path = require('path');
 
-
+const zoomRoutes = require('./routes/zoomRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const roleRoutes = require('./routes/roleRoutes');
@@ -27,6 +27,7 @@ connectDB().then(() => {
         .catch(err => console.error("Erreur de synchronisation :", err));
 });
 
+app.use('/api/zoom', zoomRoutes);
 // Utilisation des routes
 app.use('/api/quiz', quizRoutes);
 app.use('/api/paiements', paiementRoutes);

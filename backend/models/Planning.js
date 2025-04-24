@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 const Cours = require('./Cours');
-const Classe = require('./Classe'); // Ajout de la référence à Classe
+const Classe = require('./Classe');
 
 const Planning = sequelize.define('Planning', {
     id: {
@@ -25,26 +25,37 @@ const Planning = sequelize.define('Planning', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    classe_id: { 
+    classe_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-    },statut: {
+    },
+    statut: {
         type: DataTypes.ENUM('Planifié', 'En cours', 'Terminé', 'Annulé'),
         allowNull: false,
         defaultValue: 'Planifié',
     },
-  
+    meetingNumber: { // New field for Zoom meeting number
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    joinUrl: { // New field for Zoom join URL
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    password: { // New field for Zoom meeting password
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
 }, {
-    timestamps: false, 
+    timestamps: false,
     indexes: [
         { fields: ['cours_id'] },
-        { fields: ['classe_id'] }, // Index pour optimiser les requêtes sur classe_id
+        { fields: ['classe_id'] },
     ],
 });
 
 // Relations
 Planning.belongsTo(Cours, { foreignKey: 'cours_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 Planning.belongsTo(Classe, { foreignKey: 'classe_id', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
-
 
 module.exports = Planning;

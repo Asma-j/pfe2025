@@ -140,34 +140,30 @@ exports.updateUser = async (req, res) => {
   // Récupérer le profil de l'utilisateur connecté
   exports.getProfile = async (req, res) => {
     try {
-        const user = await Utilisateur.findByPk(req.user.id, {
-            include: [{ model: Role, attributes: ['nom_role'] }],
-            attributes: ['id', 'prenom', 'nom', 'email', 'photo', 'status', 'id_role'],
-        });
-
-        if (!user) {
-            return res.status(404).json({ error: "Utilisateur non trouvé" });
-        }
-
-        if (user.Role.nom_role !== 'Enseignant') {
-            return res.status(403).json({ error: "Accès réservé aux enseignants" });
-        }
-
-        res.json({
-            id: user.id,
-            prenom: user.prenom,
-            nom: user.nom,
-            email: user.email,
-            photo: user.photo,
-            role: user.Role.nom_role,
-            status: user.status,
-        });
+      const user = await Utilisateur.findByPk(req.user.id, {
+        include: [{ model: Role, attributes: ['nom_role'] }],
+        attributes: ['id', 'prenom', 'nom', 'email', 'photo', 'status', 'id_role'],
+      });
+  
+      if (!user) {
+        return res.status(404).json({ error: "Utilisateur non trouvé" });
+      }
+  
+  
+      res.json({
+        id: user.id,
+        prenom: user.prenom,
+        nom: user.nom,
+        email: user.email,
+        photo: user.photo,
+        role: user.Role.nom_role,
+        status: user.status,
+      });
     } catch (err) {
-        console.error('Erreur lors de la récupération du profil :', err);
-        res.status(500).json({ error: err.message });
+      console.error('Erreur lors de la récupération du profil :', err);
+      res.status(500).json({ error: err.message });
     }
-};
-
+  };
 // Mettre à jour le profil de l'utilisateur connecté
 exports.updateProfile = async (req, res) => {
   const { prenom, nom, email, mot_de_passe, photo } = req.body;

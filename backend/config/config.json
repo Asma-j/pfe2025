@@ -1,0 +1,41 @@
+{
+  "development": {
+    "username": "asma",
+    "password": "0000",
+    "database": "education",
+    "host": "localhost",
+    "dialect": "mssql",
+    "dialectOptions": {
+      "options": {
+        "encrypt": false,
+        "trustServerCertificate": true
+      }
+    }
+  },
+  "test": {
+    "username": "asma",
+    "password": "0000",
+    "database": "education_test",
+    "host": "localhost",
+    "dialect": "mssql",
+    "dialectOptions": {
+      "options": {
+        "encrypt": false,
+        "trustServerCertificate": true
+      }
+    }
+  },
+  "production": {
+    "username": "asma",
+    "password": "0000",
+    "database": "education_prod",
+    "host": "localhost",
+    "dialect": "mssql",
+    "dialectOptions": {
+      "options": {
+        "encrypt": false,
+        "trustServerCertificate": true
+      }
+    }
+  }
+}

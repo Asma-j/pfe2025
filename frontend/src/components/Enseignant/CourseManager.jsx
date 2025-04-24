@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Form, Modal } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import axios from 'axios';
-
+import './Course.css';
 const CourseManager = () => {
   const [courses, setCourses] = useState([]);
   const [matieres, setMatieres] = useState([]);
@@ -262,25 +262,31 @@ const CourseManager = () => {
   return (
     <div className="card p-3">
       <h5>Gestion des cours</h5>
+      <div className="filter-and-button mb-3">
+  <Form.Group className="matiere-filter">
+    <Form.Label>Sélectionner une matière</Form.Label>
+    <Form.Select
+      value={selectedMatiereId}
+      onChange={(e) => setSelectedMatiereId(e.target.value)}
+      className="w-100"
+    >
+      <option value="">Toutes les matières</option>
+      {matieres.map((matiere) => (
+        <option key={matiere.id} value={matiere.id}>
+          {matiere.nom}
+        </option>
+      ))}
+    </Form.Select>
+  </Form.Group>
 
-      <Form.Group className="mb-3">
-        <Form.Label>Sélectionner une matière</Form.Label>
-        <Form.Select
-          value={selectedMatiereId}
-          onChange={(e) => setSelectedMatiereId(e.target.value)}
-        >
-          <option value="">Toutes les matières</option>
-          {matieres.map((matiere) => (
-            <option key={matiere.id} value={matiere.id}>
-              {matiere.nom}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
-
-      <Button variant="primary" onClick={() => setShowModal(true)} className="mb-3">
-        <FaPlus /> Ajouter un cours
-      </Button>
+  <Button
+    variant="primary"
+    onClick={() => setShowModal(true)}
+    className="compact-btn"
+  >
+    <FaPlus /> Ajouter
+  </Button>
+</div>
 
       {selectedMatiereId && (
         <h6 className="mb-3">
@@ -323,21 +329,20 @@ const CourseManager = () => {
               <td>
                 {course.Creator ? `${course.Creator.prenom} ${course.Creator.nom}` : 'N/A'}
               </td>
-              <td>
-                <Button
-                  variant="warning"
-                  className="me-2"
-                  onClick={() => handleEditCourse(course)}
-                >
-                  <FaEdit />
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleDeleteCourse(course.id)}
-                >
-                  <FaTrash />
-                </Button>
-              </td>
+              <td className="d-flex align-items-center gap-2">
+  <Button
+    variant="warning"
+    onClick={() => handleEditCourse(course)}
+  >
+    <FaEdit />
+  </Button>
+  <Button
+    variant="danger"
+    onClick={() => handleDeleteCourse(course.id)}
+  >
+    <FaTrash />
+  </Button>
+</td>
             </tr>
           ))}
         </tbody>
@@ -352,6 +357,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Titre du cours</Form.Label>
               <Form.Control
+               className='w-50'
                 type="text"
                 value={newCourse.titre}
                 onChange={(e) =>
@@ -363,6 +369,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
               <Form.Control
+               className='w-50'
                 as="textarea"
                 rows={3}
                 value={newCourse.description}
@@ -375,6 +382,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Prix</Form.Label>
               <Form.Control
+               className='w-50'
                 type="number"
                 step="0.01"
                 value={newCourse.prix}
@@ -387,6 +395,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Module</Form.Label>
               <Form.Control
+               className='w-50'
                 type="text"
                 value={newCourse.module}
                 onChange={(e) =>
@@ -398,6 +407,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Statut</Form.Label>
               <Form.Select
+               className='w-50'
                 value={newCourse.status}
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, status: e.target.value })
@@ -410,6 +420,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Matière</Form.Label>
               <Form.Select
+               className='w-50'
                 value={newCourse.matiere_id}
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, matiere_id: e.target.value })
@@ -427,6 +438,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Niveau</Form.Label>
               <Form.Select
+               className='w-50'
                 value={newCourse.niveau_id}
                 onChange={(e) =>
                   setNewCourse({ ...newCourse, niveau_id: e.target.value })
@@ -444,6 +456,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Image</Form.Label>
               <Form.Control
+               className='w-50'
                 type="file"
                 name="image"
                 onChange={handleImageChange}
@@ -463,6 +476,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Fichiers (PDF, Word, etc.)</Form.Label>
               <Form.Control
+               className='w-50'
                 type="file"
                 name="files"
                 multiple
@@ -493,6 +507,7 @@ const CourseManager = () => {
             <Form.Group className="mb-3">
               <Form.Label>Vidéo</Form.Label>
               <Form.Control
+               className='w-50'
                 type="file"
                 name="video"
                 onChange={handleVideoChange}
