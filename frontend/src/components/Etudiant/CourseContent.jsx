@@ -7,6 +7,7 @@ import {
   Col,
   Spinner,
   Button,
+  Modal,
 } from "react-bootstrap";
 import { FaPlayCircle, FaCalendarAlt, FaFilePdf, FaFileAlt, FaVideo } from "react-icons/fa";
 import StudentNavbar from "./StudentNavbar";
@@ -24,8 +25,9 @@ const CourseContent = () => {
   const [planningsError, setPlanningsError] = useState(null);
   const [videoLoading, setVideoLoading] = useState(true);
   const [videoError, setVideoError] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [userRole, setUserRole] = useState(null);
+  const [userProfile, setUserProfile] = useState({ id: null, role: null, prenom: '', nom: '', email: '', photo: '' });
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [selectedJoinUrl, setSelectedJoinUrl] = useState(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -41,9 +43,19 @@ const CourseContent = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setUserId(response.data.id);
-        setUserRole(response.data.role);
-        if (response.data.role !== 'Etudiant') {
+        const profileData = response.data;
+        if (!profileData.prenom || !profileData.nom || !profileData.email) {
+          throw new Error("Profil utilisateur incomplet : prénom, nom ou email manquant.");
+        }
+        setUserProfile({
+          id: profileData.id,
+          role: profileData.role,
+          prenom: profileData.prenom,
+          nom: profileData.nom,
+          email: profileData.email,
+          photo: profileData.photo,
+        });
+        if (profileData.role !== 'Etudiant') {
           navigate('/teacher-dashboard');
         }
       } catch (err) {
@@ -87,13 +99,13 @@ const CourseContent = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!userId || userRole !== 'Etudiant') return;
+    if (!userProfile.id || userProfile.role !== 'Etudiant') return;
 
     const fetchPlannings = async () => {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get(
-          `http://localhost:5000/api/plannings?cours_id=${id}&utilisateur_id=${userId}`,
+          `http://localhost:5000/api/plannings?cours_id=${id}&utilisateur_id=${userProfile.id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -111,11 +123,7 @@ const CourseContent = () => {
     };
 
     fetchPlannings();
-  }, [id, userId, userRole]);
-
-  if (loading) return <div className="text-center mt-5">Chargement...</div>;
-  if (error) return <div className="text-center mt-5 text-danger">{error}</div>;
-  if (!course) return <div className="text-center mt-5">Cours non trouvé</div>;
+  }, [id, userProfile.id, userProfile.role]);
 
   const baseUploadUrl = "http://localhost:5000/Uploads/";
 
@@ -150,13 +158,117 @@ const CourseContent = () => {
     return now >= start && now <= end;
   };
 
-  const joinMeeting = (joinUrl) => {
-    if (joinUrl) {
-      window.open(joinUrl, '_blank');
-    } else {
+  const handleJoinMeeting = (joinUrl) => {
+    if (!joinUrl) {
       alert("Lien de réunion non disponible.");
+      return;
+    }
+    if (!userProfile.prenom || !userProfile.nom || !userProfile.email) {
+      alert("Erreur : Profil utilisateur incomplet. Veuillez vérifier vos informations de profil.");
+      return;
+    }
+    console.log('Original joinUrl:', joinUrl);
+    setSelectedJoinUrl(joinUrl);
+    setShowJoinModal(true);
+  };
+
+  const confirmJoinMeeting = async () => {
+    if (!selectedJoinUrl) {
+      alert("Erreur : Aucun lien de réunion sélectionné.");
+      return;
+    }
+    try {
+      const userName = encodeURIComponent(`${userProfile.prenom} ${userProfile.nom}`);
+      const userEmail = encodeURIComponent(userProfile.email);
+  
+      // Extract meeting ID from the joinUrl
+      const meetingIdMatch = selectedJoinUrl.match(/\/j\/(\d+)/);
+      if (!meetingIdMatch) {
+        throw new Error('Impossible d\'extraire l\'ID de la réunion à partir du lien.');
+      }
+      const meetingId = meetingIdMatch[1];
+  
+      // Check meeting status
+      let meetingDetails = null;
+      const token = localStorage.getItem('token');
+      try {
+        const meetingResponse = await axios.get(
+          `http://localhost:5000/api/zoom/meeting-details/${meetingId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        meetingDetails = meetingResponse.data;
+        console.log('Meeting details:', meetingDetails);
+        console.log('Meeting status:', meetingDetails.status);
+  
+        if (meetingDetails.status !== 'started' && meetingDetails.status !== 'waiting') {
+          throw new Error('La réunion n\'est pas active. Veuillez attendre que l\'hôte démarre la réunion.');
+        }
+      } catch (meetingError) {
+        console.error('Failed to fetch meeting details:', meetingError.response?.data || meetingError.message);
+        throw new Error('Impossible de vérifier l\'état de la réunion.');
+      }
+  
+      // Append user information to the joinUrl
+      let finalJoinUrl = selectedJoinUrl;
+      const urlObj = new URL(selectedJoinUrl);
+      urlObj.searchParams.set('userName', `${userProfile.prenom} ${userProfile.nom}`);
+      urlObj.searchParams.set('userEmail', userProfile.email);
+      finalJoinUrl = urlObj.toString();
+  
+      console.log('Joining meeting with URL:', finalJoinUrl);
+      console.log('Student profile used:', {
+        prenom: userProfile.prenom,
+        nom: userProfile.nom,
+        email: userProfile.email,
+      });
+  
+      const newWindow = window.open(finalJoinUrl, '_blank');
+      if (!newWindow) {
+        throw new Error('Échec de l\'ouverture de la réunion Zoom. Vérifiez les paramètres de votre navigateur.');
+      }
+  
+      // Verify if the student joined the meeting
+      setTimeout(async () => {
+        try {
+          const participantsResponse = await axios.get(
+            `http://localhost:5000/api/zoom/meeting-participants/${meetingId}?isOngoing=true`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const participants = participantsResponse.data.participants || [];
+          console.log('Current participants:', participants);
+          const studentJoined = participants.some(participant =>
+            participant.email === userProfile.email ||
+            participant.name === `${userProfile.prenom} ${userProfile.nom}`
+          );
+          if (!studentJoined) {
+            alert('Vous n\'avez pas été ajouté à la réunion. Vérifiez les paramètres Zoom.');
+          } else {
+            console.log('Student successfully joined the meeting.');
+          }
+        } catch (error) {
+          console.error('Error checking participants:', error.message);
+          alert('Erreur lors de la vérification des participants: ' + error.message);
+        }
+      }, 5000);
+  
+      setShowJoinModal(false);
+    } catch (error) {
+      console.error('Error joining meeting:', error.message);
+      alert('Erreur lors de la tentative de rejoindre la réunion: ' + error.message);
     }
   };
+
+  if (loading) return <div className="text-center mt-5">Chargement...</div>;
+  if (error) return <div className="text-center mt-5 text-danger">{error}</div>;
+  if (!course) return <div className="text-center mt-5">Cours non trouvé</div>;
 
   return (
     <div className="course-content-container">
@@ -273,7 +385,7 @@ const CourseContent = () => {
                             <Button
                               variant="success"
                               size="sm"
-                              onClick={() => joinMeeting(planning.joinUrl)}
+                              onClick={() => handleJoinMeeting(planning.joinUrl)}
                             >
                               <FaVideo className="me-2" /> Rejoindre la réunion
                             </Button>
@@ -294,6 +406,42 @@ const CourseContent = () => {
           </Card>
         </Col>
       </Row>
+
+      <Modal show={showJoinModal} onHide={() => setShowJoinModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Rejoindre la réunion Zoom</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center">
+            <img
+              src={
+                userProfile.photo
+                  ? `${baseUploadUrl}${userProfile.photo}?t=${Date.now()}`
+                  : require('../images/aupair-2380047_1920.png')
+              }
+              alt="Profile"
+              className="rounded-circle border mb-3"
+              style={{
+                width: '100px',
+                height: '100px',
+                objectFit: 'cover',
+                border: '2px solid #ddd',
+              }}
+            />
+            <h5>{userProfile.prenom} {userProfile.nom}</h5>
+            <p className="text-muted">{userProfile.email}</p>
+            <p>Vous rejoindrez la réunion avec ce profil.</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowJoinModal(false)}>
+            Annuler
+          </Button>
+          <Button variant="success" onClick={confirmJoinMeeting}>
+            Confirmer et rejoindre
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

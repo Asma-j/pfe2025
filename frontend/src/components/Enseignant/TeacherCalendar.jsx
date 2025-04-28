@@ -19,9 +19,7 @@ const TeacherCalendar = () => {
         const token = localStorage.getItem('token');
         const response = await axios.get('http://localhost:5000/api/plannings', {
           params: { include: 'Cours,Classe' },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const calendarEvents = response.data.map((planning) => ({
@@ -52,85 +50,117 @@ const TeacherCalendar = () => {
   const startMeeting = async (planning) => {
     try {
       console.log('Starting meeting for planning:', planning);
-  
       const token = localStorage.getItem('token');
       if (!token) {
-        console.error('No token found in localStorage');
-        setError('Utilisateur non authentifié. Veuillez vous connecter.');
-        return;
+        throw new Error('Utilisateur non authentifié. Veuillez vous connecter.');
       }
-  
+
+      let meetingDetails;
       if (planning.meetingNumber && planning.joinUrl) {
-        console.log('Meeting already exists:', planning.meetingNumber);
-        setMeetingDetails({
+        console.log('Using existing meeting details:', planning.meetingNumber);
+        meetingDetails = {
           meetingNumber: planning.meetingNumber,
           joinUrl: planning.joinUrl,
           password: planning.password,
-        });
+        };
       } else {
         console.log('Creating new Zoom meeting...');
         const response = await axios.post(
           'http://localhost:5000/api/zoom/create-meeting',
           {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         console.log('Zoom API response:', response.data);
-        const { meetingNumber, joinUrl, password } = response.data;
-        console.log('Zoom meeting created:', { meetingNumber, joinUrl, password });
-  
-        console.log('Updating planning with meeting details...');
+        meetingDetails = response.data;
+
+        console.log('Updating planning with meeting details:', meetingDetails);
         const updateResponse = await axios.put(
           `http://localhost:5000/api/plannings/${planning.id}`,
-          {
-            meetingNumber,
-            joinUrl,
-            password,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          meetingDetails,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         console.log('Planning update response:', updateResponse.data);
-  
-        setMeetingDetails({ meetingNumber, joinUrl, password });
       }
-  
+
       console.log('Updating planning status to "En cours"...');
       const statusResponse = await axios.put(
         `http://localhost:5000/api/plannings/${planning.id}/status`,
-        {
-          statut: 'En cours',
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { statut: 'En cours' },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log('Status update response:', statusResponse.data);
-  
-      console.log('Setting selected planning and opening modal...');
+
+      setMeetingDetails(meetingDetails);
       setSelectedPlanning(planning);
       setShowModal(true);
+
+      await joinMeeting(meetingDetails);
     } catch (err) {
-      console.error('Erreur lors de la création de la réunion:', err.response?.data || err.message);
-      setError('Impossible de créer la réunion Zoom. Vérifiez vos identifiants Zoom ou contactez l\'administrateur.');
+      console.error('Error starting meeting:', err.response?.data || err.message);
+      const errorMessage = err.response?.data?.error || err.message;
+      setError(`Impossible de créer la réunion Zoom: ${errorMessage}`);
     }
   };
-  const joinMeeting = async () => {
+
+  const endMeeting = async (meetingId, planningId) => {
     try {
-      const { joinUrl } = meetingDetails;
-      console.log('Redirecting to Zoom meeting:', joinUrl);
-      window.open(joinUrl, '_blank');
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `http://localhost:5000/api/zoom/end-meeting/${meetingId}`,
+        { planningId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log('Meeting ended:', response.data);
+      setShowModal(false);
+      setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+          event.resource.id === planningId
+            ? { ...event, resource: { ...event.resource, statut: 'Terminé' } }
+            : event
+        )
+      );
     } catch (err) {
-      console.error('Erreur lors de la redirection vers la réunion Zoom:', err);
-      setError('Impossible de rejoindre la réunion.');
+      console.error('Error ending meeting:', err.response?.data || err.message);
+      setError(`Impossible de mettre fin à la réunion: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const joinMeeting = async (meetingDetails) => {
+    try {
+      const { joinUrl, meetingNumber } = meetingDetails;
+      if (!joinUrl) {
+        throw new Error('Lien de réunion non disponible.');
+      }
+      console.log('Redirecting to Zoom meeting:', joinUrl);
+      const newWindow = window.open(joinUrl, '_blank');
+      if (!newWindow) {
+        throw new Error('Échec de l\'ouverture de la réunion Zoom. Veuillez vérifier les paramètres de votre navigateur.');
+      }
+      setShowModal(false);
+
+      setTimeout(async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get(
+            `http://localhost:5000/api/zoom/meeting-participants/${meetingNumber}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { isOngoing: true },
+            }
+          );
+          const participants = response.data.participants || [];
+          if (participants.length === 0) {
+            console.log('No participants found in the meeting yet');
+          } else {
+            console.log('Current meeting participants:', participants);
+          }
+        } catch (error) {
+          console.error('Error fetching participants:', error.response?.data?.message || error.message);
+        }
+      }, 5000);
+    } catch (err) {
+      console.error('Erreur lors de la redirection vers la réunion Zoom:', err.message);
+      setError('Impossible de rejoindre la réunion: ' + err.message);
     }
   };
 
@@ -182,9 +212,7 @@ const TeacherCalendar = () => {
           }
           return { style };
         }}
-        components={{
-          event: EventComponent,
-        }}
+        components={{ event: EventComponent }}
       />
 
       <div className={`modal ${showModal ? 'd-block' : 'd-none'}`} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
@@ -196,21 +224,34 @@ const TeacherCalendar = () => {
             </div>
             <div className="modal-body">
               <p>Vous êtes sur le point de rejoindre la réunion pour : <strong>{selectedPlanning?.titre}</strong></p>
-              {meetingDetails && (
+              <p className="text-warning">
+                Rappel : Veuillez activer l'option "Masquer les participants les uns des autres" dans Zoom pour que les étudiants ne voient que vous.
+              </p>
+              {meetingDetails ? (
                 <div>
                   <p><strong>Lien de la réunion :</strong> <a href={meetingDetails.joinUrl} target="_blank" rel="noopener noreferrer">{meetingDetails.joinUrl}</a></p>
                   <p><strong>Numéro de la réunion :</strong> {meetingDetails.meetingNumber}</p>
                   <p><strong>Mot de passe :</strong> {meetingDetails.password}</p>
                 </div>
+              ) : (
+                <p>Chargement des détails de la réunion...</p>
               )}
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                 Annuler
               </button>
-              <button className="btn btn-primary" onClick={joinMeeting}>
+              <button className="btn btn-primary" onClick={() => joinMeeting(meetingDetails)}>
                 Rejoindre la réunion
               </button>
+              {meetingDetails && selectedPlanning?.statut === 'En cours' && (
+                <button
+                  className="btn btn-danger"
+                  onClick={() => endMeeting(meetingDetails.meetingNumber, selectedPlanning.id)}
+                >
+                  Mettre fin à la réunion
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
-import { Button, Table, ProgressBar, Modal, Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Button, Table, ProgressBar, Modal, Form, OverlayTrigger, Tooltip, Alert } from 'react-bootstrap';
 import axios from 'axios';
-import profil from "../images/businessman-310819_1280.png";
-import './user.css'; // Import the custom CSS
+import profil from '../images/businessman-310819_1280.png';
+import './user.css';
 
 function Students() {
   const [students, setStudents] = useState([]);
@@ -31,6 +31,7 @@ function Students() {
     id_role: 2,
   });
   const [newNiveau, setNewNiveau] = useState({ nom: '', description: '' });
+  const [error, setError] = useState(null); // Added for error handling
 
   useEffect(() => {
     Promise.all([
@@ -47,6 +48,7 @@ function Students() {
       })
       .catch((error) => {
         console.error('Error fetching data:', error);
+        setError('Erreur lors du chargement des données.');
         setLoading(false);
       });
   }, []);
@@ -62,6 +64,7 @@ function Students() {
         })
         .catch((error) => {
           console.error('Error fetching students by classe:', error);
+          setError('Erreur lors du chargement des étudiants.');
           setLoading(false);
         });
     } else {
@@ -70,6 +73,37 @@ function Students() {
     }
   }, [selectedClasse, allStudents]);
 
+  const validatePassword = (password) => {
+    // Password must be at least 6 characters, any characters allowed
+    const passwordRegex = /^.{6,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const handleAddNewStudent = () => {
+    // Client-side password validation
+    if (!validatePassword(newStudent.mot_de_passe)) {
+      setError(
+        'Le mot de passe doit contenir au moins 8 caractères, inclure un chiffre et un caractère spécial.'
+      );
+      return;
+    }
+
+    axios
+      .post('http://localhost:5000/api/users/addUser', newStudent)
+      .then((response) => {
+        const newStudentData = response.data.data;
+        setAllStudents([...allStudents, newStudentData]);
+        setStudents([...students, newStudentData]);
+        setShowAddNewStudentModal(false);
+        setNewStudent({ prenom: '', nom: '', email: '', mot_de_passe: '', id_role: 2 });
+        setError(null); // Clear any previous errors
+      })
+      .catch((error) => {
+        console.error('Error adding student:', error.response?.data || error.message);
+        setError(error.response?.data?.error || 'Erreur lors de l’ajout de l’étudiant.');
+      });
+  };
+
   const handleAddClasse = () => {
     axios
       .post('http://localhost:5000/api/classes', newClasse)
@@ -77,24 +111,11 @@ function Students() {
         setClasses([...classes, response.data.classe]);
         setShowAddClasseModal(false);
         setNewClasse({ nom: '', niveau_id: '' });
+        setError(null);
       })
       .catch((error) => {
         console.error('Error adding classe:', error);
-      });
-  };
-
-  const handleAddNewStudent = () => {
-    axios
-      .post('http://localhost:5000/api/users', newStudent)
-      .then((response) => {
-        const newStudentData = response.data.data;
-        setAllStudents([...allStudents, newStudentData]);
-        setStudents([...students, newStudentData]);
-        setShowAddNewStudentModal(false);
-        setNewStudent({ prenom: '', nom: '', email: '', mot_de_passe: '', id_role: 2 });
-      })
-      .catch((error) => {
-        console.error('Error adding student:', error);
+        setError('Erreur lors de l’ajout de la classe.');
       });
   };
 
@@ -104,33 +125,33 @@ function Students() {
       .then((response) => {
         console.log('User updated:', response.data);
         setStudents((prev) =>
-          prev.map((user) =>
-            user.id === id ? { ...user, status } : user
-          )
+          prev.map((user) => (user.id === id ? { ...user, status } : user))
         );
         setAllStudents((prev) =>
-          prev.map((user) =>
-            user.id === id ? { ...user, status } : user
-          )
+          prev.map((user) => (user.id === id ? { ...user, status } : user))
         );
         setShowUpdateModal(false);
+        setError(null);
       })
       .catch((error) => {
         console.error('Error updating user:', error);
+        setError('Erreur lors de la mise à jour de l’utilisateur.');
       });
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet étudiant?')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')) {
       axios
         .delete(`http://localhost:5000/api/users/${id}`)
         .then((response) => {
           console.log('User deleted:', response.data);
           setStudents((prev) => prev.filter((user) => user.id !== id));
           setAllStudents((prev) => prev.filter((user) => user.id !== id));
+          setError(null);
         })
         .catch((error) => {
           console.error('Error deleting user:', error);
+          setError('Erreur lors de la suppression de l’étudiant.');
         });
     }
   };
@@ -149,10 +170,12 @@ function Students() {
             setStudents(response.data);
             setShowAddStudentModal(false);
             setSelectedStudentId('');
+            setError(null);
           });
       })
       .catch((error) => {
         console.error('Error adding student to classe:', error);
+        setError('Erreur lors de l’ajout de l’étudiant à la classe.');
       });
   };
 
@@ -163,9 +186,11 @@ function Students() {
         setNiveaux([...niveaux, response.data.niveau]);
         setShowAddNiveauModal(false);
         setNewNiveau({ nom: '', description: '' });
+        setError(null);
       })
       .catch((error) => {
         console.error('Error adding niveau:', error);
+        setError('Erreur lors de l’ajout du niveau.');
       });
   };
 
@@ -182,22 +207,26 @@ function Students() {
         setShowUpdateNiveauModal(false);
         setNewNiveau({ nom: '', description: '' });
         setSelectedNiveau(null);
+        setError(null);
       })
       .catch((error) => {
         console.error('Error updating niveau:', error);
+        setError('Erreur lors de la mise à jour du niveau.');
       });
   };
 
   const handleDeleteNiveau = (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce niveau?')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce niveau ?')) {
       axios
         .delete(`http://localhost:5000/api/niveaux/${id}`)
         .then((response) => {
           console.log('Niveau deleted:', response.data);
           setNiveaux((prev) => prev.filter((niveau) => niveau.id !== id));
+          setError(null);
         })
         .catch((error) => {
           console.error('Error deleting niveau:', error);
+          setError('Erreur lors de la suppression du niveau.');
         });
     }
   };
@@ -246,7 +275,9 @@ function Students() {
                       alt={user.prenom}
                       className="student-avatar rounded-circle me-3"
                     />
-                    <span className="fw-semibold text-dark">{user.prenom} {user.nom}</span>
+                    <span className="fw-semibold text-dark">
+                      {user.prenom} {user.nom}
+                    </span>
                   </div>
                 </td>
                 <td className="text-muted">{user.email}</td>
@@ -389,6 +420,7 @@ function Students() {
 
   return (
     <div className="students-container">
+      {error && <Alert variant="danger">{error}</Alert>}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h4 className="section-title">Gestion des Classes et Étudiants</h4>
         <Button
@@ -489,6 +521,7 @@ function Students() {
           <Modal.Title>Ajouter un nouvel étudiant</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {error && <Alert variant="danger">{error}</Alert>}
           <Form>
             <Form.Group controlId="formStudentPrenom" className="mb-3">
               <Form.Label className="form-label">Prénom</Form.Label>

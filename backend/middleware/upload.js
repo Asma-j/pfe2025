@@ -16,6 +16,7 @@ const fileFilter = (req, file, cb) => {
     const allowedTypes = [
         'image/jpeg',
         'image/png',
+        'image/jpg',
         'application/pdf',
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -40,6 +41,7 @@ const upload = multer({
     { name: 'image', maxCount: 1 },
     { name: 'files', maxCount: 10 },
     { name: 'video', maxCount: 1 },
+     { name: 'photo', maxCount: 1 },
 ]);
 
 module.exports = upload;

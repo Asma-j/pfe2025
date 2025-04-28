@@ -8,6 +8,7 @@ import Courses from './components/Etudiant/Courses';
 import CourseDetail from './components/Etudiant/CourseDetail';
 import TeacherDashboard from './components/Enseignant/TeacherDashboard';
 import CourseContent from './components/Etudiant/CourseContent';
+import StudentProfile from './components/Etudiant/StudentProfil';
 function App() {
   const location = useLocation();
   const state = location.state || {}; 
@@ -21,7 +22,7 @@ function App() {
       <Route path="/cours" element={<Courses />} />
       <Route path="/course/:id" element={<CourseDetail/>} />
       <Route path="/course/:id/content" element={<CourseContent />} />     
-   
+      <Route path="/profile" element={<StudentProfile />} />
       <Route path="/admin" element={<AdminDashboard/>} />
       <Route path="/teacher" element={<TeacherDashboard/>} />
         <Route path="/login" element={<Login />} />

@@ -2,7 +2,10 @@ const Utilisateur = require('../models/Utilisateur');
 const Role = require('../models/Role');
 const UtilisateurClasse = require('../models/UtilisateurClasse');
 const Classe = require('../models/Classe');
-
+const fs = require('fs');
+const path = require('path');
+const bcrypt = require('bcryptjs');
+const upload = require('../middleware/upload');
 //  Liste des utilisateurs avec leur rôle
 exports.getUsers = async (req, res) => {
     try {
@@ -81,18 +84,33 @@ exports.getApprovedUsers = async (req, res) => {
   
 // Ajouter un utilisateur (sans inscription)
 exports.addUser = async (req, res) => {
-    const { prenom, nom, email, mot_de_passe, id_role } = req.body;
+  const { prenom, nom, email, mot_de_passe, id_role } = req.body;
 
-    if (!prenom || !nom || !email || !mot_de_passe || !id_role) {
-        return res.status(400).json({ error: "Tous les champs sont requis" });
-    }
+  // Validate required fields
+  if (!prenom || !nom || !email || !mot_de_passe || !id_role) {
+    return res.status(400).json({ error: 'Tous les champs sont requis' });
+  }
 
-    try {
-        const user = await Utilisateur.create({ prenom, nom, email, mot_de_passe, id_role });
-        res.json({ message: 'Utilisateur ajouté avec succès', data: user });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+  try {
+    // Hash the password
+    const saltRounds = 10; // Number of salt rounds for bcrypt
+    const hashedPassword = await bcrypt.hash(mot_de_passe, saltRounds);
+
+    // Create the user with the hashed password
+    const user = await Utilisateur.create({
+      prenom,
+      nom,
+      email,
+      mot_de_passe: hashedPassword, // Store the hashed password
+      id_role,
+      status: 'pending', // Default status as per your model
+    });
+
+    res.json({ message: 'Utilisateur ajouté avec succès', data: user });
+  } catch (err) {
+    console.error('Error adding user:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 };
 // Mettre à jour un utilisateur
 exports.updateUser = async (req, res) => {
@@ -146,9 +164,8 @@ exports.updateUser = async (req, res) => {
       });
   
       if (!user) {
-        return res.status(404).json({ error: "Utilisateur non trouvé" });
+        return res.status(404).json({ error: 'Utilisateur non trouvé' });
       }
-  
   
       res.json({
         id: user.id,
@@ -165,46 +182,77 @@ exports.updateUser = async (req, res) => {
     }
   };
 // Mettre à jour le profil de l'utilisateur connecté
-exports.updateProfile = async (req, res) => {
-  const { prenom, nom, email, mot_de_passe, photo } = req.body;
+exports.updateProfile = (req, res) => {
+
+
+  const { prenom, nom, email, mot_de_passe } = req.body;
 
   try {
-      const user = await Utilisateur.findByPk(req.user.id);
+    // Handle multer errors
+    if (req.fileValidationError) {
+      console.error('File validation error:', req.fileValidationError);
+      return res.status(400).json({ error: req.fileValidationError.message });
+    }
 
+    // Find user
+    Utilisateur.findByPk(req.user.id).then((user) => {
       if (!user) {
-          return res.status(404).json({ error: "Utilisateur non trouvé" });
+        return res.status(404).json({ error: 'Utilisateur non trouvé' });
       }
 
+      // Update user fields
       user.prenom = prenom || user.prenom;
       user.nom = nom || user.nom;
       user.email = email || user.email;
-      user.photo = photo || user.photo;
 
+      // Update password if provided
       if (mot_de_passe) {
-          user.mot_de_passe = await bcrypt.hash(mot_de_passe, 10);
+        return bcrypt.hash(mot_de_passe, 10).then((hashedPassword) => {
+          user.mot_de_passe = hashedPassword;
+          return user;
+        });
+      }
+      return user;
+    }).then((user) => {
+      // Update photo if a new file is uploaded
+      if (req.file) {
+        // Delete old photo if it exists
+        if (user.photo) {
+          const oldPhotoPath = path.join(__dirname, '../Uploads', user.photo);
+          if (fs.existsSync(oldPhotoPath)) {
+            fs.unlinkSync(oldPhotoPath);
+          }
+        }
+        user.photo = req.file.filename; // Save the new filename
       }
 
-      await user.save();
-
-      const updatedUser = await Utilisateur.findByPk(req.user.id, {
-          include: [{ model: Role, attributes: ['nom_role'] }],
-          attributes: ['id', 'prenom', 'nom', 'email', 'photo', 'status'],
+      // Save user
+      return user.save();
+    }).then(() => {
+      // Fetch updated user with role
+      return Utilisateur.findByPk(req.user.id, {
+        include: [{ model: Role, attributes: ['nom_role'] }],
+        attributes: ['id', 'prenom', 'nom', 'email', 'photo', 'status'],
       });
-
+    }).then((updatedUser) => {
       res.json({
-          message: 'Profil mis à jour avec succès',
-          user: {
-              id: updatedUser.id,
-              prenom: updatedUser.prenom,
-              nom: updatedUser.nom,
-              email: updatedUser.email,
-              photo: updatedUser.photo,
-              role: updatedUser.Role.nom_role,
-              status: updatedUser.status,
-          },
+        message: 'Profil mis à jour avec succès',
+        user: {
+          id: updatedUser.id,
+          prenom: updatedUser.prenom,
+          nom: updatedUser.nom,
+          email: updatedUser.email,
+          photo: updatedUser.photo,
+          role: updatedUser.Role.nom_role,
+          status: updatedUser.status,
+        },
       });
-  } catch (err) {
+    }).catch((err) => {
       console.error('Erreur lors de la mise à jour du profil :', err);
       res.status(500).json({ error: err.message });
+    });
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    res.status(500).json({ error: err.message });
   }
 };

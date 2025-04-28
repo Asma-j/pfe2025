@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const Planning = require('../models/Planning');
 const Cours = require('../models/Cours');
 const Classe = require('../models/Classe');
@@ -38,7 +39,7 @@ exports.createPlanning = async (req, res) => {
       date_fin,
       cours_id,
       classe_id,
-      statut: statut || 'Planifié', // Valeur par défaut si non fourni
+      statut: statut || 'Planifié',
     });
 
     res.status(201).json({ message: "Planning créé avec succès", planning: newPlanning });
@@ -52,6 +53,20 @@ exports.createPlanning = async (req, res) => {
 exports.getAllPlannings = async (req, res) => {
   try {
     const { cours_id, utilisateur_id } = req.query;
+
+    // Update expired plannings to 'Terminé'
+    const now = new Date();
+    await Planning.update(
+      { statut: 'Terminé' },
+      {
+        where: {
+          statut: ['Planifié', 'En cours'],
+          date_fin: {
+            [Op.lte]: now,
+          },
+        },
+      }
+    );
 
     const where = {};
     if (cours_id) {
@@ -113,6 +128,7 @@ exports.getAllPlannings = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la récupération des plannings", error: error.message });
   }
 };
+
 // 📌 Récupérer un planning par ID
 exports.getPlanningById = async (req, res) => {
   try {
@@ -140,6 +156,8 @@ exports.getPlanningById = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la récupération du planning", error: error.message });
   }
 };
+
+// 📌 Mettre à jour le statut d'un planning
 exports.updatePlanningStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -159,18 +177,17 @@ exports.updatePlanningStatus = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la mise à jour du statut", error: error.message });
   }
 };
+
 // 📌 Mettre à jour un planning
 exports.updatePlanning = async (req, res) => {
   try {
-    const { titre, date_debut, date_fin, cours_id, classe_id, statut } = req.body;
+    const { titre, date_debut, date_fin, cours_id, classe_id, statut, meetingNumber, joinUrl, password } = req.body;
 
-    // Vérifier si le planning existe
     const planning = await Planning.findByPk(req.params.id);
     if (!planning) {
       return res.status(404).json({ message: "Planning non trouvé" });
     }
 
-    // Vérifier si le cours existe (si fourni)
     if (cours_id) {
       const cours = await Cours.findByPk(cours_id);
       if (!cours) {
@@ -178,22 +195,17 @@ exports.updatePlanning = async (req, res) => {
       }
     }
 
-    // Vérifier si la classe existe (si fournie)
     if (classe_id) {
       const classe = await Classe.findByPk(classe_id);
       if (!classe) {
         return res.status(404).json({ message: "Classe non trouvée" });
       }
     }
-   
 
-
-    // Vérifier la cohérence des dates (si fournies)
     if (date_debut && date_fin && new Date(date_debut) >= new Date(date_fin)) {
       return res.status(400).json({ message: "La date de début doit être antérieure à la date de fin" });
     }
 
-    // Mettre à jour le planning
     const updated = await Planning.update(
       {
         titre: titre || planning.titre,
@@ -202,6 +214,9 @@ exports.updatePlanning = async (req, res) => {
         cours_id: cours_id || planning.cours_id,
         classe_id: classe_id || planning.classe_id,
         statut: statut || planning.statut,
+        meetingNumber: meetingNumber !== undefined ? meetingNumber : planning.meetingNumber,
+        joinUrl: joinUrl !== undefined ? joinUrl : planning.joinUrl,
+        password: password !== undefined ? password : planning.password,
       },
       { where: { id: req.params.id } }
     );
@@ -210,7 +225,8 @@ exports.updatePlanning = async (req, res) => {
       return res.status(404).json({ message: "Aucune modification effectuée" });
     }
 
-    res.status(200).json({ message: "Planning mis à jour avec succès" });
+    const updatedPlanning = await Planning.findByPk(req.params.id);
+    res.status(200).json({ message: "Planning mis à jour avec succès", planning: updatedPlanning });
   } catch (error) {
     console.error("Erreur lors de la mise à jour du planning:", error);
     res.status(500).json({ message: "Erreur lors de la mise à jour du planning", error: error.message });

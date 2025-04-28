@@ -15,7 +15,8 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const paiementRoutes = require('./routes/paiementRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const niveauRoutes = require('./routes/niveauRoutes');
-
+const { startCronJobs } = require('./middleware/cronJobs');
+startCronJobs();
 const app = express();
 app.use(cors());
 app.use(express.json());
