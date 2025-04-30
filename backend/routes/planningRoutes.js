@@ -9,4 +9,5 @@ router.get('/:id', planningController.getPlanningById);
 router.put('/:id', planningController.updatePlanning);
 router.delete('/:id', planningController.deletePlanning);
 router.put('/:id/status', authMiddleware, planningController.updatePlanningStatus);
+router.get('/completed/classe/:classeId', planningController.getCompletedPlanningsByClasse);
 module.exports = router;

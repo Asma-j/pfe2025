@@ -128,7 +128,32 @@ exports.getAllPlannings = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la récupération des plannings", error: error.message });
   }
 };
-
+// 📌 Récupérer les plannings terminés pour une classe
+// controllers/planningController.js
+exports.getCompletedPlanningsByClasse = async (req, res) => {
+  try {
+    const { classeId } = req.params;
+    const plannings = await Planning.findAll({
+      where: {
+        classe_id: classeId,
+        statut: 'Terminé',
+        meetingNumber: { [Op.ne]: null },
+      },
+      include: [
+        { model: Cours, attributes: ['id', 'titre'] },
+        { model: Classe, attributes: ['id', 'nom'] },
+      ],
+      attributes: ['id', 'titre', 'date_debut', 'date_fin', 'statut', 'meetingNumber', 'joinUrl', 'password'],
+    });
+    if (!plannings.length) {
+      console.log(`No completed plannings found for classeId: ${classeId}`);
+    }
+    res.status(200).json(plannings);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des plannings terminés:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des plannings terminés', error: error.message });
+  }
+};
 // 📌 Récupérer un planning par ID
 exports.getPlanningById = async (req, res) => {
   try {

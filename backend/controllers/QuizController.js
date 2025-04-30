@@ -1,190 +1,284 @@
-const Quiz = require('../models/Quiz');
-const QuizQuestion = require('../models/QuizQuestion');
-const QuizAttempt = require('../models/QuizAttempt');
-const Cours = require('../models/Cours');
+const { Quiz, QuizQuestion, StudentAnswer, Cours, Matiere } = require('../models/association')();
+const sanitizeHtml = require('sanitize-html');
+// Note : Les dépendances suivantes ne sont pas utilisées dans cette version, mais conservées au cas où vous souhaiteriez utiliser l'API Hugging Face ultérieurement
+const axios = require('axios');
+const axiosRetry = require('axios-retry').default;
+const Bottleneck = require('bottleneck');
 
-// Create a new quiz for a course
-exports.createQuiz = async (req, res) => {
-  try {
-    const { titre, description, cours_id, questions } = req.body;
+// Configuration retry d’Axios (non utilisé ici, mais conservé)
+axiosRetry(axios, {
+  retries: 3,
+  retryDelay: (retryCount) => {
+    console.log(`Nouvelle tentative #${retryCount}`);
+    return retryCount * 2000;
+  },
+  retryCondition: (error) => {
+    return error.response && error.response.status === 429;
+  },
+});
 
-    // Validate course existence
-    const course = await Cours.findByPk(cours_id);
-    if (!course) {
-      return res.status(404).json({ message: 'Cours non trouvé' });
+const limiter = new Bottleneck({
+  minTime: 2000, // 2 secondes entre chaque appel pour respecter les 30 RPM
+});
+
+
+
+exports.generateQuiz = async (req, res) => {
+  const cleanText = (text) => {
+    if (!text) return 'Correct Answer (Default)';
+    let cleaned = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+    const maxLength = 2000;
+    if (cleaned.length > maxLength) {
+      cleaned = cleaned.substring(0, maxLength - 3) + '...';
     }
+    return cleaned.length > 0 ? cleaned : 'Correct Answer (Default)';
+  };
 
-    // Create the quiz
-    const quiz = await Quiz.create({
-      titre,
-      description,
-      cours_id,
-    });
+  try {
+    const { matiere_id } = req.body;
+    const matiere = await Matiere.findByPk(matiere_id);
+    if (!matiere) return res.status(404).json({ message: 'Matière non trouvée' });
 
-    // Create associated questions
-    if (questions && questions.length > 0) {
-      const quizQuestions = questions.map((question) => ({
-        quiz_id: quiz.id,
-        question: question.question,
-        options: {
-          options: question.options,
-          correctAnswer: question.correctAnswer,
+    const courses = await Cours.findAll({ where: { matiere_id } });
+    if (!courses.length) return res.status(404).json({ message: 'Aucun cours trouvé pour cette matière' });
+
+    const response = await limiter.schedule(() =>
+      axios.get('https://api.stackexchange.com/2.3/questions', {
+        params: {
+          order: 'desc',
+          sort: 'votes',
+          site: 'stackoverflow',
+          pagesize: 50,
+          key: process.env.STACK_OVERFLOW_API_KEY,
         },
-      }));
-      await QuizQuestion.bulkCreate(quizQuestions);
+      })
+    );
+
+    const stackOverflowQuestions = response.data.items;
+    if (!stackOverflowQuestions || stackOverflowQuestions.length === 0) {
+      return res.status(404).json({ message: 'Aucune question trouvée pour ReactJS sur Stack Overflow' });
     }
 
-    // Fetch the quiz with its questions
-    const createdQuiz = await Quiz.findByPk(quiz.id, {
-      include: [QuizQuestion],
+    const selectedQuestions = stackOverflowQuestions
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 10);
+
+    const cours_id = courses[0].id;
+
+    const quiz = await Quiz.create({
+      matiere_id,
+      cours_id,
+      titre: `${matiere.nom} Comprehensive Evaluation`,
     });
 
-    res.status(201).json({ message: 'Quiz créé avec succès', quiz: createdQuiz });
+    let createdQuestionCount = 0;
+
+    for (const q of selectedQuestions) {
+      const answerResponse = await limiter.schedule(() =>
+        axios.get(`https://api.stackexchange.com/2.3/questions/${q.question_id}/answers`, {
+          params: {
+            order: 'desc',
+            sort: 'votes',
+            site: 'stackoverflow',
+            filter: 'withbody',
+            key: process.env.STACK_OVERFLOW_API_KEY,
+          },
+        })
+      );
+
+      const answers = answerResponse.data.items;
+      if (!answers || answers.length === 0) {
+        console.warn(`No answers found for question ${q.question_id}`);
+        continue;
+      }
+
+      const acceptedAnswer = answers.find(ans => ans.is_accepted) || answers[0];
+
+      // Use other answers (not the accepted one) as distractors
+      const otherAnswers = answers
+        .filter(ans => ans.answer_id !== acceptedAnswer.answer_id) // Exclude the accepted answer
+        .sort((a, b) => b.score - a.score) // Sort by score to pick the most plausible ones
+        .slice(0, 3); // Take up to 3 other answers as distractors
+
+      let correctAnswerText = 'Correct Answer (Default)';
+      if (acceptedAnswer && acceptedAnswer.body) {
+        correctAnswerText = sanitizeHtml(acceptedAnswer.body, {
+          allowedTags: [],
+          allowedAttributes: {},
+          transformTags: {
+            'code': (tagName, attribs) => ({ tagName: 'span', attribs }),
+            'pre': (tagName, attribs) => ({ tagName: 'span', attribs }),
+          },
+        });
+        correctAnswerText = cleanText(correctAnswerText);
+      }
+
+      // Generate distractors from other answers or fallback to variations
+      const distractors = [];
+      for (let i = 0; i < 3; i++) {
+        if (otherAnswers[i] && otherAnswers[i].body) {
+          let distractorText = sanitizeHtml(otherAnswers[i].body, {
+            allowedTags: [],
+            allowedAttributes: {},
+            transformTags: {
+              'code': (tagName, attribs) => ({ tagName: 'span', attribs }),
+              'pre': (tagName, attribs) => ({ tagName: 'span', attribs }),
+            },
+          });
+          distractorText = cleanText(distractorText);
+          distractors.push(distractorText);
+        } else {
+          // Fallback: Generate a plausible incorrect option by modifying the correct answer
+          distractors.push(generatePlausibleIncorrectOption(correctAnswerText, i));
+        }
+      }
+
+      const options = [
+        { text: correctAnswerText, isCorrect: true },
+        { text: distractors[0], isCorrect: false },
+        { text: distractors[1], isCorrect: false },
+        { text: distractors[2], isCorrect: false },
+      ].sort(() => Math.random() - 0.5);
+
+      const isValidOptions = options.every(opt => opt.text && typeof opt.isCorrect === 'boolean');
+      if (!isValidOptions) {
+        console.warn(`Invalid options structure for question ${q.question_id}:`, options);
+        continue;
+      }
+
+      try {
+        const serializedOptions = JSON.stringify(options);
+        if (serializedOptions.length > 65535) {
+          console.warn(`Options for question ${q.question_id} are very large: ${serializedOptions.length} characters`);
+        }
+      } catch (err) {
+        console.warn(`Invalid JSON for question ${q.question_id}:`, options, err);
+        continue;
+      }
+
+      console.log(`Creating question ${q.question_id}, sanitized answer:`, correctAnswerText);
+
+      try {
+        await QuizQuestion.create({
+          quiz_id: quiz.id,
+          text: q.title || 'Default question',
+          options,
+        });
+        createdQuestionCount++;
+      } catch (err) {
+        console.error(`Failed to create question ${q.question_id} for quiz ${quiz.id}:`, err);
+        continue;
+      }
+    }
+
+    if (createdQuestionCount === 0) {
+      await Quiz.destroy({ where: { id: quiz.id } });
+      return res.status(400).json({ message: 'Aucune question valide disponible pour ce quiz' });
+    }
+
+    res.status(201).json({
+      message: `Quiz généré avec ${createdQuestionCount} question(s) à partir de Stack Overflow`,
+      quiz,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la création du quiz', error: error.message });
+    console.error('Erreur lors de la génération du quiz :', error);
+    res.status(500).json({ message: 'Erreur lors de la génération du quiz', error: error.message });
   }
 };
 
-// Get all quizzes for a specific course
-exports.getQuizzesByCourse = async (req, res) => {
-  try {
-    const { cours_id } = req.params;
-
-    const quizzes = await Quiz.findAll({
-      where: { cours_id },
-      include: [QuizQuestion],
-    });
-
-    if (!quizzes || quizzes.length === 0) {
-      return res.status(404).json({ message: 'Aucun quiz trouvé pour ce cours' });
-    }
-
-    res.status(200).json(quizzes);
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la récupération des quizzes', error: error.message });
+// Helper function to generate plausible incorrect options
+const generatePlausibleIncorrectOption = (correctAnswer, index) => {
+  // Basic logic to modify the correct answer for distractors
+  // This can be improved based on the type of question
+  if (correctAnswer.includes('git')) {
+    // For Git-related questions, provide common Git mistakes
+    const gitDistractors = [
+      'git ignore ...', // Misnaming .gitignore
+      'git rm ...', // Incorrect command for ignoring
+      'git add -f ...', // Forcing add instead of ignoring
+    ];
+    return gitDistractors[index] || `Incorrect Git Option ${index + 1}`;
+  } else if (correctAnswer.includes('push')) {
+    // For Git push-related questions, provide common push mistakes
+    const pushDistractors = [
+      'git push origin master', // Pushing to wrong branch
+      'git push -u origin', // Missing branch name
+      'git pull ...', // Wrong command (pull instead of push)
+    ];
+    return pushDistractors[index] || `Incorrect Push Option ${index + 1}`;
   }
-};
-
-// Get a specific quiz by ID
-exports.getQuizById = async (req, res) => {
+  // Fallback for generic incorrect options
+  return `Incorrect Option ${index + 1} (Modified)`;
+};;
+// Rest of the controller remains unchanged
+exports.getQuiz = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const quiz = await Quiz.findByPk(id, {
-      include: [QuizQuestion],
+    const { matiere_id } = req.params;
+    const quiz = await Quiz.findOne({
+      where: { matiere_id },
+      include: [{ model: QuizQuestion }],
+      logging: console.log,
     });
-
-    if (!quiz) {
-      return res.status(404).json({ message: 'Quiz non trouvé' });
-    }
-
+    if (!quiz) return res.status(404).json({ message: 'Quiz non trouvé' });
     res.status(200).json(quiz);
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la récupération du quiz', error: error.message });
+    console.error('Error fetching quiz:', error);
+    res.status(500).json({ message: 'Error fetching quiz', error: error.message });
   }
 };
 
-// Submit a quiz attempt
-exports.submitQuizAttempt = async (req, res) => {
+exports.submitQuiz = async (req, res) => {
   try {
-    const { quiz_id, utilisateur_id, answers } = req.body;
+    const { utilisateur_id, quiz_id, answers } = req.body;
+    let totalScore = 0;
 
-    // Validate quiz and user
-    const quiz = await Quiz.findByPk(quiz_id, { include: [QuizQuestion] });
-    if (!quiz) {
-      return res.status(404).json({ message: 'Quiz non trouvé' });
+    for (const answer of answers) {
+      const question = await QuizQuestion.findByPk(answer.question_id);
+      if (!question) continue;
+
+      const isCorrect = question.options[answer.selected_option]?.isCorrect || false;
+      const score = isCorrect ? 1 : 0;
+      totalScore += score;
+
+      await StudentAnswer.create({
+        utilisateur_id,
+        question_id: answer.question_id,
+        selected_option: answer.selected_option,
+        score,
+      });
     }
 
-    const user = await Utilisateur.findByPk(utilisateur_id);
-    if (!user) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
-    }
+    const maxScore = answers.length;
+    const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
 
-    // Calculate score
-    const totalQuestions = quiz.QuizQuestions.length;
-    if (totalQuestions === 0) {
-      return res.status(400).json({ message: 'Ce quiz n\'a pas de questions' });
-    }
-
-    const scorePerQuestion = 100 / totalQuestions;
-    let score = 0;
-
-    quiz.QuizQuestions.forEach((question) => {
-      const userAnswer = answers[question.id];
-      if (userAnswer === question.options.correctAnswer) {
-        score += scorePerQuestion;
-      }
-    });
-
-    // Round the score to the nearest integer
-    score = Math.round(score);
-
-    // Save the quiz attempt
-    const quizAttempt = await QuizAttempt.create({
-      utilisateur_id,
-      quiz_id,
-      score,
-      answers,
-    });
-
-    res.status(201).json({ message: 'Quiz soumis avec succès', score, quizAttempt });
+    res.status(200).json({ message: 'Quiz submitted', score: totalScore, maxScore, percentage });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la soumission du quiz', error: error.message });
+    console.error('Error submitting quiz:', error);
+    res.status(500).json({ message: 'Error submitting quiz', error: error.message });
   }
 };
 
-// Update a quiz
-exports.updateQuiz = async (req, res) => {
+exports.getQuizResults = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { titre, description, questions } = req.body;
-
-    const quiz = await Quiz.findByPk(id);
-    if (!quiz) {
-      return res.status(404).json({ message: 'Quiz non trouvé' });
-    }
-
-    // Update quiz details
-    await quiz.update({ titre, description });
-
-    // Update questions (delete existing and create new ones)
-    if (questions && questions.length > 0) {
-      await QuizQuestion.destroy({ where: { quiz_id: id } }); // Delete existing questions
-      const quizQuestions = questions.map((question) => ({
-        quiz_id: id,
-        question: question.question,
-        options: {
-          options: question.options,
-          correctAnswer: question.correctAnswer,
+    const { utilisateur_id, quiz_id } = req.query;
+    const answers = await StudentAnswer.findAll({
+      where: {
+        utilisateur_id,
+        question_id: {
+          [Op.in]: (await QuizQuestion.findAll({ where: { quiz_id } })).map(q => q.id),
         },
-      }));
-      await QuizQuestion.bulkCreate(quizQuestions);
-    }
+      },
+      include: [{ model: QuizQuestion }],
+    });
 
-    // Fetch updated quiz
-    const updatedQuiz = await Quiz.findByPk(id, { include: [QuizQuestion] });
+    const totalScore = answers.reduce((sum, ans) => sum + ans.score, 0);
+    const maxScore = answers.length;
+    const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
 
-    res.status(200).json({ message: 'Quiz mis à jour avec succès', quiz: updatedQuiz });
+    res.status(200).json({ answers, totalScore, maxScore, percentage });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du quiz', error: error.message });
-  }
-};
-
-// Delete a quiz
-exports.deleteQuiz = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const quiz = await Quiz.findByPk(id);
-    if (!quiz) {
-      return res.status(404).json({ message: 'Quiz non trouvé' });
-    }
-    await QuizQuestion.destroy({ where: { quiz_id: id } });
-    await QuizAttempt.destroy({ where: { quiz_id: id } });
-    await quiz.destroy();
-
-    res.status(200).json({ message: 'Quiz supprimé avec succès' });
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la suppression du quiz', error: error.message });
+    console.error('Error fetching quiz results:', error);
+    res.status(500).json({ message: 'Error fetching quiz results', error: error.message });
   }
 };

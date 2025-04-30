@@ -4,6 +4,7 @@ import TopStudentsChart from './TopStudentsChart';
 import StudentList from './StudentList';
 import TeacherCalendar from './TeacherCalendar';
 import CourseManager from './CourseManager';
+import Evaluation from './Evaluation';
 import './teacher.css';
 import defaultProfil from "../images/businessman-310819_1280.png";
 import {
@@ -56,6 +57,7 @@ function TeacherDashboard() {
         students: <StudentList />,
         courses: <CourseManager />,
         schedule: <TeacherCalendar />,
+        evaluation: <Evaluation/>,
         dashboard: (
             <>
                 <Row>
@@ -99,6 +101,7 @@ function TeacherDashboard() {
                             { icon: Speedometer, label: "Tableau de bord", view: "dashboard" },
                             { icon: People, label: "Étudiants", view: "students" },
                             { icon: Book, label: "Cours", view: "courses" },
+                            { icon: Book, label: "evaluation", view: "evaluation" },
                             { icon: Calendar, label: "Emploi du temps", view: "schedule" },
                             { icon: Gear, label: "Paramètres", view: "settings" },
                         ].map(({ icon: Icon, label, view }) => (

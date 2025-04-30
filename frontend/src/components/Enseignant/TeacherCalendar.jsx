@@ -17,6 +17,7 @@ const TeacherCalendar = () => {
     const fetchPlannings = async () => {
       try {
         const token = localStorage.getItem('token');
+        console.log(token)
         const response = await axios.get('http://localhost:5000/api/plannings', {
           params: { include: 'Cours,Classe' },
           headers: { Authorization: `Bearer ${token}` },

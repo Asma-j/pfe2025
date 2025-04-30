@@ -174,4 +174,5 @@ const endZoomMeeting = async (meetingId) => {
   }
 };
 
+
 module.exports = { createZoomMeeting, getMeetingParticipants, getMeetingDetails, endZoomMeeting };

@@ -1,44 +1,32 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 const Cours = require('./Cours');
-const Utilisateur = require('./Utilisateur');
+const Matiere = require('./Matiere');
 
 const Quiz = sequelize.define('Quiz', {
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-    },
-    titre: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    description: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    cours_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    utilisateur_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    date_creation: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-    },
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  cours_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // Optional, for course-specific quizzes
+  },
+  matiere_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // Optional, for subject-wide quizzes
+  },
+  titre: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
-    timestamps: false,
-    tableName: 'Quizzes',
+  timestamps: true,
 });
 
-// Relations
-Quiz.belongsTo(Cours, { foreignKey: 'cours_id' });
-Cours.hasMany(Quiz, { foreignKey: 'cours_id' });
-
-Quiz.belongsTo(Utilisateur, { foreignKey: 'utilisateur_id' });
-Utilisateur.hasMany(Quiz, { foreignKey: 'utilisateur_id' });
+// Associations
+Quiz.belongsTo(Cours, { foreignKey: 'cours_id', onDelete: 'CASCADE' });
+Quiz.belongsTo(Matiere, { foreignKey: 'matiere_id', onDelete: 'CASCADE' });
 
 module.exports = Quiz;

@@ -3,6 +3,9 @@ const cors = require('cors');
 const { connectDB, sequelize } = require('./db');
 const path = require('path');
 
+
+
+const defineAssociations = require('./models/association');
 const zoomRoutes = require('./routes/zoomRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -15,6 +18,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const paiementRoutes = require('./routes/paiementRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const niveauRoutes = require('./routes/niveauRoutes');
+const presenceRoutes= require('./routes/presenceRoutes')
 const { startCronJobs } = require('./middleware/cronJobs');
 startCronJobs();
 const app = express();
@@ -28,8 +32,9 @@ connectDB().then(() => {
         .catch(err => console.error("Erreur de synchronisation :", err));
 });
 
+defineAssociations();
 app.use('/api/zoom', zoomRoutes);
-// Utilisation des routes
+app.use('/api/presence', presenceRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/paiements', paiementRoutes);
 app.use('/api/matieres', matiereRoutes);
