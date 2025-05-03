@@ -48,7 +48,6 @@ const Evaluation = () => {
         });
         const data = await response.json();
         if (response.ok) {
-          // Ensure options is an array for each question
           if (data.QuizQuestions) {
             data.QuizQuestions = data.QuizQuestions.map(question => ({
               ...question,
@@ -73,61 +72,74 @@ const Evaluation = () => {
     fetchQuiz();
   }, [selectedMatiere]);
 
-const handleGenerateQuiz = async () => {
-  if (!selectedMatiere) {
-    setError('Veuillez sélectionner une matière');
-    return;
-  }
+  const handleGenerateQuiz = async () => {
+    if (!selectedMatiere) {
+      setError('Veuillez sélectionner une matière');
+      return;
+    }
 
-  setLoading(true);
-  setError('');
+    setLoading(true);
+    setError('');
 
-  try {
-    const response = await fetch('http://localhost:5000/api/quiz/generate', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ matiere_id: selectedMatiere }),
-    });
-    const data = await response.json();
-    if (response.ok) {
-      const quizResponse = await fetch(`http://localhost:5000/api/quiz/matiere/${selectedMatiere}`, {
+    try {
+      const response = await fetch('http://localhost:5000/api/quiz/generate', {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ matiere_id: selectedMatiere }),
       });
-      const quizData = await quizResponse.json();
-      if (quizResponse.ok) {
-        if (quizData.QuizQuestions) {
-          quizData.QuizQuestions = quizData.QuizQuestions.map(question => ({
-            ...question,
-            options: Array.isArray(question.options)
-              ? question.options
-              : typeof question.options === 'string'
-              ? JSON.parse(question.options)
-              : [{ text: 'Default Option', isCorrect: false }],
-          }));
+      const data = await response.json();
+      if (response.ok) {
+        const quizResponse = await fetch(`http://localhost:5000/api/quiz/matiere/${selectedMatiere}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        const quizData = await quizResponse.json();
+        if (quizResponse.ok) {
+          if (quizData.QuizQuestions) {
+            quizData.QuizQuestions = quizData.QuizQuestions.map(question => ({
+              ...question,
+              options: Array.isArray(question.options)
+                ? question.options
+                : typeof question.options === 'string'
+                ? JSON.parse(question.options)
+                : [{ text: 'Default Option', isCorrect: false }],
+            }));
+          }
+          setQuiz(quizData);
+        } else {
+          setError(quizData.message || 'Erreur lors du chargement du quiz généré');
         }
-        setQuiz(quizData);
       } else {
-        setError(quizData.message || 'Erreur lors du chargement du quiz généré');
+        setError(data.message || 'Erreur lors de la génération du quiz');
       }
-    } else {
-      setError(data.message || 'Erreur lors de la génération du quiz');
+    } catch (err) {
+      setError('Erreur réseau lors de la génération du quiz');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError('Erreur réseau lors de la génération du quiz');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
+  const isGenericOption = (text) => {
+    const genericPatterns = [
+      /Incorrect Option/,
+      /Alternative Option/,
+      /Try updating/,
+      /Check if your internet/,
+      /Use a different framework/,
+      /It’s a frontend issue/,
+      /Modified version/,
+      /Common misconception/,
+    ];
+    return genericPatterns.some(pattern => pattern.test(text));
+  };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Gestion des Évaluations</h1>
-
       <div className="mb-4">
         <label htmlFor="matiere" className="block text-sm font-medium text-gray-700">
           Sélectionner une Matière
@@ -146,7 +158,6 @@ const handleGenerateQuiz = async () => {
           ))}
         </select>
       </div>
-
       <button
         onClick={handleGenerateQuiz}
         disabled={loading || !selectedMatiere}
@@ -156,13 +167,7 @@ const handleGenerateQuiz = async () => {
       >
         {loading ? 'Génération en cours...' : 'Générer un Quiz'}
       </button>
-
-      {error && (
-        <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
-
+      {error && <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md">{error}</div>}
       {loading ? (
         <div className="text-center">Chargement...</div>
       ) : quiz ? (
@@ -172,43 +177,42 @@ const handleGenerateQuiz = async () => {
           <h3 className="text-lg font-medium mb-2">Questions :</h3>
           {quiz.QuizQuestions && quiz.QuizQuestions.length > 0 ? (
             <ul className="space-y-4">
-              {quiz.QuizQuestions.map((question, index) => (
-                <li key={question.id} className="border-b pb-2">
-                  <p className="font-medium">
-                    {index + 1}. {question.text}
-                  </p>
-                  <ul className="ml-4 mt-1">
-                    {Array.isArray(question.options) ? (
-                      question.options.map((option, optIndex) => {
-                        const maxDisplayLength = 200;
-                        const displayText =
-                          option.text.length > maxDisplayLength
-                            ? `${option.text.substring(0, maxDisplayLength)}...`
-                            : option.text;
-                        return (
+              {quiz.QuizQuestions.map((question, index) => {
+                const hasGenericOptions = question.options.some(option => isGenericOption(option.text));
+                return (
+                  <li key={question.id} className="border-b pb-2">
+                    <p className="font-medium">{index + 1}. {question.text}</p>
+                    {hasGenericOptions && (
+                      <p className="text-sm text-orange-600 mt-1">
+                        Certaines options semblent génériques. Essayez de régénérer.
+                      </p>
+                    )}
+                    <ul className="ml-4 mt-1 space-y-2">
+                      {Array.isArray(question.options) ? (
+                        question.options.map((option, optIndex) => (
                           <li
                             key={optIndex}
                             className={`text-sm ${
                               option.isCorrect ? 'text-green-600 font-semibold' : 'text-gray-600'
                             }`}
                           >
-                            {optIndex + 1}. {displayText} {option.isCorrect ? '(Correcte)' : ''}
+                            {optIndex + 1}. {option.text} {option.isCorrect ? '(Correcte)' : ''}
                           </li>
-                        );
-                      })
-                    ) : (
-                      <li className="text-sm text-red-600">Erreur : Options non valides</li>
-                    )}
-                  </ul>
-                </li>
-              ))}
+                        ))
+                      ) : (
+                        <li className="text-sm text-red-600">Options invalides</li>
+                      )}
+                    </ul>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
-            <p>Aucune question disponible pour ce quiz.</p>
+            <p>Aucune question disponible.</p>
           )}
         </div>
       ) : (
-        <p>Aucun quiz trouvé pour cette matière. Cliquez sur "Générer un Quiz" pour en créer un.</p>
+        <p>Quiz non trouvé. Générez-en un.</p>
       )}
     </div>
   );

@@ -20,6 +20,7 @@ function StudentNavbar() {
   const [notificationError, setNotificationError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [matieres, setMatieres] = useState([]);
   const navigate = useNavigate();
 
   // Fetch profile
@@ -30,6 +31,7 @@ function StudentNavbar() {
         if (!token) {
           console.warn('No token found in localStorage');
           setNotificationError('Veuillez vous connecter');
+          navigate('/login');
           return;
         }
         const response = await axios.get('http://localhost:5000/api/users/profile', {
@@ -45,10 +47,37 @@ function StudentNavbar() {
       } catch (err) {
         console.error('Error fetching profile:', err.response?.data || err.message);
         setNotificationError('Erreur lors de la récupération du profil');
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
       }
     };
 
     fetchProfile();
+  }, [navigate]);
+
+  // Fetch matieres (subjects)
+  useEffect(() => {
+    const fetchMatieres = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.warn('No token found for fetching matieres');
+          return;
+        }
+        const response = await axios.get('http://localhost:5000/api/matieres', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('Fetched matieres data:', response.data); // Debug log
+        setMatieres(response.data);
+      } catch (err) {
+        console.error('Error fetching matieres:', err.response?.data || err.message);
+        setNotificationError('Erreur lors de la récupération des matières');
+      }
+    };
+
+    fetchMatieres();
   }, []);
 
   // Fetch notifications when profile.id changes
@@ -68,10 +97,11 @@ function StudentNavbar() {
           headers: { Authorization: `Bearer ${token}` },
           params: { userId: profile.id },
         });
-        console.log('Notifications fetched:', response.data);
+        console.log('Raw notifications:', response.data);
         const evaluationNotifications = response.data.filter((notification) =>
           notification.message.toLowerCase().includes('évaluation')
         );
+        console.log('Filtered evaluation notifications:', evaluationNotifications);
         setNotifications(evaluationNotifications);
         setNotificationLoading(false);
       } catch (err) {
@@ -90,34 +120,72 @@ function StudentNavbar() {
   const fetchQuizDetails = async (matiereId) => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        setNotificationError('Veuillez vous connecter');
+        return null;
+      }
       const response = await axios.get(`http://localhost:5000/api/quiz/matiere/${matiereId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     } catch (err) {
       console.error('Error fetching quiz details:', err.response?.data || err.message);
-      setNotificationError('Erreur lors de la récupération des détails du quiz');
+      if (err.response?.status === 404) {
+        setNotificationError('Aucun quiz disponible pour cette matière. Veuillez contacter votre enseignant.');
+      } else if (err.response?.status === 401) {
+        setNotificationError('Session expirée. Veuillez vous reconnecter.');
+      } else if (err.response?.status === 400) {
+        setNotificationError('La matière sélectionnée est invalide. Veuillez vérifier la notification.');
+      } else {
+        setNotificationError('Une erreur est survenue lors de la récupération des détails du quiz.');
+      }
       return null;
     }
   };
 
   // Open modal and fetch quiz details
   const openQuizModal = async (notification) => {
-    const matiereId = notification.message.includes('/quiz/matiere/')
-      ? notification.message.split('/quiz/matiere/')[1].split(' ')[0]
-      : null;
-    if (matiereId) {
-      const quizData = await fetchQuizDetails(matiereId);
-      if (quizData) {
-        setSelectedQuiz({
-          ...quizData,
-          matiereId,
-          notificationId: notification.id,
-        });
-        setShowModal(true);
+    let matiereId = notification.matiereId || null;
+
+    // Log the notification for debugging
+    console.log('Processing notification:', notification);
+
+    // If matiereId is not in the notification object, parse the message
+    if (!matiereId) {
+      const match = notification.message.match(/\/quiz\/matiere\/(\d+)/);
+      matiereId = match ? match[1] : null;
+      console.log('Parsed matiereId from URL pattern:', matiereId);
+    }
+
+    // If matiereId is still not found, extract the subject name and match with matieres
+    if (!matiereId) {
+      const subjectMatch = notification.message.match(/pour la matière "([^"]+)"/);
+      const subjectName = subjectMatch ? subjectMatch[1] : null;
+      console.log('Extracted subject name:', subjectName);
+      if (subjectName) {
+        const matchedMatiere = matieres.find((matiere) => matiere.nom === subjectName);
+        matiereId = matchedMatiere ? matchedMatiere.id : null;
+        console.log('Matched matiere:', matchedMatiere, 'matiereId:', matiereId);
       }
+    }
+
+    // Validate matiereId before proceeding
+    if (!matiereId || isNaN(matiereId) || matiereId === 'undefined') {
+      setNotificationError('Impossible de déterminer l\'identifiant de la matière pour ce quiz.');
+      console.error('Invalid matiereId:', matiereId);
+      return; // Prevent opening the modal
+    }
+
+    const quizData = await fetchQuizDetails(matiereId);
+    if (quizData) {
+      setSelectedQuiz({
+        ...quizData,
+        matiereId,
+        notificationId: notification.id,
+      });
+      setShowModal(true);
     } else {
-      setNotificationError('Impossible de trouver les détails du quiz');
+      console.log('Failed to fetch quiz details for matiereId:', matiereId);
     }
   };
 
@@ -127,6 +195,18 @@ function StudentNavbar() {
       try {
         setNotificationLoading(true);
         const token = localStorage.getItem('token');
+
+        // Validate matiereId before navigation
+        const matiereId = selectedQuiz.matiereId;
+        console.log('Navigating with matiereId:', matiereId); // Debug log
+        if (!matiereId || isNaN(matiereId) || matiereId === 'undefined') {
+          setNotificationError('Identifiant de matière invalide. Impossible de naviguer vers le quiz.');
+          setShowModal(false);
+          setNotificationLoading(false);
+          return;
+        }
+
+        // Mark notification as read
         await axios.patch(
           `http://localhost:5000/api/notifications/${selectedQuiz.notificationId}/read`,
           {},
@@ -134,7 +214,9 @@ function StudentNavbar() {
         );
         setNotifications(notifications.filter((n) => n.id !== selectedQuiz.notificationId));
         setShowModal(false);
-        navigate(`/quiz/matiere/${selectedQuiz.matiereId}`);
+
+        // Navigate to the quiz page
+        navigate(`/quiz/matiere/${matiereId}`);
       } catch (err) {
         console.error('Error marking notification as read:', err.response?.data || err.message);
         setNotificationError('Erreur lors de la mise à jour de la notification');
@@ -200,18 +282,12 @@ function StudentNavbar() {
                   notifications.map((notification) => (
                     <Dropdown.ItemText key={notification.id} className="py-2">
                       <div className="d-flex justify-content-between align-items-center">
-                        <Link
-                          to={notification.message.includes('/quiz/matiere/') ? notification.message.split('ici: ')[1] : '#'}
-                          className="text-decoration-none text-dark"
-                          style={{ flex: 1 }}
-                        >
-                          {notification.message.split('ici: ')[0]}
-                        </Link>
+                        <span style={{ flex: 1 }}>{notification.message}</span>
                         <Button
                           variant="outline-primary"
                           size="sm"
                           onClick={() => openQuizModal(notification)}
-                          disabled={notificationLoading}
+                          disabled={notificationLoading || matieres.length === 0}
                         >
                           Passer
                         </Button>
