@@ -14,6 +14,9 @@ const Quiz = () => {
   const [result, setResult] = useState(null);
   const [userProfile, setUserProfile] = useState({ id: null });
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const [remainingTime, setRemainingTime] = useState(null); // In seconds
+  const [timeUp, setTimeUp] = useState(false);
 
   console.log('id from useParams:', id);
 
@@ -22,7 +25,7 @@ const Quiz = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          setError('Utilisateur non authentifié.');
+          setError('Utilisateur non authentifie.');
           setLoading(false);
           return;
         }
@@ -39,7 +42,7 @@ const Quiz = () => {
     const fetchQuiz = async () => {
       if (!id || isNaN(id) || id === 'undefined') {
         console.log('Invalid id:', id);
-        setError('ID matière invalide.');
+        setError('ID matiere invalide.');
         setLoading(false);
         setTimeout(() => navigate('/courses'), 2000);
         return;
@@ -53,6 +56,9 @@ const Quiz = () => {
         });
         console.log('Quiz data:', response.data);
         setQuiz(response.data);
+        setStartTime(Date.now());
+        // Initialize remaining time based on setDuration (convert minutes to seconds)
+        setRemainingTime(response.data.setDuration * 60);
         setLoading(false);
       } catch (err) {
         setError('Aucun quiz disponible.');
@@ -64,24 +70,53 @@ const Quiz = () => {
     fetchQuiz();
   }, [id, navigate]);
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (remainingTime === null || result || timeUp) return;
+
+    const timer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const timeLeft = quiz.setDuration * 60 - elapsed;
+      setRemainingTime(timeLeft);
+
+      if (timeLeft <= 0) {
+        setTimeUp(true);
+        clearInterval(timer);
+        handleSubmit(); // Auto-submit when time is up
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [remainingTime, startTime, quiz, result, timeUp]);
+
   const handleAnswerChange = (questionId, optionIndex) => {
     console.log(`Answer changed for question ${questionId}: Selected option index ${optionIndex}`);
-    setAnswers((prev) => ({ ...prev, [questionId]: optionIndex }));
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: optionIndex,
+    }));
   };
 
   const handleSubmit = async () => {
     try {
+      const endTime = Date.now();
+      const timeTakenInSeconds = Math.floor((endTime - startTime) / 1000);
+
       const token = localStorage.getItem('token');
       const formattedAnswers = Object.keys(answers).map((question_id) => ({
         question_id: parseInt(question_id),
         selected_option: answers[question_id],
       }));
-
-      console.log('Submitting answers:', formattedAnswers);
+      console.log('Submitting answers:', formattedAnswers, 'Time taken (seconds):', timeTakenInSeconds);
 
       const response = await axios.post(
         'http://localhost:5000/api/quiz/submit',
-        { utilisateur_id: userProfile.id, quiz_id: quiz.id, answers: formattedAnswers },
+        {
+          utilisateur_id: userProfile.id,
+          quiz_id: quiz.id,
+          answers: formattedAnswers,
+          duration: timeTakenInSeconds,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -93,6 +128,7 @@ const Quiz = () => {
       setResult({
         ...response.data,
         answers: resultsResponse.data.answers,
+        timeTaken: timeTakenInSeconds,
       });
 
       setShowSubmitModal(false);
@@ -103,11 +139,18 @@ const Quiz = () => {
   };
 
   const handleSubmitClick = () => {
+    console.log('Current answers state:', answers);
     if (Object.keys(answers).length !== quiz?.QuizQuestions?.length) {
       setShowSubmitModal(true);
     } else {
       handleSubmit();
     }
+  };
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
   };
 
   if (loading) return <div className="text-center mt-5">Chargement...</div>;
@@ -121,7 +164,7 @@ const Quiz = () => {
   if (!quiz) return (
     <div className="container mt-4">
       <StudentNavbar />
-      <Alert variant="info">Quiz non trouvé</Alert>
+      <Alert variant="info">Quiz non trouve</Alert>
       <Button onClick={() => navigate('/courses')}>Retour</Button>
     </div>
   );
@@ -130,14 +173,27 @@ const Quiz = () => {
     <div className="container mt-4">
       <StudentNavbar />
       <h2 className="mb-2">Quiz: {quiz.titre}</h2>
+      {!result && (
+        <div className="mb-4 p-2 bg-blue-100 text-blue-700 rounded-md">
+          <p>
+            Duree totale: {formatTime(quiz.setDuration * 60)} | Temps restant: {remainingTime !== null ? formatTime(remainingTime > 0 ? remainingTime : 0) : 'Calcul...'}
+          </p>
+        </div>
+      )}
+      {timeUp && !result && (
+        <Alert variant="warning" className="mb-4">
+          Temps ecoule ! Le quiz a ete soumis automatiquement.
+        </Alert>
+      )}
       {result ? (
         <div>
           <Alert variant="success" className="mb-4">
-            <h4>Résultat</h4>
+            <h4>Resultat</h4>
             <p>Score: {result.score} / {result.maxScore}</p>
             <p>Pourcentage: {result.percentage.toFixed(2)}%</p>
+            <p>Temps pris: {formatTime(result.timeTaken)}</p>
           </Alert>
-          <h4 className="mb-2">Détails :</h4>
+          <h4 className="mb-2">Details :</h4>
           <ListGroup>
             {result.answers.map((answer, index) => {
               let parsedOptions = answer.QuizQuestion.options;
@@ -159,11 +215,11 @@ const Quiz = () => {
                 >
                   <strong>Question {index + 1}: {answer.QuizQuestion.text}</strong>
                   <p className="mt-1">
-                    Votre réponse: {parsedOptions[answer.selected_option]?.text || 'Non répondu'}
-                    {answer.score === 1 ? ' ✅' : ' ❌'}
+                    Votre reponse: {parsedOptions[answer.selected_option]?.text || 'Non repondu'}
+                    {answer.score === 1 ? ' (Correct)' : ' (Incorrect)'}
                   </p>
                   {answer.score === 0 && (
-                    <p>Réponse correcte: {parsedOptions.find(opt => opt.isCorrect)?.text || 'N/A'}</p>
+                    <p>Reponse correcte: {parsedOptions.find(opt => opt.isCorrect)?.text || 'N/A'}</p>
                   )}
                 </ListGroup.Item>
               );
@@ -196,6 +252,7 @@ const Quiz = () => {
                               checked={answers[question.id] === optIndex}
                               onChange={() => handleAnswerChange(question.id, optIndex)}
                               className="mb-2"
+                              disabled={timeUp}
                             />
                           ));
                         }
@@ -214,6 +271,7 @@ const Quiz = () => {
                           checked={answers[question.id] === optIndex}
                           onChange={() => handleAnswerChange(question.id, optIndex)}
                           className="mb-2"
+                          disabled={timeUp}
                         />
                       ));
                     }
@@ -222,7 +280,7 @@ const Quiz = () => {
                 </Form>
               </div>
             ))}
-            <Button onClick={handleSubmitClick} className="mt-3">
+            <Button onClick={handleSubmitClick} className="mt-3" disabled={timeUp}>
               Soumettre
             </Button>
           </Card.Body>
@@ -232,7 +290,7 @@ const Quiz = () => {
         <Modal.Header closeButton>
           <Modal.Title>Confirmation</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Questions non répondues. Soumettre quand même?</Modal.Body>
+        <Modal.Body>Questions non repondues. Soumettre quand meme?</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSubmitModal(false)}>
             Annuler

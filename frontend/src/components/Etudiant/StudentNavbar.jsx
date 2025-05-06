@@ -363,7 +363,7 @@ function StudentNavbar() {
             <>
               <p><strong>Titre :</strong> {selectedQuiz.titre}</p>
               <p><strong>Matière :</strong> {selectedQuiz.Matiere?.nom || 'Non spécifié'}</p>
-              <p><strong>Temps estimé :</strong> 30 minutes</p>
+              <p><strong>Temps estimé :</strong> {selectedQuiz.setDuration}</p>
               <p><strong>Nombre de questions :</strong> {selectedQuiz.QuizQuestions?.length || 'Non disponible'}</p>
             </>
           ) : (

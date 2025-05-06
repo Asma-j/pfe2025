@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 const Evaluation = () => {
   const [matieres, setMatieres] = useState([]);
   const [selectedMatiere, setSelectedMatiere] = useState('');
+  const [quizDuration, setQuizDuration] = useState(30); // Default duration in minutes
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,10 +23,10 @@ const Evaluation = () => {
             setSelectedMatiere(data[0].id);
           }
         } else {
-          setError(data.message || 'Erreur lors du chargement des matières');
+          setError(data.message || 'Erreur lors du chargement des matieres');
         }
       } catch (err) {
-        setError('Erreur réseau lors du chargement des matières');
+        setError('Erreur reseau lors du chargement des matieres');
       }
     };
 
@@ -63,7 +64,7 @@ const Evaluation = () => {
           setError(data.message || 'Erreur lors du chargement du quiz');
         }
       } catch (err) {
-        setError('Erreur réseau lors du chargement du quiz');
+        setError('Erreur reseau lors du chargement du quiz');
       } finally {
         setLoading(false);
       }
@@ -74,7 +75,7 @@ const Evaluation = () => {
 
   const handleGenerateQuiz = async () => {
     if (!selectedMatiere) {
-      setError('Veuillez sélectionner une matière');
+      setError('Veuillez selectionner une matiere');
       return;
     }
 
@@ -88,7 +89,7 @@ const Evaluation = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ matiere_id: selectedMatiere }),
+        body: JSON.stringify({ matiere_id: selectedMatiere, setDuration: quizDuration }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -111,13 +112,13 @@ const Evaluation = () => {
           }
           setQuiz(quizData);
         } else {
-          setError(quizData.message || 'Erreur lors du chargement du quiz généré');
+          setError(quizData.message || 'Erreur lors du chargement du quiz genere');
         }
       } else {
-        setError(data.message || 'Erreur lors de la génération du quiz');
+        setError(data.message || 'Erreur lors de la generation du quiz');
       }
     } catch (err) {
-      setError('Erreur réseau lors de la génération du quiz');
+      setError('Erreur reseau lors de la generation du quiz');
     } finally {
       setLoading(false);
     }
@@ -139,10 +140,10 @@ const Evaluation = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Gestion des Évaluations</h1>
+      <h1 className="text-2xl font-bold mb-4">Gestion des Evaluations</h1>
       <div className="mb-4">
         <label htmlFor="matiere" className="block text-sm font-medium text-gray-700">
-          Sélectionner une Matière
+          Selectionner une Matiere
         </label>
         <select
           id="matiere"
@@ -150,13 +151,27 @@ const Evaluation = () => {
           onChange={(e) => setSelectedMatiere(e.target.value)}
           className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
         >
-          <option value="">-- Choisir une matière --</option>
+          <option value="">-- Choisir une matiere --</option>
           {matieres.map((matiere) => (
             <option key={matiere.id} value={matiere.id}>
               {matiere.nom}
             </option>
           ))}
         </select>
+      </div>
+      <div className="mb-4">
+        <label htmlFor="quizDuration" className="block text-sm font-medium text-gray-700">
+          Duree du Quiz (en minutes)
+        </label>
+        <input
+          type="number"
+          id="quizDuration"
+          value={quizDuration}
+          onChange={(e) => setQuizDuration(Number(e.target.value))}
+          min="1"
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          placeholder="Entrez la duree en minutes"
+        />
       </div>
       <button
         onClick={handleGenerateQuiz}
@@ -165,7 +180,7 @@ const Evaluation = () => {
           loading || !selectedMatiere ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
         }`}
       >
-        {loading ? 'Génération en cours...' : 'Générer un Quiz'}
+        {loading ? 'Generation en cours...' : 'Generer un Quiz'}
       </button>
       {error && <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md">{error}</div>}
       {loading ? (
@@ -173,7 +188,8 @@ const Evaluation = () => {
       ) : quiz ? (
         <div className="border p-4 rounded-md shadow-md">
           <h2 className="text-xl font-semibold mb-2">{quiz.titre}</h2>
-          <p className="text-gray-600 mb-4">Matière ID: {quiz.matiere_id}</p>
+          <p className="text-gray-600 mb-2">Matiere ID: {quiz.matiere_id}</p>
+          <p className="text-gray-600 mb-4">Duree: {quiz.setDuration} minutes</p>
           <h3 className="text-lg font-medium mb-2">Questions :</h3>
           {quiz.QuizQuestions && quiz.QuizQuestions.length > 0 ? (
             <ul className="space-y-4">
@@ -184,7 +200,7 @@ const Evaluation = () => {
                     <p className="font-medium">{index + 1}. {question.text}</p>
                     {hasGenericOptions && (
                       <p className="text-sm text-orange-600 mt-1">
-                        Certaines options semblent génériques. Essayez de régénérer.
+                        Certaines options semblent generiques. Essayez de regenerer.
                       </p>
                     )}
                     <ul className="ml-4 mt-1 space-y-2">
@@ -212,7 +228,7 @@ const Evaluation = () => {
           )}
         </div>
       ) : (
-        <p>Quiz non trouvé. Générez-en un.</p>
+        <p>Quiz non trouve. Generez-en un.</p>
       )}
     </div>
   );

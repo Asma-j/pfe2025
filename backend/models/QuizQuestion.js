@@ -16,8 +16,15 @@ const QuizQuestion = sequelize.define('QuizQuestion', {
     allowNull: false,
   },
   options: {
-    type: DataTypes.JSON,
+    type: DataTypes.JSON, // or DataTypes.STRING if your DB doesn't support JSON
     allowNull: false,
+    get() {
+      const value = this.getDataValue('options');
+      return typeof value === 'string' ? JSON.parse(value) : value;
+    },
+    set(value) {
+      this.setDataValue('options', JSON.stringify(value));
+    },
   },
   createdAt: {
     type: DataTypes.DATE,
