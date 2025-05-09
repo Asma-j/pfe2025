@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Form, Alert, ListGroup, Modal } from 'react-bootstrap';
 import axios from 'axios';
+import { jsPDF } from 'jspdf';
 import StudentNavbar from './StudentNavbar';
 
 const Quiz = () => {
@@ -12,10 +13,10 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
-  const [userProfile, setUserProfile] = useState({ id: null });
+  const [userProfile, setUserProfile] = useState({ id: null, name: 'Utilisateur' });
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [startTime, setStartTime] = useState(null);
-  const [remainingTime, setRemainingTime] = useState(null); // In seconds
+  const [remainingTime, setRemainingTime] = useState(null);
   const [timeUp, setTimeUp] = useState(false);
 
   console.log('id from useParams:', id);
@@ -25,16 +26,16 @@ const Quiz = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          setError('Utilisateur non authentifie.');
+          setError('Utilisateur non authentifié.');
           setLoading(false);
           return;
         }
         const response = await axios.get('http://localhost:5000/api/users/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUserProfile({ id: response.data.id });
+        setUserProfile({ id: response.data.id, name: response.data.name || 'Utilisateur' });
       } catch (err) {
-        setError('Erreur profil utilisateur.');
+        setError('Erreur lors de la récupération du profil utilisateur.');
         setLoading(false);
       }
     };
@@ -42,7 +43,7 @@ const Quiz = () => {
     const fetchQuiz = async () => {
       if (!id || isNaN(id) || id === 'undefined') {
         console.log('Invalid id:', id);
-        setError('ID matiere invalide.');
+        setError('ID de matière invalide.');
         setLoading(false);
         setTimeout(() => navigate('/courses'), 2000);
         return;
@@ -57,7 +58,6 @@ const Quiz = () => {
         console.log('Quiz data:', response.data);
         setQuiz(response.data);
         setStartTime(Date.now());
-        // Initialize remaining time based on setDuration (convert minutes to seconds)
         setRemainingTime(response.data.setDuration * 60);
         setLoading(false);
       } catch (err) {
@@ -82,7 +82,7 @@ const Quiz = () => {
       if (timeLeft <= 0) {
         setTimeUp(true);
         clearInterval(timer);
-        handleSubmit(); // Auto-submit when time is up
+        handleSubmit();
       }
     }, 1000);
 
@@ -132,8 +132,9 @@ const Quiz = () => {
       });
 
       setShowSubmitModal(false);
+      setTimeUp(true);
     } catch (err) {
-      setError('Erreur soumission quiz.');
+      setError('Erreur lors de la soumission du quiz.');
       setShowSubmitModal(false);
     }
   };
@@ -145,6 +146,69 @@ const Quiz = () => {
     } else {
       handleSubmit();
     }
+  };
+
+  const generateCertificate = () => {
+    const doc = new jsPDF();
+
+    // Bordure décorative
+    doc.setLineWidth(1);
+    doc.setDrawColor(0, 102, 204); // Bleu
+    doc.rect(10, 10, 190, 277); // Bordure extérieure
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(204, 204, 204); // Gris clair
+    doc.rect(15, 15, 180, 267); // Bordure intérieure
+
+    // En-tête
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(28);
+    doc.setTextColor(0, 102, 204);
+    doc.text('CERTIFICAT DE RÉUSSITE', 105, 40, { align: 'center' });
+
+    // Ligne décorative sous l'en-tête
+    doc.setLineWidth(0.5);
+    doc.line(50, 45, 160, 45);
+
+    // Nom de l'utilisateur
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Délivré à`, 105, 70, { align: 'center' });
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text(`${userProfile.name}`, 105, 85, { align: 'center' });
+
+    // Détails du quiz
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(14);
+    doc.text(`Pour la réussite du quiz :`, 105, 110, { align: 'center' });
+    doc.setFont('Helvetica', 'bold');
+    doc.text(`${quiz.titre}`, 105, 125, { align: 'center' });
+    doc.setFont('Helvetica', 'normal');
+    doc.text(`Score obtenu : ${result.score} / ${result.maxScore}`, 105, 140, { align: 'center' });
+    doc.text(`Pourcentage : ${result.percentage.toFixed(2)}%`, 105, 155, { align: 'center' });
+
+    // Date
+    const today = new Date().toLocaleDateString('fr-FR');
+    doc.text(`Date de délivrance : ${today}`, 105, 170, { align: 'center' });
+
+    // Texte de validation
+    doc.setFontSize(12);
+    doc.text('Ce certificat atteste que l’utilisateur a réussi le quiz avec un score supérieur à 70%,', 105, 200, { align: 'center' });
+    doc.text('démontrant une maîtrise significative des compétences évaluées.', 105, 210, { align: 'center' });
+
+    // Signature (optionnel)
+    doc.setFont('Helvetica', 'italic');
+    doc.text('Émis par la plateforme d’apprentissage', 105, 240, { align: 'center' });
+
+    // Ajout d’un logo (optionnel, décommenter si vous avez une image en base64)
+    /*
+    const logo = 'data:image/png;base64,...'; // Remplacer par votre image encodée en base64
+    doc.addImage(logo, 'PNG', 85, 250, 40, 20);
+    */
+
+    // Téléchargement du PDF
+    doc.save(`Certificat_${quiz.titre}_${userProfile.name}.pdf`);
   };
 
   const formatTime = (seconds) => {
@@ -164,7 +228,7 @@ const Quiz = () => {
   if (!quiz) return (
     <div className="container mt-4">
       <StudentNavbar />
-      <Alert variant="info">Quiz non trouve</Alert>
+      <Alert variant="info">Quiz non trouvé</Alert>
       <Button onClick={() => navigate('/courses')}>Retour</Button>
     </div>
   );
@@ -173,27 +237,32 @@ const Quiz = () => {
     <div className="container mt-4">
       <StudentNavbar />
       <h2 className="mb-2">Quiz: {quiz.titre}</h2>
-      {!result && (
+      {!result && !timeUp && (
         <div className="mb-4 p-2 bg-blue-100 text-blue-700 rounded-md">
           <p>
-            Duree totale: {formatTime(quiz.setDuration * 60)} | Temps restant: {remainingTime !== null ? formatTime(remainingTime > 0 ? remainingTime : 0) : 'Calcul...'}
+            Durée totale: {formatTime(quiz.setDuration * 60)} | Temps restant: {remainingTime !== null ? formatTime(remainingTime > 0 ? remainingTime : 0) : 'Calcul...'}
           </p>
         </div>
       )}
       {timeUp && !result && (
         <Alert variant="warning" className="mb-4">
-          Temps ecoule ! Le quiz a ete soumis automatiquement.
+          Temps écoulé ! Le quiz est en cours de soumission...
         </Alert>
       )}
       {result ? (
         <div>
           <Alert variant="success" className="mb-4">
-            <h4>Resultat</h4>
+            <h4>Résultat</h4>
             <p>Score: {result.score} / {result.maxScore}</p>
             <p>Pourcentage: {result.percentage.toFixed(2)}%</p>
             <p>Temps pris: {formatTime(result.timeTaken)}</p>
           </Alert>
-          <h4 className="mb-2">Details :</h4>
+          {result.percentage > 70 && (
+            <Button variant="primary" className="mb-4" onClick={generateCertificate}>
+              Télécharger le Certificat
+            </Button>
+          )}
+          <h4 className="mb-2">Détails :</h4>
           <ListGroup>
             {result.answers.map((answer, index) => {
               let parsedOptions = answer.QuizQuestion.options;
@@ -215,11 +284,11 @@ const Quiz = () => {
                 >
                   <strong>Question {index + 1}: {answer.QuizQuestion.text}</strong>
                   <p className="mt-1">
-                    Votre reponse: {parsedOptions[answer.selected_option]?.text || 'Non repondu'}
+                    Votre réponse: {parsedOptions[answer.selected_option]?.text || 'Non répondu'}
                     {answer.score === 1 ? ' (Correct)' : ' (Incorrect)'}
                   </p>
                   {answer.score === 0 && (
-                    <p>Reponse correcte: {parsedOptions.find(opt => opt.isCorrect)?.text || 'N/A'}</p>
+                    <p>Réponse correcte: {parsedOptions.find(opt => opt.isCorrect)?.text || 'N/A'}</p>
                   )}
                 </ListGroup.Item>
               );
@@ -230,67 +299,69 @@ const Quiz = () => {
           </Button>
         </div>
       ) : (
-        <Card>
-          <Card.Body>
-            {quiz.QuizQuestions.map((question, index) => (
-              <div key={question.id} className="mb-4">
-                <h5 className="mb-2">{index + 1}. {question.text}</h5>
-                <Form>
-                  {(() => {
-                    if (!question.options) return <Alert variant="warning">Options manquantes</Alert>;
-                    if (typeof question.options === 'string') {
-                      try {
-                        const parsedOptions = JSON.parse(question.options);
-                        if (Array.isArray(parsedOptions)) {
-                          console.log(`Options for question ${question.id}:`, parsedOptions);
-                          return parsedOptions.map((option, optIndex) => (
-                            <Form.Check
-                              key={optIndex}
-                              type="radio"
-                              label={<span>{option.text}</span>}
-                              name={`question-${question.id}`}
-                              checked={answers[question.id] === optIndex}
-                              onChange={() => handleAnswerChange(question.id, optIndex)}
-                              className="mb-2"
-                              disabled={timeUp}
-                            />
-                          ));
+        !timeUp && (
+          <Card>
+            <Card.Body>
+              {quiz.QuizQuestions.map((question, index) => (
+                <div key={question.id} className="mb-4">
+                  <h5 className="mb-2">{index + 1}. {question.text}</h5>
+                  <Form>
+                    {(() => {
+                      if (!question.options) return <Alert variant="warning">Options manquantes</Alert>;
+                      if (typeof question.options === 'string') {
+                        try {
+                          const parsedOptions = JSON.parse(question.options);
+                          if (Array.isArray(parsedOptions)) {
+                            console.log(`Options for question ${question.id}:`, parsedOptions);
+                            return parsedOptions.map((option, optIndex) => (
+                              <Form.Check
+                                key={optIndex}
+                                type="radio"
+                                label={<span>{option.text}</span>}
+                                name={`question-${question.id}`}
+                                checked={answers[question.id] === optIndex}
+                                onChange={() => handleAnswerChange(question.id, optIndex)}
+                                className="mb-2"
+                                disabled={timeUp}
+                              />
+                            ));
+                          }
+                        } catch (e) {
+                          return <Alert variant="warning">Options invalides</Alert>;
                         }
-                      } catch (e) {
-                        return <Alert variant="warning">Options invalides</Alert>;
                       }
-                    }
-                    if (Array.isArray(question.options)) {
-                      console.log(`Options for question ${question.id}:`, question.options);
-                      return question.options.map((option, optIndex) => (
-                        <Form.Check
-                          key={optIndex}
-                          type="radio"
-                          label={<span>{option.text}</span>}
-                          name={`question-${question.id}`}
-                          checked={answers[question.id] === optIndex}
-                          onChange={() => handleAnswerChange(question.id, optIndex)}
-                          className="mb-2"
-                          disabled={timeUp}
-                        />
-                      ));
-                    }
-                    return <Alert variant="warning">Options invalides</Alert>;
-                  })()}
-                </Form>
-              </div>
-            ))}
-            <Button onClick={handleSubmitClick} className="mt-3" disabled={timeUp}>
-              Soumettre
-            </Button>
-          </Card.Body>
-        </Card>
+                      if (Array.isArray(question.options)) {
+                        console.log(`Options for question ${question.id}:`, question.options);
+                        return question.options.map((option, optIndex) => (
+                          <Form.Check
+                            key={optIndex}
+                            type="radio"
+                            label={<span>{option.text}</span>}
+                            name={`question-${question.id}`}
+                            checked={answers[question.id] === optIndex}
+                            onChange={() => handleAnswerChange(question.id, optIndex)}
+                            className="mb-2"
+                            disabled={timeUp}
+                          />
+                        ));
+                      }
+                      return <Alert variant="warning">Options invalides</Alert>;
+                    })()}
+                  </Form>
+                </div>
+              ))}
+              <Button onClick={handleSubmitClick} className="mt-3" disabled={timeUp}>
+                Soumettre
+              </Button>
+            </Card.Body>
+          </Card>
+        )
       )}
       <Modal show={showSubmitModal} onHide={() => setShowSubmitModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Confirmation</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Questions non repondues. Soumettre quand meme?</Modal.Body>
+        <Modal.Body>Questions non répondues. Soumettre quand même ?</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowSubmitModal(false)}>
             Annuler

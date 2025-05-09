@@ -1,9 +1,12 @@
 const Classe = require('../models/Classe');
+const Niveau = require('../models/Niveau');
 
 // ➤ Obtenir toutes les classes
 exports.getAllClasses = async (req, res) => {
     try {
-        const classes = await Classe.findAll();
+        const classes = await Classe.findAll({
+            include: [{ model: Niveau, attributes: ['id', 'nom'] }],
+        });
         res.status(200).json(classes);
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la récupération des classes", error });
@@ -13,7 +16,9 @@ exports.getAllClasses = async (req, res) => {
 // ➤ Obtenir une classe par ID
 exports.getClasseById = async (req, res) => {
     try {
-        const classe = await Classe.findByPk(req.params.id);
+        const classe = await Classe.findByPk(req.params.id, {
+            include: [{ model: Niveau, attributes: ['id', 'nom'] }],
+        });
         if (!classe) return res.status(404).json({ message: "Classe non trouvée" });
         res.status(200).json(classe);
     } catch (error) {
@@ -21,11 +26,31 @@ exports.getClasseById = async (req, res) => {
     }
 };
 
+// ➤ Obtenir les classes par niveau ID
+exports.getClassesByNiveauId = async (req, res) => {
+    try {
+        const niveauId = req.params.niveauId;
+        const classes = await Classe.findAll({
+            where: { niveau_id: niveauId },
+            include: [{ model: Niveau, attributes: ['nom'] }],
+        });
+        if (!classes.length) {
+            return res.status(404).json({ message: "Aucune classe trouvée pour ce niveau" });
+        }
+        res.status(200).json(classes);
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la récupération des classes pour ce niveau", error: error.message });
+    }
+};
+
 // ➤ Ajouter une nouvelle classe
 exports.createClasse = async (req, res) => {
     try {
         const classe = await Classe.create(req.body);
-        res.status(201).json({ message: "Classe créée avec succès", classe });
+        const classeWithNiveau = await Classe.findByPk(classe.id, {
+            include: [{ model: Niveau, attributes: ['id', 'nom'] }],
+        });
+        res.status(201).json({ message: "Classe créée avec succès", classe: classeWithNiveau });
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la création de la classe", error });
     }
@@ -38,7 +63,10 @@ exports.updateClasse = async (req, res) => {
         if (!classe) return res.status(404).json({ message: "Classe non trouvée" });
 
         await classe.update(req.body);
-        res.status(200).json({ message: "Classe mise à jour avec succès", classe });
+        const updatedClasse = await Classe.findByPk(classe.id, {
+            include: [{ model: Niveau, attributes: ['id', 'nom'] }],
+        });
+        res.status(200).json({ message: "Classe mise à jour avec succès", classe: updatedClasse });
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la mise à jour de la classe", error });
     }

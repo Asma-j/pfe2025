@@ -161,7 +161,7 @@ exports.generateQuiz = async (req, res) => {
 
     const selectedQuestions = stackOverflowQuestions
       .sort(() => 0.5 - Math.random())
-      .slice(0, 10);
+      .slice(0, 20);
     console.log('Questions selectionnees:', selectedQuestions.length);
 
     const cours_id = courses[0].id;
