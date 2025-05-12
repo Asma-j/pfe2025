@@ -21,8 +21,9 @@ import Sidebar from './Sidebar';
 import Students from './Students';
 import Teachers from './Teachers';
 import GestionMatiere from './GestionMatiere';
-import GestionMNiveau from './GestionNiveau';
-import GestionMClasse from './GestionClasse';
+import GestionNiveau from './GestionNiveau';
+import GestionClasse from './GestionClasse';
+import GestionUtilisateur from './GestionUtilisateur';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const teacherData = [
@@ -131,8 +132,9 @@ const AdminDashboard = () => {
     schedule: <Schedule />,
     teachers: <Teachers />,
     matiere: <GestionMatiere />, 
-    niveau: <GestionMNiveau />,
-     classe: <GestionMClasse />,
+    niveau: <GestionNiveau />,
+     classe: <GestionClasse />,
+       user: <GestionUtilisateur />,
     dashboard: (
       <>
         <Row>

@@ -571,3 +571,87 @@ h2 {
     padding: 0.75rem;
   }
 }
+.students-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.custom-table {
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.custom-table th,
+.custom-table td {
+  padding: 15px;
+  text-align: left;
+}
+
+.custom-table th {
+  background-color: #f8f9fa;
+  border-bottom: none;
+}
+
+.custom-table td {
+  vertical-align: middle;
+}
+
+.student-avatar {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+.custom-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.action-btn {
+  margin-left: 10px;
+  padding: 5px;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.tab:hover {
+  color: #000;
+}
+
+.tab.active {
+  color: #000;
+  font-weight: bold;
+  border-bottom: 2px solid #00cc00;
+}
+
+.tab-content {
+  padding: 20px;
+}

@@ -39,7 +39,7 @@ const AdminNavbar = ({
   };
 
   const handleManageUsers = () => {
-    window.location.href = '/users';
+  setCurrentView('user');
   };
 
   const handleManageLevels = () => {
