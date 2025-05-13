@@ -202,17 +202,41 @@ exports.getStudentsByClasse = async (req, res) => {
     const { classeId } = req.params;
     const students = await Utilisateur.findAll({
       include: [
-        { model: Role, where: { id: 2 } },
+        { model: Role, where: { id: 2 }, attributes: ['nom_role'] },
         {
           model: Classe,
           where: { id: classeId },
-          as: 'AssociatedClasses', // Updated alias
-          through: { attributes: [] }
+          as: 'AssociatedClasses',
+          through: { attributes: [] },
+          attributes: ['id', 'nom'],
         },
+        { model: Niveau, attributes: ['nom'], as: 'Niveau', required: false }, // Add Niveau include
+      ],
+      attributes: [
+        'id', 'prenom', 'nom', 'email', 'status', 'photo', 
+        'id_role', 'niveau_id'
       ],
     });
-    res.json(students);
+
+    // Format the response to match the frontend expectations
+    const formattedStudents = students.map(student => ({
+      id: student.id,
+      prenom: student.prenom,
+      nom: student.nom,
+      email: student.email,
+      status: student.status,
+      photo: student.photo,
+      id_role: student.id_role,
+      role: student.Role?.nom_role || null,
+      niveau_id: student.niveau_id,
+      niveau_nom: student.Niveau?.nom || null, // Include niveau_nom
+      classe_ids: student.AssociatedClasses?.map(classe => classe.id) || [],
+      classe_noms: student.AssociatedClasses?.map(classe => classe.nom) || []
+    }));
+
+    res.json(formattedStudents);
   } catch (err) {
+    console.error('Error fetching students by classe:', err);
     res.status(500).json({ error: err.message });
   }
 };

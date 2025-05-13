@@ -13,13 +13,10 @@ import { Card, Col, Container, Row } from 'react-bootstrap';
 import { Book, Calendar, People } from 'react-bootstrap-icons';
 import { Bar } from 'react-chartjs-2';
 import './admin.css';
-import Background3D from './Background3D';
 import Courses from './Courses';
 import Navbar from './AdminNavbar';
 import Schedule from './Schedule';
 import Sidebar from './Sidebar';
-import Students from './Students';
-import Teachers from './Teachers';
 import GestionMatiere from './GestionMatiere';
 import GestionNiveau from './GestionNiveau';
 import GestionClasse from './GestionClasse';
@@ -36,80 +33,90 @@ const teacherData = [
 
 const AdminDashboard = () => {
   const [currentView, setCurrentView] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('teachers');
   const [notifications, setNotifications] = useState([]);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [userPhoto, setUserPhoto] = useState(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
     // Fetch notifications
     axios
-      .get('http://localhost:5000/api/notifications')
+      .get('http://localhost:5000/api/notifications', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { userId: 1 },
+      })
       .then((response) => {
         setNotifications(response.data);
       })
-      .catch((error) => console.error('Erreur notifications :', error));
+      .catch((error) => {
+        console.error('Erreur notifications :', error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
+      });
 
     // Fetch user profile
     axios
       .get('http://localhost:5000/api/users/profile', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
         setUserPhoto(response.data.photo);
       })
-      .catch((error) => console.error('Erreur profil :', error));
+      .catch((error) => {
+        console.error('Erreur profil :', error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
+      });
   }, []);
 
   const handleApprove = async (userId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
     try {
-      await axios.post('http://localhost:5000/api/auth/approve', { userId });
+      await axios.post(
+        'http://localhost:5000/api/auth/approve',
+        { userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setNotifications([]);
       alert('Utilisateur approuvé et email envoyé.');
     } catch (error) {
       console.error('Erreur approbation :', error);
-      alert("Erreur lors de l'approbation.");
+      alert('Erreur lors de l\'approbation.');
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
   };
 
   const chartOptions = {
     indexAxis: 'y',
-    elements: {
-      bar: {
-        borderWidth: 2,
-      },
-    },
+    elements: { bar: { borderWidth: 2 } },
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
-      title: {
-        display: false,
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => `${context.raw} students`,
-        },
-      },
+      legend: { display: false },
+      title: { display: false },
+      tooltip: { callbacks: { label: (context) => `${context.raw} students` } },
     },
     scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-        title: {
-          display: true,
-          text: 'Number of Students',
-        },
-      },
-      y: {
-        grid: {
-          display: false,
-        },
-      },
+      x: { grid: { display: false }, title: { display: true, text: 'Number of Students' }, ticks: { maxRotation: 0 } },
+      y: { grid: { display: false }, ticks: { font: { size: 12 } } },
     },
   };
 
@@ -127,14 +134,12 @@ const AdminDashboard = () => {
   };
 
   const views = {
-    students: <Students />,
     courses: <Courses />,
     schedule: <Schedule />,
-    teachers: <Teachers />,
-    matiere: <GestionMatiere />, 
+    matiere: <GestionMatiere />,
     niveau: <GestionNiveau />,
-     classe: <GestionClasse />,
-       user: <GestionUtilisateur />,
+    classe: <GestionClasse />,
+    user: <GestionUtilisateur activeTab={activeTab} setActiveTab={setActiveTab} />,
     dashboard: (
       <>
         <Row>
@@ -162,7 +167,7 @@ const AdminDashboard = () => {
               </div>
             </Card.Header>
             <Card.Body>
-              <div className="chart-container">
+              <div className="chart-container" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
                 <Bar options={chartOptions} data={chartData} />
               </div>
             </Card.Body>
@@ -180,10 +185,13 @@ const AdminDashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <Background3D />
       <Container fluid className="min-vh-100 d-flex p-0">
-        <Sidebar setCurrentView={setCurrentView} currentView={currentView} />
-        <div className="main-content flex-grow-1 p-4">
+        <Sidebar
+          setCurrentView={setCurrentView}
+          currentView={currentView}
+          setActiveTab={setActiveTab}
+        />
+        <div className="main-content flex-grow-1 p-4" style={{ overflowX: 'hidden' }}>
           <Navbar
             notifications={notifications}
             showNotificationsModal={showNotificationsModal}
@@ -191,6 +199,7 @@ const AdminDashboard = () => {
             handleApprove={handleApprove}
             userPhoto={userPhoto}
             setCurrentView={setCurrentView}
+            setActiveTab={setActiveTab}
           />
           {views[currentView] || <div>View not found</div>}
         </div>

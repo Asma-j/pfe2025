@@ -9,7 +9,8 @@ import {
 } from 'react-bootstrap-icons';
 import './admin.css';
 
-const Sidebar = ({ setCurrentView, currentView }) => {
+const Sidebar = ({ setCurrentView, currentView, setActiveTab }) => {
+  console.log('setActiveTab in Sidebar:', setActiveTab); // Debug log
   return (
     <Nav className="flex-column sidebar">
       <div className="d-flex align-items-center p-3">
@@ -21,16 +22,21 @@ const Sidebar = ({ setCurrentView, currentView }) => {
       </div>
       {[
         { icon: Speedometer, label: 'Tableau de bord', view: 'dashboard' },
-        { icon: People, label: 'Étudiants', view: 'students' },
-        { icon: People, label: 'Enseignant', view: 'teachers' },
+        { icon: People, label: 'Étudiants', view: 'user', tab: 'students' },
+        { icon: People, label: 'Enseignant', view: 'user', tab: 'teachers' },
         { icon: Book, label: 'Cours', view: 'courses' },
         { icon: Calendar, label: 'Emploi du temps', view: 'schedule' },
         { icon: Gear, label: 'Paramètres', view: 'settings' },
-      ].map(({ icon: Icon, label, view }) => (
+      ].map(({ icon: Icon, label, view, tab }) => (
         <Button
           key={label}
           variant="link"
-          onClick={() => setCurrentView(view)}
+          onClick={() => {
+            setCurrentView(view);
+            if (tab) {
+              setActiveTab(tab); // Call setActiveTab if tab exists
+            }
+          }}
           className={`d-flex align-items-center mb-1 text-start sidebar-btn ${
             currentView === view ? 'active' : ''
           }`}
@@ -39,7 +45,6 @@ const Sidebar = ({ setCurrentView, currentView }) => {
           {label}
         </Button>
       ))}
- 
     </Nav>
   );
 };

@@ -19,70 +19,71 @@ const transporter = nodemailer.createTransport({
     },
   });
 
-  exports.register = async (req, res) => {
-    const { prenom, nom, email, mot_de_passe, id_role, niveau_id, classes, matieres } = req.body;
+exports.register = async (req, res) => {
+  const { prenom, nom, email, mot_de_passe, id_role, niveau_id, classes, matieres } = req.body;
 
-    if (!prenom || !nom || !email || !mot_de_passe || !id_role || !niveau_id) {
-        return res.status(400).json({ error: 'Tous les champs obligatoires sont requis' });
-    }
+  if (!prenom || !nom || !email || !mot_de_passe || !id_role || !niveau_id) {
+      return res.status(400).json({ error: 'Tous les champs obligatoires sont requis' });
+  }
 
-    try {
-        const utilisateurExiste = await Utilisateur.findOne({ where: { email } });
-        if (utilisateurExiste) {
-            return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
-        }
+  try {
+      const utilisateurExiste = await Utilisateur.findOne({ where: { email } });
+      if (utilisateurExiste) {
+          return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+      }
 
-        const role = await Role.findByPk(id_role);
-        if (!role) return res.status(400).json({ error: 'Rôle invalide' });
+      const role = await Role.findByPk(id_role);
+      if (!role) return res.status(400).json({ error: 'Rôle invalide' });
 
-        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
+      const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
-        const isAdmin = role.nom_role.toLowerCase() === 'admin';
-        const isEnseignant = role.nom_role.toLowerCase() === 'enseignant';
+      const isAdmin = role.nom_role.toLowerCase() === 'admin';
+      const isEnseignant = role.nom_role.toLowerCase() === 'enseignant';
 
-        const user = await Utilisateur.create({
-            prenom,
-            nom,
-            email,
-            mot_de_passe: hashedPassword,
-            id_role,
-            niveau_id, // Store niveau_id for both enseignant and etudiant
-            status: isAdmin ? 'approved' : 'pending',
-        });
+      const user = await Utilisateur.create({
+          prenom,
+          nom,
+          email,
+          mot_de_passe: hashedPassword,
+          id_role,
+          niveau_id,
+          status: isAdmin ? 'approved' : 'pending',
+      });
 
-        // For enseignant, associate classes and matieres
-        if (isEnseignant && Array.isArray(classes) && classes.length > 0) {
-            const utilisateurClasseData = classes.map(classeId => ({
-                utilisateur_id: user.id,
-                classe_id: classeId,
-            }));
-            await UtilisateurClasse.bulkCreate(utilisateurClasseData);
-        }
+      // For enseignant, associate classes and matieres
+      if (isEnseignant && Array.isArray(classes) && classes.length > 0) {
+          const utilisateurClasseData = classes.map(classeId => ({
+              utilisateur_id: user.id,
+              classe_id: classeId,
+          }));
+          await UtilisateurClasse.bulkCreate(utilisateurClasseData);
+      }
 
-        if (isEnseignant && Array.isArray(matieres) && matieres.length > 0) {
-            const utilisateurMatiereData = matieres.map(matiereId => ({
-                utilisateur_id: user.id,
-                matiere_id: matiereId,
-            }));
-            await UtilisateurMatiere.bulkCreate(utilisateurMatiereData);
-        }
+      if (isEnseignant && Array.isArray(matieres) && matieres.length > 0) {
+          const utilisateurMatiereData = matieres.map(matiereId => ({
+              utilisateur_id: user.id,
+              matiere_id: matiereId,
+          }));
+          await UtilisateurMatiere.bulkCreate(utilisateurMatiereData);
+      }
 
-        if (!isAdmin) {
-            await Notification.create({
-                message: `Nouvelle inscription en attente: ${prenom} ${nom} (${email})`,
-                userId: user.id,
-            });
-        }
+      if (!isAdmin) {
+          const notification = await Notification.create({
+              message: `Nouvelle inscription en attente: ${prenom} ${nom} (${email})`,
+              userId: user.id, // Notification tied to the new user
+          });
+          console.log('Notification créée :', notification.toJSON());
+      }
 
-        res.json({ 
-            message: isAdmin 
-                ? 'Compte administrateur créé avec succès.' 
-                : 'Inscription en attente d’approbation par l’admin.' 
-        });
-    } catch (err) {
-        console.error('Erreur lors de l’inscription :', err);
-        res.status(500).json({ error: err.message });
-    }
+      res.json({
+          message: isAdmin
+              ? 'Compte administrateur créé avec succès.'
+              : 'Inscription en attente d’approbation par l’admin.',
+      });
+  } catch (err) {
+      console.error('Erreur lors de l’inscription :', err);
+      res.status(500).json({ error: err.message });
+  }
 };
   
   exports.approveRegistration = async (req, res) => {

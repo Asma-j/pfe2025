@@ -8,11 +8,12 @@ exports.getNotifications = async (req, res) => {
       return res.status(400).json({ message: 'userId est requis' });
     }
 
+    // Fetch all pending user registrations' notifications for an admin
     const notifications = await Notification.findAll({
-      where: { userId, read: false },
       include: [
         {
           model: Utilisateur,
+          where: { status: 'pending' }, // Only pending users
           attributes: ['id', 'prenom', 'nom', 'email'],
         },
       ],

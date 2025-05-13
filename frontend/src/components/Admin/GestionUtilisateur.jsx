@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
-import { Button, Table, Modal, Form, OverlayTrigger, Tooltip, Alert } from 'react-bootstrap';
+import { Button, Table, Modal, Form, OverlayTrigger, Tooltip, Alert, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import profil from '../images/businessman-310819_1280.png';
 import './user.css';
 
-function GestionUtilisateur() {
-  const [activeTab, setActiveTab] = useState('teachers');
+function GestionUtilisateur({ activeTab, setActiveTab }) {
   const [teachers, setTeachers] = useState([]);
   const [students, setStudents] = useState([]);
   const [allStudents, setAllStudents] = useState([]);
@@ -16,8 +15,12 @@ function GestionUtilisateur() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showAddStudentToClassModal, setShowAddStudentToClassModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [status, setStatus] = useState('');
+  const [selectedClasse, setSelectedClasse] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [filteredStudents, setFilteredStudents] = useState([]);
   const [newUser, setNewUser] = useState({
     prenom: '',
     nom: '',
@@ -34,17 +37,20 @@ function GestionUtilisateur() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [teachersResponse, studentsResponse, levelsResponse, subjectsResponse] = await Promise.all([
+        const [teachersResponse, studentsResponse, levelsResponse, subjectsResponse, classesResponse] = await Promise.all([
           axios.get('http://localhost:5000/api/users/teachers'),
           axios.get('http://localhost:5000/api/users/students'),
           axios.get('http://localhost:5000/api/niveaux'),
-          axios.get('http://localhost:5000/api/matieres')
+          axios.get('http://localhost:5000/api/matieres'),
+          axios.get('http://localhost:5000/api/classes')
         ]);
         setTeachers(teachersResponse.data);
         setStudents(studentsResponse.data);
         setAllStudents(studentsResponse.data);
         setLevels(levelsResponse.data);
         setSubjects(subjectsResponse.data);
+        setClasses(classesResponse.data);
+        setFilteredStudents(studentsResponse.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -55,10 +61,31 @@ function GestionUtilisateur() {
     fetchData();
   }, [activeTab]);
 
+  useEffect(() => {
+    if (activeTab === 'students' && selectedClasse) {
+      setLoading(true);
+      axios
+        .get(`http://localhost:5000/api/users/students/classe/${selectedClasse}`)
+        .then((response) => {
+          setFilteredStudents(response.data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('Error fetching students by classe:', error);
+          setError('Erreur lors du chargement des étudiants.');
+          setLoading(false);
+        });
+    } else {
+      setFilteredStudents(students);
+      setLoading(false);
+    }
+  }, [selectedClasse, students, activeTab]);
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSelectedUser(null);
     setError(null);
+    setSelectedClasse('');
   };
 
   const validatePassword = (password) => /^.{6,}$/.test(password);
@@ -72,7 +99,7 @@ function GestionUtilisateur() {
       const userData = { 
         ...newUser, 
         id_role: activeTab === 'teachers' ? 1003 : 2,
-        niveau_id: activeTab === 'teachers' ? newUser.niveau_id : undefined,
+        niveau_id: activeTab === 'teachers' ? newUser.niveau_id : newUser.niveau_id || undefined,
         classe_ids: activeTab === 'teachers' ? newUser.classe_ids : undefined,
         matiere_id: activeTab === 'teachers' ? newUser.matiere_id : undefined
       };
@@ -83,6 +110,7 @@ function GestionUtilisateur() {
       } else {
         setStudents([...students, newUserData]);
         setAllStudents([...allStudents, newUserData]);
+        setFilteredStudents([...students, newUserData]);
       }
       setShowAddModal(false);
       setNewUser({
@@ -105,15 +133,16 @@ function GestionUtilisateur() {
   const handleUpdate = async (id) => {
     try {
       await axios.put(`http://localhost:5000/api/users/${id}`, { status });
-      const updatedUsers = activeTab === 'teachers' ? teachers : students;
+      const updatedUsers = activeTab === 'teachers' ? teachers : filteredStudents;
       const updatedList = updatedUsers.map((user) =>
         user.id === id ? { ...user, status } : user
       );
       if (activeTab === 'teachers') {
         setTeachers(updatedList);
       } else {
-        setStudents(updatedList);
-        setAllStudents(updatedList);
+        setFilteredStudents(updatedList);
+        setStudents(students.map((user) => (user.id === id ? { ...user, status } : user)));
+        setAllStudents(allStudents.map((user) => (user.id === id ? { ...user, status } : user)));
       }
       setShowUpdateModal(false);
       setError(null);
@@ -130,6 +159,7 @@ function GestionUtilisateur() {
         if (activeTab === 'teachers') {
           setTeachers((prev) => prev.filter((teacher) => teacher.id !== id));
         } else {
+          setFilteredStudents((prev) => prev.filter((student) => student.id !== id));
           setStudents((prev) => prev.filter((student) => student.id !== id));
           setAllStudents((prev) => prev.filter((student) => student.id !== id));
         }
@@ -144,7 +174,7 @@ function GestionUtilisateur() {
   const handleLevelChange = async (e) => {
     const niveau_id = e.target.value;
     setNewUser({ ...newUser, niveau_id, classe_ids: [] });
-    if (niveau_id) {
+    if (niveau_id && activeTab === 'teachers') {
       const classesResponse = await axios.get(`http://localhost:5000/api/classes/niveau/${niveau_id}`);
       setClasses(classesResponse.data);
     } else {
@@ -152,97 +182,137 @@ function GestionUtilisateur() {
     }
   };
 
-  const handleClassChange = (e) => {
-    const { options } = e.target;
-    const selectedClasses = Array.from(options)
-      .filter(option => option.selected)
-      .map(option => option.value);
-    setNewUser({ ...newUser, classe_ids: selectedClasses });
+  const handleAddStudentToClasse = async () => {
+    try {
+      await axios.post('http://localhost:5000/api/users/students/classe', {
+        utilisateur_id: selectedStudentId,
+        classe_id: selectedClasse,
+      });
+      const response = await axios.get(`http://localhost:5000/api/users/students/classe/${selectedClasse}`);
+      setFilteredStudents(response.data);
+      const updatedStudents = students.map((student) => {
+        if (student.id === parseInt(selectedStudentId)) {
+          return {
+            ...student,
+            classe_ids: [...(student.classe_ids || []), parseInt(selectedClasse)],
+            classe_noms: [...(student.classe_noms || []), classes.find(c => c.id === parseInt(selectedClasse))?.nom]
+          };
+        }
+        return student;
+      });
+      setStudents(updatedStudents);
+      setAllStudents(updatedStudents);
+      setShowAddStudentToClassModal(false);
+      setSelectedStudentId('');
+      setError(null);
+    } catch (error) {
+      console.error('Error adding student to classe:', error);
+      setError('Erreur lors de l’ajout de l’étudiant à la classe.');
+    }
   };
 
-const renderTable = (users, title) => {
-  console.log('Users data:', users); // Debug log
-  return (
-    <div className="mb-5">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="section-title">{title}</h4>
-        <Button
-          className="custom-btn"
-          variant="primary"
-          onClick={() => setShowAddModal(true)}
-        >
-          <FaPlus className="me-2" /> Ajouter un nouvel {activeTab === 'teachers' ? 'enseignant' : 'étudiant'}
-        </Button>
-      </div>
-      <Table className="custom-table">
-        <thead>
-          <tr>
-            <th>{activeTab === 'teachers' ? 'ENSEIGNANT' : 'ÉTUDIANT'}</th>
-            <th>Email</th>
-            {activeTab === 'teachers' && <th>Niveau</th>}
-            {activeTab === 'teachers' && <th>Classes</th>}
-            {activeTab === 'teachers' && <th>Matière</th>}
-            <th>STATUT</th>
-            <th className="text-end">ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.length > 0 ? (
-            users.map((user) => (
-              <tr key={user.id}>
-                <td>
-                  <div className="d-flex align-items-center">
-                    <img
-                      src={user.photo || profil}
-                      alt={user.prenom}
-                      className="student-avatar rounded-circle me-3"
-                    />
-                    <span className="fw-semibold text-dark">{user.prenom} {user.nom}</span>
-                  </div>
-                </td>
-                <td className="text-muted">{user.email}</td>
-                {activeTab === 'teachers' && <td className="text-muted">{user.niveau_nom || '-'}</td>}
-                {activeTab === 'teachers' && <td className="text-muted">{(user.classe_noms || []).join(', ') || '-'}</td>}
-                {activeTab === 'teachers' && <td className="text-muted">{user.matiere_nom || '-'}</td>}
-                <td className="text-muted">{user.status || 'pending'}</td>
-                <td className="text-end">
-                  <OverlayTrigger placement="top" overlay={<Tooltip>Modifier le statut</Tooltip>}>
-                    <Button
-                      variant="link"
-                      className="text-muted action-btn"
-                      onClick={() => {
-                        setSelectedUser(user);
-                        setStatus(user.status || 'pending');
-                        setShowUpdateModal(true);
-                      }}
-                    >
-                      <FaEdit />
-                    </Button>
-                  </OverlayTrigger>
-                  <OverlayTrigger placement="top" overlay={<Tooltip>Supprimer</Tooltip>}>
-                    <Button
-                      variant="link"
-                      className="text-muted action-btn"
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </OverlayTrigger>
+  const renderTable = (users, title) => {
+    return (
+      <div className="mb-5">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4 className="section-title">{title}</h4>
+          {activeTab === 'students' ? (
+            <div>
+              <Button
+                className="custom-btn me-2"
+                variant="primary"
+                onClick={() => setShowAddModal(true)}
+              >
+                <FaPlus className="me-2" /> Ajouter un nouvel étudiant
+              </Button>
+              <Button
+                className="custom-btn"
+                variant="primary"
+                onClick={() => setShowAddStudentToClassModal(true)}
+                disabled={!selectedClasse}
+              >
+                <FaPlus className="me-2" /> Ajouter un étudiant à la classe
+              </Button>
+            </div>
+          ) : (
+            <Button
+              className="custom-btn"
+              variant="primary"
+              onClick={() => setShowAddModal(true)}
+            >
+              <FaPlus className="me-2" /> Ajouter un nouvel enseignant
+            </Button>
+          )}
+        </div>
+        <Table className="custom-table">
+          <thead>
+            <tr>
+              <th>{activeTab === 'teachers' ? 'ENSEIGNANT' : 'ÉTUDIANT'}</th>
+              <th>Email</th>
+              <th>Niveau</th>
+              {activeTab === 'teachers' && <th>Classes</th>}
+              {activeTab === 'teachers' && <th>Matière</th>}
+              <th>STATUT</th>
+              <th className="text-end">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length > 0 ? (
+              users.map((user) => (
+                <tr key={user.id}>
+                  <td>
+                    <div className="d-flex align-items-center">
+                      <img
+                        src={user.photo || profil}
+                        alt={user.prenom}
+                        className="student-avatar rounded-circle me-3"
+                      />
+                      <span className="fw-semibold text-dark">{user.prenom} {user.nom}</span>
+                    </div>
+                  </td>
+                  <td className="text-muted">{user.email}</td>
+                  <td className="text-muted">{user.niveau_nom || '-'}</td>
+                  {activeTab === 'teachers' && <td className="text-muted">{(user.classe_noms || []).join(', ') || '-'}</td>}
+                  {activeTab === 'teachers' && <td className="text-muted">{user.matiere_nom || '-'}</td>}
+                  <td className="text-muted">{user.status || 'pending'}</td>
+                  <td className="text-end">
+                    <OverlayTrigger placement="top" overlay={<Tooltip>Modifier le statut</Tooltip>}>
+                      <Button
+                        variant="link"
+                        className="text-muted action-btn"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setStatus(user.status || 'pending');
+                          setShowUpdateModal(true);
+                        }}
+                      >
+                        <FaEdit />
+                      </Button>
+                    </OverlayTrigger>
+                    <OverlayTrigger placement="top" overlay={<Tooltip>Supprimer</Tooltip>}>
+                      <Button
+                        variant="link"
+                        className="text-muted action-btn"
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        <FaTrash />
+                      </Button>
+                    </OverlayTrigger>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={activeTab === 'teachers' ? 7 : 5} className="text-center text-muted">
+                  Aucun {activeTab === 'teachers' ? 'enseignant' : 'étudiant'}
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={activeTab === 'teachers' ? 7 : 5} className="text-center text-muted">
-                Aucun {activeTab === 'teachers' ? 'enseignant' : 'étudiant'}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
-    </div>
-  );
-};
+            )}
+          </tbody>
+        </Table>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -271,114 +341,166 @@ const renderTable = (users, title) => {
       </div>
 
       <div className="tab-content">
+        {activeTab === 'students' && (
+          <Form.Group controlId="classeSelect" className="mb-4">
+            <Form.Label className="form-label">Sélectionner une classe</Form.Label>
+            <Form.Control
+              as="select"
+              value={selectedClasse}
+              onChange={(e) => setSelectedClasse(e.target.value)}
+              className="form-control"
+            >
+              <option value="">Toutes les classes</option>
+              {classes.map((classe) => (
+                <option key={classe.id} value={classe.id}>
+                  {classe.nom}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+        )}
         {activeTab === 'teachers' && renderTable(teachers, 'Enseignants')}
-        {activeTab === 'students' && renderTable(students, 'Étudiants')}
+        {activeTab === 'students' && renderTable(filteredStudents, 'Étudiants')}
 
-        <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Ajouter un nouvel {activeTab === 'teachers' ? 'enseignant' : 'étudiant'}</Modal.Title>
+        <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered size="lg">
+          <Modal.Header closeButton className="bg-primary text-white">
+            <Modal.Title className="fw-bold">Ajouter un nouvel {activeTab === 'teachers' ? 'enseignant' : 'étudiant'}</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
-            {error && <Alert variant="danger">{error}</Alert>}
+          <Modal.Body className="p-4">
+            {error && <Alert variant="danger" className="mb-4">{error}</Alert>}
             <Form>
-              <Form.Group controlId="formUserPrenom" className="mb-3">
-                <Form.Label className="form-label">Prénom</Form.Label>
+              <Row className="g-3">
+                <Col md={6}>
+                  <Form.Group controlId="formUserPrenom" className="mb-3">
+                    <Form.Label className="form-label">Prénom</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={newUser.prenom}
+                      onChange={(e) => setNewUser({ ...newUser, prenom: e.target.value })}
+                      placeholder="Entrez le prénom"
+                      className="form-control"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group controlId="formUserNom" className="mb-3">
+                    <Form.Label className="form-label">Nom</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={newUser.nom}
+                      onChange={(e) => setNewUser({ ...newUser, nom: e.target.value })}
+                      placeholder="Entrez le nom"
+                      className="form-control"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="g-3">
+                <Col md={6}>
+                  <Form.Group controlId="formUserEmail" className="mb-3">
+                    <Form.Label className="form-label">Email</Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                      placeholder="Entrez l'email"
+                      className="form-control"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group controlId="formUserPassword" className="mb-3">
+                    <Form.Label className="form-label">Mot de passe</Form.Label>
+                    <Form.Control
+                      type="password"
+                      value={newUser.mot_de_passe}
+                      onChange={(e) => setNewUser({ ...newUser, mot_de_passe: e.target.value })}
+                      placeholder="Entrez le mot de passe"
+                      className="form-control"
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Form.Group controlId="formUserNiveau" className="mb-3">
+                <Form.Label className="form-label">Niveau</Form.Label>
                 <Form.Control
-                  type="text"
-                  value={newUser.prenom}
-                  onChange={(e) => setNewUser({ ...newUser, prenom: e.target.value })}
-                  placeholder="Entrez le prénom"
-                  className="form-control w-50"
-                />
+                  as="select"
+                  value={newUser.niveau_id}
+                  onChange={handleLevelChange}
+                  className="form-control"
+                  required
+                >
+                  <option value="">Sélectionner un niveau</option>
+                  {levels.map(level => (
+                    <option key={level.id} value={level.id}>{level.nom}</option>
+                  ))}
+                </Form.Control>
               </Form.Group>
-              <Form.Group controlId="formUserNom" className="mb-3">
-                <Form.Label className="form-label">Nom</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={newUser.nom}
-                  onChange={(e) => setNewUser({ ...newUser, nom: e.target.value })}
-                  placeholder="Entrez le nom"
-                  className="form-control w-50"
-                />
-              </Form.Group>
-              <Form.Group controlId="formUserEmail" className="mb-3">
-                <Form.Label className="form-label">Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                  placeholder="Entrez l'email"
-                  className="form-control w-50"
-                />
-              </Form.Group>
-              <Form.Group controlId="formUserPassword" className="mb-3">
-                <Form.Label className="form-label">Mot de passe</Form.Label>
-                <Form.Control
-                  type="password"
-                  value={newUser.mot_de_passe}
-                  onChange={(e) => setNewUser({ ...newUser, mot_de_passe: e.target.value })}
-                  placeholder="Entrez le mot de passe"
-                  className="form-control w-50"
-                />
-              </Form.Group>
+              {activeTab === 'teachers' && newUser.niveau_id && classes.length > 0 && (
+                <Form.Group controlId="formUserClasses" className="mb-3">
+                  <Form.Label className="form-label">Classes associées</Form.Label>
+                  <div className="class-selection-container">
+                    {classes.map(classe => (
+                      <Form.Check
+                        key={classe.id}
+                        type="checkbox"
+                        id={`class-${classe.id}`}
+                        label={classe.nom}
+                        value={classe.id}
+                        checked={newUser.classe_ids.includes(classe.id.toString())}
+                        onChange={(e) => {
+                          const updatedClasses = e.target.checked
+                            ? [...newUser.classe_ids, e.target.value]
+                            : newUser.classe_ids.filter(id => id !== e.target.value);
+                          setNewUser({ ...newUser, classe_ids: updatedClasses });
+                        }}
+                        className="mb-2"
+                      />
+                    ))}
+                  </div>
+                  <Form.Text className="text-muted">
+                    Cochez pour sélectionner plusieurs classes.
+                  </Form.Text>
+                </Form.Group>
+              )}
               {activeTab === 'teachers' && (
-                <>
-                  <Form.Group controlId="formUserNiveau" className="mb-3">
-                    <Form.Label className="form-label">Niveau</Form.Label>
-                    <Form.Control
-                      as="select"
-                      value={newUser.niveau_id}
-                      onChange={handleLevelChange}
-                      className="form-control w-50"
-                    >
-                      <option value="">Sélectionner un niveau</option>
-                      {levels.map(level => (
-                        <option key={level.id} value={level.id}>{level.nom}</option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                  <Form.Group controlId="formUserClasses" className="mb-3">
-                    <Form.Label className="form-label">Classes</Form.Label>
-                    <Form.Control
-                      as="select"
-                      multiple
-                      value={newUser.classe_ids}
-                      onChange={handleClassChange}
-                      className="form-control w-50"
-                      size={5}
-                    >
-                      {classes.map(classe => (
-                        <option key={classe.id} value={classe.id}>{classe.nom}</option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                  <Form.Group controlId="formUserMatiere" className="mb-3">
-                    <Form.Label className="form-label">Matière</Form.Label>
-                    <Form.Control
-                      as="select"
-                      value={newUser.matiere_id}
-                      onChange={(e) => setNewUser({ ...newUser, matiere_id: e.target.value })}
-                      className="form-control w-50"
-                    >
-                      <option value="">Sélectionner une matière</option>
-                      {subjects.map(subject => (
-                        <option key={subject.id} value={subject.id}>{subject.nom}</option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                </>
+                <Form.Group controlId="formUserMatiere" className="mb-3">
+                  <Form.Label className="form-label">Matière</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={newUser.matiere_id}
+                    onChange={(e) => setNewUser({ ...newUser, matiere_id: e.target.value })}
+                    className="form-control"
+                    required
+                  >
+                    <option value="">Sélectionner une matière</option>
+                    {subjects.map(subject => (
+                      <option key={subject.id} value={subject.id}>{subject.nom}</option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
               )}
             </Form>
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer className="bg-light py-3">
             <Button variant="secondary" onClick={() => setShowAddModal(false)}>
-              Fermer
+              Annuler
             </Button>
             <Button
               variant="primary"
               onClick={handleAddUser}
-              disabled={!newUser.prenom || !newUser.nom || !newUser.email || !newUser.mot_de_passe || 
-                (activeTab === 'teachers' && (!newUser.niveau_id || newUser.classe_ids.length === 0 || !newUser.matiere_id))}
+              disabled={
+                !newUser.prenom ||
+                !newUser.nom ||
+                !newUser.email ||
+                !newUser.mot_de_passe ||
+                !newUser.niveau_id ||
+                (activeTab === 'teachers' && (newUser.classe_ids.length === 0 || !newUser.matiere_id))
+              }
               className="custom-btn"
             >
               Ajouter
@@ -417,6 +539,47 @@ const renderTable = (users, title) => {
               className="custom-btn"
             >
               Sauvegarder
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal show={showAddStudentToClassModal} onHide={() => setShowAddStudentToClassModal(false)} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Ajouter un étudiant à la classe</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="studentSelect" className="mb-3">
+                <Form.Label className="form-label w-50">Sélectionner un étudiant</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={selectedStudentId}
+                  onChange={(e) => setSelectedStudentId(e.target.value)}
+                  className="form-control w-50"
+                >
+                  <option value="">Choisir un étudiant</option>
+                  {allStudents
+                    .filter((student) => !filteredStudents.some((s) => s.id === student.id))
+                    .map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.prenom} {student.nom}
+                      </option>
+                    ))}
+                </Form.Control>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowAddStudentToClassModal(false)}>
+              Fermer
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleAddStudentToClasse}
+              disabled={!selectedStudentId}
+              className="custom-btn"
+            >
+              Ajouter
             </Button>
           </Modal.Footer>
         </Modal>

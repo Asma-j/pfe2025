@@ -11,6 +11,7 @@ const AdminNavbar = ({
   handleApprove,
   userPhoto,
   setCurrentView,
+  setActiveTab, // Add setActiveTab prop
 }) => {
   const [userProfile, setUserProfile] = useState(null);
 
@@ -38,16 +39,17 @@ const AdminNavbar = ({
     window.location.href = '/login';
   };
 
-  const handleManageUsers = () => {
-  setCurrentView('user');
+  const handleManageUsers = (tab = 'teachers') => {
+    setCurrentView('user');
+    setActiveTab(tab); // Set the active tab (default to 'teachers')
   };
 
   const handleManageLevels = () => {
- setCurrentView('niveau');
+    setCurrentView('niveau');
   };
 
   const handleManageClasses = () => {
-     setCurrentView('classe');
+    setCurrentView('classe');
   };
 
   const handleManageSubjects = () => {
@@ -91,8 +93,11 @@ const AdminNavbar = ({
               <Gear size={24} />
             </Dropdown.Toggle>
             <Dropdown.Menu align="end" className="dropdown-menu-custom">
-              <Dropdown.Item onClick={handleManageUsers}>
-                Gestion des utilisateurs
+              <Dropdown.Item onClick={() => handleManageUsers('teachers')}>
+                Gestion des utilisateurs (Enseignants)
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => handleManageUsers('students')}>
+                Gestion des utilisateurs (Étudiants)
               </Dropdown.Item>
               <Dropdown.Item onClick={handleManageLevels}>
                 Gestion niveau
@@ -122,7 +127,7 @@ const AdminNavbar = ({
                 <small>{userProfile ? userProfile.role : 'admin'}</small>
               </Dropdown.ItemText>
               <Dropdown.Divider />
-              <Dropdown.Item onClick={handleManageUsers}>
+              <Dropdown.Item onClick={() => handleManageUsers('teachers')}>
                 <Gear className="me-2" size={16} /> Gestion des utilisateurs
               </Dropdown.Item>
               <Dropdown.Item onClick={handleLogout}>Déconnexion</Dropdown.Item>

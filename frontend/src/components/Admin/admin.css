@@ -654,4 +654,45 @@ h2 {
 
 .tab-content {
   padding: 20px;
+}/* Modal Enhancements */
+.modal-content {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-footer {
+  border-top: 1px solid #e9ecef;
+}
+
+/* Class Selection Container */
+.class-selection-container {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.class-selection-container .form-check {
+  margin-left: 0;
+}
+
+.class-selection-container .form-check-label {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+  }
+  .col-md-6 {
+    width: 100%;
+  }
 }

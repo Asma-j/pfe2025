@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Nav, Card, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Nav, Card, Dropdown, Navbar as BSNavbar } from 'react-bootstrap';
 import TopStudentsChart from './TopStudentsChart';
 import StudentList from './StudentList';
 import TeacherCalendar from './TeacherCalendar';
@@ -57,7 +57,7 @@ function TeacherDashboard() {
         students: <StudentList />,
         courses: <CourseManager />,
         schedule: <TeacherCalendar />,
-        evaluation: <Evaluation/>,
+        evaluation: <Evaluation />,
         dashboard: (
             <>
                 <Row>
@@ -89,56 +89,55 @@ function TeacherDashboard() {
                 <Background3D />
                 <Container fluid className="min-vh-100 d-flex p-0">
                     {/* Sidebar */}
-                    <Nav className="flex-column bg-light shadow-sm p-3 sidebar">
-                        <div className="d-flex align-items-center pb-3">
-                            <MortarboardFill
-                                style={{ width: "32px", height: "32px" }}
-                                className="text-white me-2"
-                            />
-                            <span className="fw-bold fs-4 text-white">EduEnseignant</span>
+                    <Nav className="flex-column bg-dark text-white shadow-sm p-3 sidebar" style={{ width: '250px' }}>
+                        <div className="d-flex align-items-center pb-3 mb-4 mt-4 border-bottom border-secondary">
+                            <MortarboardFill style={{ width: "32px", height: "32px" }} className="me-2" />
+                            <span className="fw-bold fs-4 ">EduEnseignant</span>
                         </div>
                         {[
                             { icon: Speedometer, label: "Tableau de bord", view: "dashboard" },
                             { icon: People, label: "Étudiants", view: "students" },
                             { icon: Book, label: "Cours", view: "courses" },
-                            { icon: Book, label: "evaluation", view: "evaluation" },
+                            { icon: Book, label: "Évaluation", view: "evaluation" },
                             { icon: Calendar, label: "Emploi du temps", view: "schedule" },
                             { icon: Gear, label: "Paramètres", view: "settings" },
                         ].map(({ icon: Icon, label, view }) => (
                             <Button
                                 key={label}
-                                variant="light"
+                                variant="link"
                                 onClick={() => setCurrentView(view)}
-                                className="d-flex align-items-center mb-2 text-start"
+                                className={`d-flex align-items-center mb-2 text-white text-decoration-none sidebar-link ${currentView === view ? 'active' : ''}`}
                             >
-                                <Icon className="me-2" />
+                                <Icon className="me-2" size={20} />
                                 {label}
                             </Button>
                         ))}
                     </Nav>
 
                     {/* Main Content */}
-                    <div className="main-content flex-grow-1 p-4">
-                        <div className="d-flex justify-content-between align-items-center mb-4">
-                            <Form className="d-flex">
+                    <div className="main-content flex-grow-1">
+                        {/* Navbar */}
+                        <BSNavbar bg="white" expand="lg" className="px-4 py-3 shadow-sm">
+                            <Form className="d-flex me-auto">
                                 <Form.Control
                                     type="text"
                                     placeholder="Rechercher..."
-                                    className="me-2"
+                                    className="me-2 rounded-pill"
+                                    style={{ maxWidth: '300px' }}
                                 />
-                                <Button variant="outline-secondary">
+                                <Button variant="outline-primary" className="rounded-pill">
                                     <Search />
                                 </Button>
                             </Form>
                             <div className="d-flex align-items-center">
-                                <Bell className="me-4" />
+                                <Bell className="me-4 text-muted" size={20} style={{ cursor: 'pointer' }} />
                                 <Dropdown>
                                     <Dropdown.Toggle variant="link" id="dropdown-profile" className="p-0">
                                         <img
                                             src={profile?.photo || defaultProfil}
                                             alt="Profil"
                                             className="profile-img rounded-circle"
-                                            style={{ width: '40px', height: '40px' }}
+                                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                                         />
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu align="end">
@@ -168,10 +167,13 @@ function TeacherDashboard() {
                                     </Dropdown.Menu>
                                 </Dropdown>
                             </div>
-                        </div>
+                        </BSNavbar>
 
-                        {error && <div className="alert alert-danger">{error}</div>}
-                        {views[currentView] || <div>View not found</div>}
+                        {/* Main Content Area */}
+                        <div className="p-4">
+                            {error && <div className="alert alert-danger">{error}</div>}
+                            {views[currentView] || <div>View not found</div>}
+                        </div>
                     </div>
                 </Container>
             </div>

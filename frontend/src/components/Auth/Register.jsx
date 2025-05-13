@@ -16,7 +16,7 @@ function Register({ show = true, onClose }) {
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [matieres, setMatieres] = useState([]);
   const [selectedMatieres, setSelectedMatieres] = useState([]);
-  const [errors, setErrors] = useState({}); // For validation errors
+  const [errors, setErrors] = useState({});
 
   // Fetch levels (niveaux) on component mount
   useEffect(() => {
@@ -108,23 +108,29 @@ function Register({ show = true, onClose }) {
     if (!validateForm()) return;
 
     try {
-      // Map roleType to id_role (assuming backend expects id_role)
+      // Map roleType to id_role with correct case
       const roleIdMap = {
-        enseignant: 2, // Adjust these IDs based on your Role table
-        etudiant: 3,
+        enseignant: 1003, // Adjust these IDs based on your Role table
+        etudiant: 2,
       };
-      const id_role = roleIdMap[roleType];
+      const id_role = roleIdMap[roleType.toLowerCase()]; // Ensure lowercase match
+
+      if (!id_role) {
+        throw new Error("Rôle non valide dans la carte des rôles");
+      }
 
       const payload = {
         prenom,
         nom,
         email,
         mot_de_passe: motDePasse,
-        id_role, // Send numeric role ID
-        niveau_id: selectedNiveau, // For etudiant or enseignant
-        classes: roleType === "enseignant" ? selectedClasses : [], // For enseignant
-        matieres: roleType === "enseignant" ? selectedMatieres : [], // For enseignant
+        id_role,
+        niveau_id: selectedNiveau,
+        classes: roleType === "enseignant" ? selectedClasses : [],
+        matieres: roleType === "enseignant" ? selectedMatieres : [],
       };
+      console.log("Payload envoyé :", payload); // Log the payload for debugging
+
       const response = await axios.post("http://localhost:5000/api/auth/register", payload);
       alert(response.data.message);
       if (onClose) onClose();
