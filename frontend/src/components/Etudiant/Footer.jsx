@@ -6,15 +6,15 @@ import { MortarboardFill } from 'react-bootstrap-icons';
 
 const Footer = () => {
   return (
-    <footer className="footer">
+    <footer className="footer m-3">
       <Container>
         <Row className="justify-content-between">
           <Col md={6}>
          <MortarboardFill
                    style={{ width: '32px', height: '32px' }}
-                   className="text-primary me-2 mb-2"
+                   className="text-white me-2 mb-2"
                  />
-                 <span className="fw-bold fs-4 text-primary mb-4">EduLearn</span>
+                 <span className="fw-bold fs-4 text-white mb-4">EduLearn</span>
             <p className='mt-3'>Virtual Class for Zoom</p>
             <Form>
               <Form.Group controlId="formEmail">

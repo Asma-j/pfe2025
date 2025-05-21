@@ -20,6 +20,9 @@ import {
 import StudentNavbar from "./StudentNavbar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Footer from "./Footer";
+
+
 const CourseDetail = () => {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
@@ -59,7 +62,7 @@ const CourseDetail = () => {
   if (error) return <div>{error}</div>;
   if (!course) return <div>Cours non trouvé</div>;
 
-  return (
+  return (<div>
     <div className="container mt-4">
       <StudentNavbar />
       <Card style={{ "margin-top": 100 }}>
@@ -114,7 +117,7 @@ const CourseDetail = () => {
                   </>
                 )}
               </h4>
-              <p className="text-danger">Il reste 11 heures à ce prix</p>
+            
               <Button
   variant="primary"
   className="w-100 mb-2"
@@ -143,16 +146,7 @@ const CourseDetail = () => {
                   </ListGroup.Item>
                 ))}
               </ListGroup>
-              <h5 className="mt-3">Partager ce cours</h5>
-              <div className="d-flex justify-content-center">
-                {["facebook", "twitter", "linkedin", "instagram"].map(
-                  (network, index) => (
-                    <Button key={index} variant="light" className="me-2">
-                      <FaShareAlt />
-                    </Button>
-                  )
-                )}
-              </div>
+       
             </Card.Body>
           </Card>
         </div>
@@ -226,6 +220,9 @@ const CourseDetail = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+            
+    </div><Footer />
     </div>
   );
 };

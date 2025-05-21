@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
-import "./cours.css";
-import StudentNavbar from "./StudentNavbar";
 import { Link } from "react-router-dom";
+import { Container, Row, Col, Form, Button, Card, Spinner, Alert } from "react-bootstrap";
+import StudentNavbar from "./StudentNavbar";
 import Footer from "./Footer";
 import axios from "axios";
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
-
+import "./cours.css"; // Corrected file name
+import img from "../images/online.jpg"
+import img1 from "../images/never-stop-learning-3653430_1920.jpg"
 const Courses = () => {
   const [courses, setCourses] = useState([]);
-  const [filteredCourses, setFilteredCourses] = useState([]); // New state for filtered courses
+  const [filteredCourses, setFilteredCourses] = useState([]);
   const [matieres, setMatieres] = useState([]);
   const [selectedMatiereId, setSelectedMatiereId] = useState("");
-  const [searchTerm, setSearchTerm] = useState(""); // New state for search term
+  const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +24,7 @@ const Courses = () => {
         const response = await axios.get("http://localhost:5000/api/matieres");
         setMatieres(response.data);
       } catch (err) {
-        setError(err.message);
+        setError("Erreur lors du chargement des matières.");
       } finally {
         setLoading(false);
       }
@@ -31,7 +32,7 @@ const Courses = () => {
     fetchMatieres();
   }, []);
 
-  // Fetch courses and apply search filter
+  // Fetch courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -41,8 +42,9 @@ const Courses = () => {
           : "http://localhost:5000/api/cours";
         const response = await axios.get(url);
         setCourses(response.data);
+        setFilteredCourses(response.data);
       } catch (err) {
-        setError(err.message);
+        setError("Erreur lors du chargement des cours.");
       } finally {
         setLoading(false);
       }
@@ -59,110 +61,172 @@ const Courses = () => {
   }, [courses, searchTerm]);
 
   return (
-    <div>
+    <div className="courses-page">
       <StudentNavbar />
 
-      <main>
-        <section className="pt-5 hero-section">
-          <Container fluid className="px-0">
-            <Row className="align-items-center gy-4">
-              <Col md={12} className="position-relative">
-                <img
-                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80"
-                  alt="Students learning"
-                  className="img-fluid hero-image"
-                />
-                <div className="overlay" />
-                <div className="search-container">
-                  <div className="d-flex justify-content-center align-items-center">
-                    <input
-                      type="text"
-                      className="form-control search-input"
-                      placeholder="Rechercher des cours..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <Button variant="primary" className="search-button">
-                      Recherche
-                    </Button>
-                  </div>
-                </div>
-              </Col>
-            </Row>
-          </Container>
-        </section>
-
-        <section className="blog-categories-section">
-          <h2 className="section-title">Liste des cours</h2>
-
-          <div className="mb-4">
-            <label htmlFor="matiere-select" className="form-label">
-              Filtrer par matière :
-            </label>
-            <select
-              id="matiere-select"
-              className="form-select"
-              value={selectedMatiereId}
-              onChange={(e) => setSelectedMatiereId(e.target.value)}
-              style={{ maxWidth: "300px" }}
-            >
-              <option value="">Toutes les matières</option>
-              {matieres.map((matiere) => (
-                <option key={matiere.id} value={matiere.id}>
-                  {matiere.nom}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {error && (
-            <div className="alert alert-danger text-center" role="alert">
-              {error}
-            </div>
-          )}
-
-          {loading && (
-            <div className="text-center">
-              <p>Chargement des cours...</p>
-            </div>
-          )}
-
-          {!loading && filteredCourses.length === 0 && !error && (
-            <div className="text-center">
-              <p>Aucun cours trouvé pour cette recherche ou matière.</p>
-            </div>
-          )}
-
-<div className="categories-grid">
-            {filteredCourses.map((course, index) => (
-              <Link
-                to={`/course/${course.id}`}
-                key={index}
-                className="category-card-link"
-              >
-                <article className="category-card">
-                  <img
-                    src={
-                      course.image
-                        ? `http://localhost:5000/Uploads/${course.image}`
-                        : "https://cdn.builder.io/api/v1/image/assets/TEMP/1d0971fc31c8fa194a5af0d0b3d6d7b0dd552d92?apiKey=94620a1500a3473894a74b620cac940d"
-                    }
-                    alt={`${course.titre} catégorie`}
-                    style={{
-                      height: "350px",
-                      width: "450px",
-                      objectFit: "cover",
-                    }}
+      {/* Hero Section */}
+    <Container fluid className="hero-section">
+      <div className="hero-image-container">
+        <svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 1600 800"
+          preserveAspectRatio="xMidYMid slice"
+          className="hero-svg"
+        >
+          <defs>
+            <filter id="turbulent-dissolve" x="0%" y="0%" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency=".012" />
+              <feColorMatrix type="luminanceToAlpha" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0">
+                  <animate
+                    attributeName="slope"
+                    values="0;0;0.5;1;1.5;2;2;1.5;1;0.5;0"
+                    dur="8s"
+                    repeatCount="indefinite"
                   />
-                  <div className="category-overlay"></div>
-                  <h3 className="category-name">{course.titre}</h3>
-                </article>
-              </Link>
-            ))}
-          </div>
-        </section>
-        <Footer />
-      </main>
+                </feFuncA>
+              </feComponentTransfer>
+              <feComponentTransfer>
+                <feFuncA type="discrete" tableValues="0 1" />
+              </feComponentTransfer>
+              <feGaussianBlur stdDeviation="1" />
+              <feComposite operator="in" in="SourceGraphic" result="overlay" />
+              <feImage
+                href={img}
+          width="100%"
+          height="100%"
+          preserveAspectRatio="xMidYMid slice"
+                result="underlay"
+              />
+              <feComposite operator="over" in="overlay" in2="underlay" />
+            </filter>
+          </defs>
+          <image
+            filter="url(#turbulent-dissolve)"
+            x="0"
+            y="0"
+        width="100%"
+          height="100%"
+            href={img1}
+            preserveAspectRatio="xMidYMid slice"
+          />
+        </svg>
+        <div className="hero-overlay" />
+      </div>
+
+      <Row className="justify-content-center hero-row">
+        <Col md={10} lg={8} className="hero-content text-center">
+          <h2 className="hero-title">Découvrez Nos Cours</h2>
+          <Form className="search-form">
+            <Form.Group className="d-flex">
+              <Form.Control
+                type="text"
+                placeholder="Rechercher des cours..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+                aria-label="Rechercher des cours"
+              />
+              <Button variant="danger" type="submit" className="search-button">
+                Recherche
+              </Button>
+            </Form.Group>
+          </Form>
+        </Col>
+      </Row>
+    </Container>
+
+      {/* Courses Section */}
+      <Container fluid className="courses-section">
+        <Row className="courses-row">
+          <Col>
+            <Container>
+              <Row >
+                <Col>
+                  <h2 className="section-title">Liste des Cours</h2>
+                </Col>
+              </Row>
+              <Row >
+                <Col md={6} lg={4}>
+                  {/* Filter by Matière */}
+                  <Form.Group className="mb-3 filter-group" controlId="matiere-select">
+                    <Form.Label className="filter-label">Filtrer par matière</Form.Label>
+                    <Form.Select
+                      value={selectedMatiereId}
+                      onChange={(e) => setSelectedMatiereId(e.target.value)}
+                      aria-label="Filtrer par matière"
+                      className="filter-select"
+                    >
+                      <option value="">Toutes les matières</option>
+                      {matieres.map((matiere) => (
+                        <option key={matiere.id} value={matiere.id}>
+                          {matiere.nom}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Error and Loading States */}
+              <Row>
+                <Col>
+                  {error && (
+                    <Alert variant="danger" role="alert">
+                      {error}
+                    </Alert>
+                  )}
+
+                  {loading && (
+                    <div className="text-center py-3">
+                      <Spinner animation="border" role="status">
+                        <span className="visually-hidden">Chargement...</span>
+                      </Spinner>
+                    </div>
+                  )}
+
+                  {!loading && filteredCourses.length === 0 && !error && (
+                    <Alert variant="info" className="text-center">
+                      Aucun cours trouvé pour cette recherche ou matière.
+                    </Alert>
+                  )}
+                </Col>
+              </Row>
+
+              {/* Courses Grid */}
+              <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+                {filteredCourses.map((course) => (
+                  <Col key={course.id}>
+                    <Link to={`/course/${course.id}`} className="course-card-link">
+                      <Card className="course-card">
+                        <Card.Img
+                          variant="top"
+                          src={
+                            course.image
+                              ? `http://localhost:5000/Uploads/${course.image}`
+                              : "https://via.placeholder.com/450x200?text=Image+Indisponible"
+                          }
+                          alt={`Cours: ${course.titre}`}
+                          className="course-image"
+                          loading="lazy"
+                        />
+                        <div className="course-overlay" />
+                        <Card.Body className="course-body">
+                          <Card.Title className="course-title">{course.titre}</Card.Title>
+                        </Card.Body>
+                      </Card>
+                    </Link>
+                  </Col>
+                ))}
+              </Row>
+            </Container>
+          </Col>
+        </Row>
+      </Container>
+
+      <Footer />
     </div>
   );
 };

@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Navbar as BootstrapNavbar, Nav, Container, Dropdown, Badge, Button, Modal } from 'react-bootstrap';
 import { MortarboardFill, Gear, BoxArrowRight, Bell } from 'react-bootstrap-icons';
 import axios from 'axios';
-import defaultProfil from '../images/aupair-2380047_1920.png';
+import defaultProfil from '../images/graduated.png';
 import './student.css';
 
 function StudentNavbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
+
   const [profile, setProfile] = useState({
     prenom: '',
     nom: '',
@@ -244,25 +244,25 @@ function StudentNavbar() {
       <BootstrapNavbar
         expand="lg"
         fixed="top"
-        className={`transition-all shadow-sm ${isScrolled ? 'bg-white py-2 navbar-light' : 'bg-transparent py-3 navbar-dark'}`}
+     
       >
         <Container>
           <BootstrapNavbar.Brand href="#home" className="d-flex align-items-center">
             <MortarboardFill
               style={{ width: '32px', height: '32px' }}
-              className="text-primary me-2"
+              className=" me-2"
             />
-            <span className="fw-bold fs-4 text-primary">EduLearn</span>
+            <span className="fw-bold fs-4">EduLearn</span>
           </BootstrapNavbar.Brand>
 
           <Nav className="ms-auto d-flex flex-row gap-4 align-items-center">
-            <Link to="/" className="nav-link text-primary">Accueil</Link>
-            <Link to="/courses" className="nav-link text-primary">Cours</Link>
+            <Link to="/" className="nav-link ">Accueil</Link>
+            <Link to="/cours" className="nav-link ">Cours</Link>
 
             {/* Notification Dropdown */}
             <Dropdown align="end">
-              <Dropdown.Toggle variant="link" id="dropdown-notifications" className="p-0 border-0 position-relative">
-                <Bell className="text-primary" style={{ width: '24px', height: '24px' }} />
+              <Dropdown.Toggle variant="link" id="dropdown-notifications" className="p-0 border-0 position-relative text-dark">
+                <Bell  style={{ width: '24px', height: '24px' }} />
                 {notifications.length > 0 && (
                   <Badge bg="danger" className="position-absolute top-0 start-100 translate-middle rounded-circle" style={{ fontSize: '10px', padding: '4px 6px' }}>
                     {notifications.length}
@@ -284,7 +284,7 @@ function StudentNavbar() {
                       <div className="d-flex justify-content-between align-items-center">
                         <span style={{ flex: 1 }}>{notification.message}</span>
                         <Button
-                          variant="outline-primary"
+                          
                           size="sm"
                           onClick={() => openQuizModal(notification)}
                           disabled={notificationLoading || matieres.length === 0}
@@ -300,7 +300,7 @@ function StudentNavbar() {
 
             {/* Profile Dropdown */}
             <Dropdown align="end">
-              <Dropdown.Toggle variant="link" id="dropdown-profile" className="p-0 border-0">
+              <Dropdown.Toggle variant="link" id="dropdown-profile" className="p-0 border-0 text-dark">
                 <img
                   src={
                     profile.photo

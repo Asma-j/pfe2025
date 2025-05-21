@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import poster from"../images/website-8305451_1280.jpg"
 import {
   Card,
   ListGroup,
@@ -13,6 +14,7 @@ import { FaPlayCircle, FaCalendarAlt, FaFilePdf, FaFileAlt, FaVideo } from "reac
 import StudentNavbar from "./StudentNavbar";
 import axios from "axios";
 import "./content.css";
+import Footer from "./Footer";
 
 const CourseContent = () => {
   const { id } = useParams();
@@ -181,14 +183,12 @@ const CourseContent = () => {
       const userName = encodeURIComponent(`${userProfile.prenom} ${userProfile.nom}`);
       const userEmail = encodeURIComponent(userProfile.email);
   
-      // Extract meeting ID from the joinUrl
       const meetingIdMatch = selectedJoinUrl.match(/\/j\/(\d+)/);
       if (!meetingIdMatch) {
         throw new Error('Impossible d\'extraire l\'ID de la réunion à partir du lien.');
       }
       const meetingId = meetingIdMatch[1];
   
-      // Check meeting status
       let meetingDetails = null;
       const token = localStorage.getItem('token');
       try {
@@ -212,7 +212,6 @@ const CourseContent = () => {
         throw new Error('Impossible de vérifier l\'état de la réunion.');
       }
   
-      // Append user information to the joinUrl
       let finalJoinUrl = selectedJoinUrl;
       const urlObj = new URL(selectedJoinUrl);
       urlObj.searchParams.set('userName', `${userProfile.prenom} ${userProfile.nom}`);
@@ -231,7 +230,6 @@ const CourseContent = () => {
         throw new Error('Échec de l\'ouverture de la réunion Zoom. Vérifiez les paramètres de votre navigateur.');
       }
   
-      // Verify if the student joined the meeting
       setTimeout(async () => {
         try {
           const participantsResponse = await axios.get(
@@ -280,54 +278,55 @@ const CourseContent = () => {
 
       <Row>
         <Col md={8}>
-          <Card className="video-card mb-4">
-            <Card.Body>
-              <h4 className="section-title">
-                <FaPlayCircle className="me-2" /> Vidéo du cours
-              </h4>
-              {course.video ? (
-                <>
-                  {videoLoading && !videoError && (
-                    <div className="text-center">
-                      <Spinner animation="border" variant="primary" />
-                      <p>Chargement de la vidéo...</p>
-                    </div>
-                  )}
-                  {videoError ? (
-                    <p className="text-danger">{videoError}</p>
-                  ) : (
-                    <video
-                      width="100%"
-                      height="400"
-                      controls
-                      className="video-player"
-                      onCanPlay={() => setVideoLoading(false)}
-                      onError={() => {
-                        setVideoLoading(false);
-                        setVideoError("Erreur lors du chargement de la vidéo.");
-                      }}
-                      style={{ display: videoLoading || videoError ? 'none' : 'block' }}
-                    >
-                      <source
-                        src={`${baseUploadUrl}${course.video}`}
-                        type="video/mp4"
-                      />
-                      Votre navigateur ne supporte pas la lecture de vidéos.
-                    </video>
-                  )}
-                </>
-              ) : (
-                <p className="text-muted">Aucune vidéo disponible pour ce cours.</p>
-              )}
-            </Card.Body>
-          </Card>
+       <Card className="video-card mb-4">
+  <Card.Body>
+    <h4 className="section-title">
+      <FaPlayCircle className="me-2" /> Vidéo du cours
+    </h4>
+    {course.video ? (
+      <>
+        {videoLoading && !videoError && (
+          <div className="text-center">
+            <Spinner animation="border" variant="primary" />
+            <p>Chargement de la vidéo...</p>
+          </div>
+        )}
+        {videoError ? (
+          <p className="text-danger">{videoError}</p>
+        ) : (
+          <video
+            width="100%"
+            height="400"
+            controls
+            className="video-player"
+            poster={poster} 
+            onCanPlay={() => setVideoLoading(false)}
+            onError={() => {
+              setVideoLoading(false);
+              setVideoError("Erreur lors du chargement de la vidéo.");
+            }}
+            style={{ display: videoLoading || videoError ? 'none' : 'block' }}
+          >
+            <source
+              src={`${baseUploadUrl}${course.video}`}
+              type="video/mp4"
+            />
+            Votre navigateur ne supporte pas la lecture de vidéos.
+          </video>
+        )}
+      </>
+    ) : (
+      <p className="text-muted">Aucune vidéo disponible pour ce cours.</p>
+    )}
+  </Card.Body>
+</Card>
 
           <Card className="description-card mb-4">
             <Card.Body>
-              <h4 className="section-title">Description du cours</h4>
-              <p>
+              <h3 className="section-title text-danger">Description du cours</h3>
+              <h5 className="section-title text-dark">
                 {course.description || "Aucune description disponible pour ce cours."}
-              </p>
+              </h5>
               <div className="attachment-section">
                 <h5>Pièces jointes</h5>
                 {course.files && ensureArray(course.files).length > 0 ? (
@@ -352,59 +351,78 @@ const CourseContent = () => {
             </Card.Body>
           </Card>
         </Col>
+<Col md={4}>
+  <Card className="schedule-card shadow-sm border-0">
+    <Card.Body>
+      <h4 className="mb-4 d-flex align-items-center text-primary fw-bold">
+        <FaCalendarAlt className="me-2" /> Planning du cours
+      </h4>
 
-        <Col md={4}>
-          <Card className="schedule-card">
-            <Card.Body>
-              <h4 className="section-title">
-                <FaCalendarAlt className="me-2" /> Planning du cours
-              </h4>
-              {planningsLoading ? (
-                <div className="text-center">
-                  <Spinner animation="border" variant="primary" />
-                  <p>Chargement des plannings...</p>
+      {planningsLoading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <p>Chargement des plannings...</p>
+        </div>
+      ) : planningsError ? (
+        <p className="text-danger">{planningsError}</p>
+      ) : plannings.length > 0 ? (
+        plannings.map((planning, index) => {
+          const date = new Date(planning.date_debut);
+          const startTime = new Date(planning.date_debut).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+          const endTime = new Date(planning.date_fin).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+
+          return (
+            <div
+              key={index}
+              className="planning-entry mb-4 p-3 rounded-4 shadow-sm position-relative bg-light border-start border-4 border-primary"
+            >
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div className="d-flex align-items-center">
+                  <div className="date-badge text-center me-3">
+                    <div className="day">{String(date.getDate()).padStart(2, '0')}</div>
+                    <div className="month">{date.toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
+                  </div>
+                  <div>
+                    <h6 className="mb-1 fw-bold">{planning.titre}</h6>
+                    <small className="text-muted">
+                      Classe : {planning.Classe?.nom || 'Inconnue'}
+                    </small>
+                  </div>
                 </div>
-              ) : planningsError ? (
-                <p className="text-danger">{planningsError}</p>
-              ) : plannings.length > 0 ? (
-                <ListGroup variant="flush">
-                  {plannings.map((planning, index) => (
-                    <ListGroup.Item key={index} className="schedule-item">
-                      <span className="schedule-date">
-                        {new Date(planning.date_debut).toLocaleDateString()}
-                      </span>
-                      : {planning.titre} (Classe: {planning.Classe?.nom || 'Inconnue'})
-                      <br />
-                      <small>
-                        {new Date(planning.date_debut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{' '}
-                        {new Date(planning.date_fin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </small>
-                      {isMeetingActive(planning) ? (
-                        planning.joinUrl ? (
-                          <div className="mt-2">
-                            <Button
-                              variant="success"
-                              size="sm"
-                              onClick={() => handleJoinMeeting(planning.joinUrl)}
-                            >
-                              <FaVideo className="me-2" /> Rejoindre la réunion
-                            </Button>
-                          </div>
-                        ) : (
-                          <div className="mt-2 text-danger">
-                            Réunion en cours, mais le lien de réunion n'est pas disponible.
-                          </div>
-                        )
-                      ) : null}
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              ) : (
-                <p className="text-muted">Aucun planning disponible pour votre classe.</p>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
+
+                <div className="text-end">
+                  <div className="time-range fw-semibold">
+                    {startTime} - {endTime}
+                  </div>
+                  {isMeetingActive(planning) && planning.joinUrl ? (
+                    <Button
+                      variant="outline-success"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => handleJoinMeeting(planning.joinUrl)}
+                    >
+                      <FaVideo className="me-1" /> Rejoindre
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          );
+        })
+      ) : (
+        <p className="text-muted">Aucun planning disponible pour votre classe.</p>
+      )}
+    </Card.Body>
+  </Card>
+</Col>
+
+
       </Row>
 
       <Modal show={showJoinModal} onHide={() => setShowJoinModal(false)} centered>
@@ -417,7 +435,7 @@ const CourseContent = () => {
               src={
                 userProfile.photo
                   ? `${baseUploadUrl}${userProfile.photo}?t=${Date.now()}`
-                  : require('../images/aupair-2380047_1920.png')
+                  : require('../images/graduated.png')
               }
               alt="Profile"
               className="rounded-circle border mb-3"
@@ -442,6 +460,7 @@ const CourseContent = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+      <Footer/>
     </div>
   );
 };

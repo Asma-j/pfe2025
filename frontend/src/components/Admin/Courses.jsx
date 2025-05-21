@@ -182,12 +182,8 @@ function Courses() {
     <div className="container my-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
-          <h1 className="mb-1">📚 Gestion des Matières</h1>
-          <p className="text-muted mb-0">Ajoutez, consultez et organisez vos cours facilement.</p>
+          <h1 className="mb-1">📚Cours</h1>
         </div>
-        <Button variant="primary" onClick={handleShowModal} className="d-flex align-items-center">
-          <FaPlus className="me-2" /> Ajouter une matière
-        </Button>
       </div>
 
       {matieres.map((matiere) => (
@@ -269,80 +265,9 @@ function Courses() {
         </div>
       ))}
 
-      {/* Modal for Adding a Matiere */}
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Ajouter une nouvelle matière</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="formStatus">
-              <Form.Label>Nom de la matière</Form.Label>
-              <Form.Control
-              
-                type="text"
-                name="nom"
-                value={newMatiere.nom}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formStatus">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                name="description"
-                value={newMatiere.description}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formStatus">
-              <Form.Label>Image</Form.Label>
-              <Form.Control type="file" name="image" onChange={handleImageChange} />
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              Ajouter
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
 
-      {/* Modal for Editing a Matiere */}
-      <Modal show={editModal} onHide={handleCloseEditModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Modifier la matière</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleEditSubmit}>
-            <Form.Group className="mb-3" controlId="formStatus">
-              <Form.Label>Nom de la matière</Form.Label>
-              <Form.Control
-                type="text"
-                name="nom"
-                value={editMatiere.nom}
-                onChange={handleEditInputChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formStatus">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                name="description"
-                value={editMatiere.description}
-                onChange={handleEditInputChange}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="formStatus">
-              <Form.Label>Image</Form.Label>
-              <Form.Control type="file" name="image" onChange={handleEditImageChange} />
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              Mettre à jour
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+
+ 
     </div>
   );
 }

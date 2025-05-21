@@ -3,7 +3,7 @@ import { Container, Form, Button, Card, Alert, Image } from 'react-bootstrap';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './student.css';
-import defaultProfil from '../images/aupair-2380047_1920.png';
+import defaultProfil from '../images/graduated.png';
 
 const StudentProfile = () => {
   const [profile, setProfile] = useState({

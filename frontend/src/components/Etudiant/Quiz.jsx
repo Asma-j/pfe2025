@@ -4,6 +4,7 @@ import { Button, Card, Form, Alert, ListGroup, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import { jsPDF } from 'jspdf';
 import StudentNavbar from './StudentNavbar';
+import "./quiz.css";
 
 const Quiz = () => {
   const { id } = useParams();
@@ -236,9 +237,9 @@ const Quiz = () => {
   return (
     <div className="container mt-4">
       <StudentNavbar />
-      <h2 className="mb-2">Quiz: {quiz.titre}</h2>
+      <h2 className="mb-4 quiz">Quiz: {quiz.titre}</h2>
       {!result && !timeUp && (
-        <div className="mb-4 p-2 bg-blue-100 text-blue-700 rounded-md">
+        <div className="m-4  bg-blue-100 text-blue-700 rounded-md">
           <p>
             Durée totale: {formatTime(quiz.setDuration * 60)} | Temps restant: {remainingTime !== null ? formatTime(remainingTime > 0 ? remainingTime : 0) : 'Calcul...'}
           </p>
@@ -300,8 +301,8 @@ const Quiz = () => {
         </div>
       ) : (
         !timeUp && (
-          <Card>
-            <Card.Body>
+          <Card className='quizcard'>
+            <Card.Body className='bodycard'>
               {quiz.QuizQuestions.map((question, index) => (
                 <div key={question.id} className="mb-4">
                   <h5 className="mb-2">{index + 1}. {question.text}</h5>
@@ -350,7 +351,7 @@ const Quiz = () => {
                   </Form>
                 </div>
               ))}
-              <Button onClick={handleSubmitClick} className="mt-3" disabled={timeUp}>
+              <Button onClick={handleSubmitClick} className=" buttonSub mt-3" disabled={timeUp}>
                 Soumettre
               </Button>
             </Card.Body>
@@ -358,11 +359,11 @@ const Quiz = () => {
         )
       )}
       <Modal show={showSubmitModal} onHide={() => setShowSubmitModal(false)} centered>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className='modalquiz'>
           <Modal.Title>Confirmation</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Questions non répondues. Soumettre quand même ?</Modal.Body>
-        <Modal.Footer>
+        <Modal.Body className='modalquizbody'>Questions non répondues. Soumettre quand même ?</Modal.Body>
+        <Modal.Footer className='modalquizfooter'>
           <Button variant="secondary" onClick={() => setShowSubmitModal(false)}>
             Annuler
           </Button>

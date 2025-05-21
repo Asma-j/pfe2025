@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Modal, Button, Form, Row, Col, Image } from "react-bootstrap";
-import image from "../images/auth.jpg";
+import image from "../images/auth.jpg"; // Ensure this path is correct
 import "./auth.css";
 
 function Register({ show = true, onClose }) {
@@ -9,7 +9,7 @@ function Register({ show = true, onClose }) {
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
-  const [roleType, setRoleType] = useState(""); // "enseignant" or "etudiant"
+  const [roleType, setRoleType] = useState("");
   const [niveaux, setNiveaux] = useState([]);
   const [selectedNiveau, setSelectedNiveau] = useState("");
   const [classes, setClasses] = useState([]);
@@ -18,7 +18,6 @@ function Register({ show = true, onClose }) {
   const [selectedMatieres, setSelectedMatieres] = useState([]);
   const [errors, setErrors] = useState({});
 
-  // Fetch levels (niveaux) on component mount
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/niveaux")
@@ -28,7 +27,6 @@ function Register({ show = true, onClose }) {
       .catch((error) => console.error("Erreur niveaux :", error));
   }, []);
 
-  // Fetch classes when a niveau is selected (for enseignant)
   useEffect(() => {
     if (roleType === "enseignant" && selectedNiveau) {
       axios
@@ -43,7 +41,6 @@ function Register({ show = true, onClose }) {
     }
   }, [roleType, selectedNiveau]);
 
-  // Fetch matieres (subjects) when enseignant is selected
   useEffect(() => {
     if (roleType === "enseignant") {
       axios
@@ -58,7 +55,6 @@ function Register({ show = true, onClose }) {
     }
   }, [roleType]);
 
-  // Clear selections when roleType changes
   useEffect(() => {
     setSelectedNiveau("");
     setSelectedClasses([]);
@@ -66,7 +62,6 @@ function Register({ show = true, onClose }) {
     setErrors({});
   }, [roleType]);
 
-  // Handle class selection (multiple checkboxes)
   const handleClassSelection = (classeId) => {
     setSelectedClasses((prev) =>
       prev.includes(classeId)
@@ -75,7 +70,6 @@ function Register({ show = true, onClose }) {
     );
   };
 
-  // Handle matiere selection (multiple checkboxes)
   const handleMatiereSelection = (matiereId) => {
     setSelectedMatieres((prev) =>
       prev.includes(matiereId)
@@ -84,7 +78,6 @@ function Register({ show = true, onClose }) {
     );
   };
 
-  // Validate form before submission
   const validateForm = () => {
     const newErrors = {};
     if (!prenom) newErrors.prenom = "Prénom est requis";
@@ -108,13 +101,11 @@ function Register({ show = true, onClose }) {
     if (!validateForm()) return;
 
     try {
-      // Map roleType to id_role with correct case
       const roleIdMap = {
-        enseignant: 1003, // Adjust these IDs based on your Role table
+        enseignant: 1003,
         etudiant: 2,
       };
-      const id_role = roleIdMap[roleType.toLowerCase()]; // Ensure lowercase match
-
+      const id_role = roleIdMap[roleType.toLowerCase()];
       if (!id_role) {
         throw new Error("Rôle non valide dans la carte des rôles");
       }
@@ -129,7 +120,7 @@ function Register({ show = true, onClose }) {
         classes: roleType === "enseignant" ? selectedClasses : [],
         matieres: roleType === "enseignant" ? selectedMatieres : [],
       };
-      console.log("Payload envoyé :", payload); // Log the payload for debugging
+      console.log("Payload envoyé :", payload);
 
       const response = await axios.post("http://localhost:5000/api/auth/register", payload);
       alert(response.data.message);
@@ -154,7 +145,7 @@ function Register({ show = true, onClose }) {
       <Modal.Body className="p-0">
         <div className="auth-container">
           <div className="auth-left">
-            <Image src={image} alt="Classroom" fluid className="auth-image" />
+            <img src={image} alt="Classroom" className="w-100 h-100" />
           </div>
           <div className="auth-right">
             <div className="auth-form">
@@ -222,7 +213,7 @@ function Register({ show = true, onClose }) {
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group className="mb-3">
-                  <Form.Label>Rôle</Form.Label>
+                 
                   <div>
                     <Form.Check
                       inline
