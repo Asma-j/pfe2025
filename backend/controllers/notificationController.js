@@ -1,5 +1,4 @@
-// controllers/notificationController.js
-const { Notification, Utilisateur } = require('../models/userNotif'); // Import from userNotif.js
+const { Notification, Utilisateur } = require('../models/userNotif');
 
 exports.getNotifications = async (req, res) => {
   try {
@@ -8,13 +7,13 @@ exports.getNotifications = async (req, res) => {
       return res.status(400).json({ message: 'userId est requis' });
     }
 
-    // Fetch all pending user registrations' notifications for an admin
+    // Fetch all notifications for the given userId
     const notifications = await Notification.findAll({
+      where: { userId },
       include: [
         {
           model: Utilisateur,
-          where: { status: 'pending' }, // Only pending users
-          attributes: ['id', 'prenom', 'nom', 'email'],
+          attributes: ['id', 'prenom', 'nom', 'email', 'status'],
         },
       ],
       order: [['createdAt', 'DESC']],

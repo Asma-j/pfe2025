@@ -292,37 +292,6 @@ exports.generateQuiz = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la generation du quiz', error: error.message });
   }
 };
-// Other exports remain unchanged
-exports.getQuiz = async (req, res) => {
-  try {
-    const { matiereId } = req.params;
-
-    const matiere_id_num = parseInt(matiereId, 10);
-    if (isNaN(matiere_id_num) || matiereId === 'undefined' || matiere_id_num <= 0) {
-      console.log(`Invalid matiereId: ${matiereId}`);
-      return res.status(400).json({ message: 'Identifiant de matiere invalide' });
-    }
-
-    console.log(`Fetching quiz for matiere_id: ${matiere_id_num}`);
-    const quiz = await Quiz.findOne({
-      where: { matiere_id: matiere_id_num },
-      include: [{ model: QuizQuestion }],
-      logging: console.log,
-    });
-
-    if (!quiz) {
-      console.log(`No quiz found for matiere_id: ${matiere_id_num}`);
-      return res.status(404).json({ message: 'Quiz non trouve' });
-    }
-
-    console.log(`Quiz found: ${quiz.id}, title: ${quiz.titre}`);
-    res.status(200).json(quiz);
-  } catch (error) {
-    console.error('Error fetching quiz:', error);
-    res.status(500).json({ message: 'Error fetching quiz', error: error.message });
-  }
-};
-
 
 exports.getQuiz = async (req, res) => {
   try {
@@ -360,8 +329,22 @@ exports.submitQuiz = async (req, res) => {
     let totalScore = 0;
 
     const totalQuestions = await QuizQuestion.count({ where: { quiz_id } });
+    if (totalQuestions !== 20) {
+      console.warn(`Expected 20 questions, but found ${totalQuestions} for quiz_id: ${quiz_id}`);
+    }
 
-    // Update the Quiz record with the timeTaken (previously duration)
+    // Clear previous answers for this user and quiz
+    await StudentAnswer.destroy({
+      where: {
+        utilisateur_id,
+        question_id: {
+          [Op.in]: (await QuizQuestion.findAll({ where: { quiz_id } })).map(q => q.id),
+        },
+      },
+    });
+    console.log(`Cleared previous answers for utilisateur_id: ${utilisateur_id}, quiz_id: ${quiz_id}`);
+
+    // Update the Quiz record with the timeTaken
     await Quiz.update(
       { timeTaken: duration },
       { where: { id: quiz_id } }

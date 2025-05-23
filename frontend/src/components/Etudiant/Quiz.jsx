@@ -14,7 +14,7 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
-  const [userProfile, setUserProfile] = useState({ id: null, name: 'Utilisateur' });
+  const [userProfile, setUserProfile] = useState({ id: null, prenom: '', nom: '' });
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [remainingTime, setRemainingTime] = useState(null);
@@ -34,7 +34,11 @@ const Quiz = () => {
         const response = await axios.get('http://localhost:5000/api/users/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUserProfile({ id: response.data.id, name: response.data.name || 'Utilisateur' });
+        setUserProfile({ 
+          id: response.data.id, 
+          prenom: response.data.prenom || '', 
+          nom: response.data.nom || '' 
+        });
       } catch (err) {
         setError('Erreur lors de la récupération du profil utilisateur.');
         setLoading(false);
@@ -49,6 +53,14 @@ const Quiz = () => {
         setTimeout(() => navigate('/courses'), 2000);
         return;
       }
+
+      // Reset all states for a fresh quiz attempt
+      setAnswers({});
+      setResult(null);
+      setTimeUp(false);
+      setShowSubmitModal(false);
+      setRemainingTime(null);
+      setStartTime(null);
 
       try {
         const token = localStorage.getItem('token');
@@ -152,64 +164,103 @@ const Quiz = () => {
   const generateCertificate = () => {
     const doc = new jsPDF();
 
-    // Bordure décorative
+    // Gradient header
+    doc.setFillColor(59, 130, 246); // Blue
+    doc.rect(0, 0, 210, 50, 'F'); // Header background
+    doc.setFillColor(139, 92, 246); // Purple
+    doc.triangle(0, 50, 210, 50, 210, 0, 'F'); // Gradient effect
+
+    // Double decorative border
+    doc.setLineWidth(1.5);
+    doc.setDrawColor(59, 130, 246); // Blue
+    doc.rect(10, 10, 190, 280, 'D'); // Outer border
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(139, 92, 246); // Purple
+    doc.rect(14, 14, 182, 272, 'D'); // Inner border
+
+    // Watermark
+    doc.setFont('Times', 'italic');
+    doc.setFontSize(60);
+    doc.setTextColor(240, 240, 240); // Light gray
+    doc.text('CERTIFICAT', 105, 150, { align: 'center', angle: 45 });
+
+    // Header
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(32);
+    doc.setTextColor(255, 255, 255); // White
+    doc.text('CERTIFICAT DE RÉUSSITE', 105, 30, { align: 'center' });
+
+    // Decorative line
     doc.setLineWidth(1);
-    doc.setDrawColor(0, 102, 204); // Bleu
-    doc.rect(10, 10, 190, 277); // Bordure extérieure
+    doc.setDrawColor(255, 215, 0); // Gold
+    doc.line(40, 40, 170, 40);
     doc.setLineWidth(0.5);
-    doc.setDrawColor(204, 204, 204); // Gris clair
-    doc.rect(15, 15, 180, 267); // Bordure intérieure
+    doc.setDrawColor(255, 255, 255);
+    doc.line(40, 42, 170, 42);
 
-    // En-tête
-    doc.setFont('Helvetica', 'bold');
-    doc.setFontSize(28);
-    doc.setTextColor(0, 102, 204);
-    doc.text('CERTIFICAT DE RÉUSSITE', 105, 40, { align: 'center' });
-
-    // Ligne décorative sous l'en-tête
-    doc.setLineWidth(0.5);
-    doc.line(50, 45, 160, 45);
-
-    // Nom de l'utilisateur
-    doc.setFont('Helvetica', 'normal');
+    // User name
+    doc.setFont('Times', 'normal');
     doc.setFontSize(18);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Délivré à`, 105, 70, { align: 'center' });
-    doc.setFont('Helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.text(`${userProfile.name}`, 105, 85, { align: 'center' });
+    doc.setTextColor(17, 24, 39); // Dark gray
+    doc.text('Délivré à', 105, 70, { align: 'center' });
+    doc.setFont('Times', 'bold');
+    doc.setFontSize(24);
+    doc.setTextColor(59, 130, 246); // Blue
+    doc.text(`${userProfile.prenom} ${userProfile.nom}`.trim(), 105, 85, { align: 'center' });
 
-    // Détails du quiz
+    // Quiz details
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(14);
-    doc.text(`Pour la réussite du quiz :`, 105, 110, { align: 'center' });
+    doc.setTextColor(17, 24, 39);
+    doc.text('Pour la réussite du quiz :', 105, 110, { align: 'center' });
     doc.setFont('Helvetica', 'bold');
-    doc.text(`${quiz.titre}`, 105, 125, { align: 'center' });
+    doc.setFontSize(16);
+    doc.setTextColor(17, 24, 39);
+    doc.text(quiz.titre, 105, 125, { align: 'center' });
     doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(14);
     doc.text(`Score obtenu : ${result.score} / ${result.maxScore}`, 105, 140, { align: 'center' });
     doc.text(`Pourcentage : ${result.percentage.toFixed(2)}%`, 105, 155, { align: 'center' });
 
-    // Date
-    const today = new Date().toLocaleDateString('fr-FR');
-    doc.text(`Date de délivrance : ${today}`, 105, 170, { align: 'center' });
+    // Current date and time
+    const today = new Date();
+    const formattedDate = today.toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).replace(',', '');
+    doc.text(`Date de délivrance : ${formattedDate}`, 105, 170, { align: 'center' });
 
-    // Texte de validation
+    // Validation text
     doc.setFontSize(12);
+    doc.setTextColor(75, 85, 99); // Gray
     doc.text('Ce certificat atteste que l’utilisateur a réussi le quiz avec un score supérieur à 70%,', 105, 200, { align: 'center' });
     doc.text('démontrant une maîtrise significative des compétences évaluées.', 105, 210, { align: 'center' });
 
-    // Signature (optionnel)
-    doc.setFont('Helvetica', 'italic');
-    doc.text('Émis par la plateforme d’apprentissage', 105, 240, { align: 'center' });
+    // Decorative seal
+    doc.setDrawColor(255, 215, 0); // Gold
+    doc.setFillColor(255, 255, 255);
+    doc.circle(105, 250, 20, 'FD'); // Outer circle
+    doc.setLineWidth(0.3);
+    doc.setDrawColor(59, 130, 246);
+    doc.circle(105, 250, 18, 'D'); // Inner circle
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(59, 130, 246);
+    doc.text('Plateforme', 105, 245, { align: 'center' });
+    doc.text('d’Apprentissage', 105, 255, { align: 'center' });
 
-    // Ajout d’un logo (optionnel, décommenter si vous avez une image en base64)
-    /*
-    const logo = 'data:image/png;base64,...'; // Remplacer par votre image encodée en base64
-    doc.addImage(logo, 'PNG', 85, 250, 40, 20);
-    */
+    // Signature
+    doc.setFont('Times', 'italic');
+    doc.setFontSize(12);
+    doc.setTextColor(17, 24, 39);
+    doc.text('Émis par la Plateforme d’Apprentissage', 105, 280, { align: 'center' });
 
-    // Téléchargement du PDF
-    doc.save(`Certificat_${quiz.titre}_${userProfile.name}.pdf`);
+    // Download the PDF
+    doc.save(`Certificat_${quiz.titre}_${userProfile.prenom}_${userProfile.nom}.pdf`);
   };
 
   const formatTime = (seconds) => {
@@ -237,9 +288,9 @@ const Quiz = () => {
   return (
     <div className="container mt-4">
       <StudentNavbar />
-      <h2 className="mb-4 quiz">Quiz: {quiz.titre}</h2>
+      <h2 className="quiz">Quiz: {quiz.titre}</h2>
       {!result && !timeUp && (
-        <div className="m-4  bg-blue-100 text-blue-700 rounded-md">
+        <div className="bg-blue-100">
           <p>
             Durée totale: {formatTime(quiz.setDuration * 60)} | Temps restant: {remainingTime !== null ? formatTime(remainingTime > 0 ? remainingTime : 0) : 'Calcul...'}
           </p>
@@ -250,19 +301,24 @@ const Quiz = () => {
           Temps écoulé ! Le quiz est en cours de soumission...
         </Alert>
       )}
-      {result ? (
-        <div>
-          <Alert variant="success" className="mb-4">
-            <h4>Résultat</h4>
-            <p>Score: {result.score} / {result.maxScore}</p>
-            <p>Pourcentage: {result.percentage.toFixed(2)}%</p>
-            <p>Temps pris: {formatTime(result.timeTaken)}</p>
+      {result && (
+        <div className="result-card">
+          <Alert variant={result.percentage >= 70 ? 'success' : 'warning'} className="result-alert mb-4">
+            <h4 className="result-title">Résultat</h4>
+            <div className="result-details">
+              <p>Score: <span className="result-value">{result.score}</span> / <span className="result-value">{result.maxScore}</span></p>
+              <p>Pourcentage: <span className="result-value">{result.percentage.toFixed(2)}%</span></p>
+              <p>Temps pris: <span className="result-value">{formatTime(result.timeTaken)}</span></p>
+            </div>
+            {result.percentage >= 70 && (
+              <Button variant="primary" className="certificate-btn mt-4" onClick={generateCertificate}>
+                Télécharger le Certificat
+              </Button>
+            )}
+            {result.percentage < 70 && (
+              <p className="result-feedback">Continuez à vous entraîner pour améliorer votre score !</p>
+            )}
           </Alert>
-          {result.percentage > 70 && (
-            <Button variant="primary" className="mb-4" onClick={generateCertificate}>
-              Télécharger le Certificat
-            </Button>
-          )}
           <h4 className="mb-2">Détails :</h4>
           <ListGroup>
             {result.answers.map((answer, index) => {
@@ -299,36 +355,36 @@ const Quiz = () => {
             Retour
           </Button>
         </div>
-      ) : (
-        !timeUp && (
-          <Card className='quizcard'>
-            <Card.Body className='bodycard'>
-              {quiz.QuizQuestions.map((question, index) => (
-                <div key={question.id} className="mb-4">
-                  <h5 className="mb-2">{index + 1}. {question.text}</h5>
-                  <Form>
-                    {(() => {
-                      if (!question.options) return <Alert variant="warning">Options manquantes</Alert>;
-                      if (typeof question.options === 'string') {
-                        try {
-                          const parsedOptions = JSON.parse(question.options);
-                          if (Array.isArray(parsedOptions)) {
-                            console.log(`Options for question ${question.id}:`, parsedOptions);
-                            return parsedOptions.map((option, optIndex) => (
-                              <Form.Check
-                                key={optIndex}
-                                type="radio"
-                                label={<span>{option.text}</span>}
-                                name={`question-${question.id}`}
-                                checked={answers[question.id] === optIndex}
-                                onChange={() => handleAnswerChange(question.id, optIndex)}
-                                className="mb-2"
-                                disabled={timeUp}
-                              />
-                            ));
-                          }
-                        } catch (e) {
-                          return <Alert variant="warning">Options invalides</Alert>;
+      )}
+      {!timeUp && (
+        <Card className='quizcard'>
+          <Card.Body className='bodycard'>
+            {quiz.QuizQuestions.map((question, index) => (
+              <div key={question.id} className="mb-4">
+                <h5 className="mb-2">{index + 1}. {question.text}</h5>
+                <Form>
+                  {(() => {
+                    if (!question.options) return <Alert variant="warning">Options manquantes</Alert>;
+                    if (typeof question.options === 'string') {
+                      try {
+                        const parsedOptions = JSON.parse(question.options);
+                        if (Array.isArray(parsedOptions)) {
+                          console.log(`Options for question ${question.id}:`, parsedOptions);
+                          return parsedOptions.map((option, optIndex) => (
+                            <Form.Check
+                              key={optIndex}
+                              type="radio"
+                              label={<span>{option.text}</span>}
+                              name={`question-${question.id}`}
+                              checked={answers[question.id] === optIndex}
+                              onChange={() => handleAnswerChange(question.id, optIndex)}
+                              className="mb-2"
+                              disabled={timeUp}
+                            />
+                          ));
+                        }
+                      } catch (e) {
+                        return <Alert variant="warning">Options invalides</Alert>;
                         }
                       }
                       if (Array.isArray(question.options)) {
@@ -351,13 +407,12 @@ const Quiz = () => {
                   </Form>
                 </div>
               ))}
-              <Button onClick={handleSubmitClick} className=" buttonSub mt-3" disabled={timeUp}>
+              <Button onClick={handleSubmitClick} className="buttonSub mt-3" disabled={timeUp}>
                 Soumettre
               </Button>
             </Card.Body>
           </Card>
-        )
-      )}
+        )}
       <Modal show={showSubmitModal} onHide={() => setShowSubmitModal(false)} centered>
         <Modal.Header closeButton className='modalquiz'>
           <Modal.Title>Confirmation</Modal.Title>

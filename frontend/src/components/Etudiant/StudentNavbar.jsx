@@ -7,7 +7,6 @@ import defaultProfil from '../images/graduated.png';
 import './student.css';
 
 function StudentNavbar() {
-
   const [profile, setProfile] = useState({
     prenom: '',
     nom: '',
@@ -69,7 +68,7 @@ function StudentNavbar() {
         const response = await axios.get('http://localhost:5000/api/matieres', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('Fetched matieres data:', response.data); // Debug log
+        console.log('Fetched matieres data:', response.data);
         setMatieres(response.data);
       } catch (err) {
         console.error('Error fetching matieres:', err.response?.data || err.message);
@@ -80,7 +79,7 @@ function StudentNavbar() {
     fetchMatieres();
   }, []);
 
-  // Fetch notifications when profile.id changes
+  // Fetch notifications
   useEffect(() => {
     if (!profile.id) return;
 
@@ -97,9 +96,12 @@ function StudentNavbar() {
           headers: { Authorization: `Bearer ${token}` },
           params: { userId: profile.id },
         });
-        console.log('Raw notifications:', response.data);
-        const evaluationNotifications = response.data.filter((notification) =>
-          notification.message.toLowerCase().includes('évaluation')
+        console.log('Fetched notifications:', response.data);
+        // Filter for unread quiz notifications
+        const evaluationNotifications = response.data.filter(
+          (notification) =>
+            !notification.read &&
+            notification.message.toLowerCase().includes('évaluation')
         );
         console.log('Filtered evaluation notifications:', evaluationNotifications);
         setNotifications(evaluationNotifications);
@@ -130,34 +132,25 @@ function StudentNavbar() {
       return response.data;
     } catch (err) {
       console.error('Error fetching quiz details:', err.response?.data || err.message);
-      if (err.response?.status === 404) {
-        setNotificationError('Aucun quiz disponible pour cette matière. Veuillez contacter votre enseignant.');
-      } else if (err.response?.status === 401) {
-        setNotificationError('Session expirée. Veuillez vous reconnecter.');
-      } else if (err.response?.status === 400) {
-        setNotificationError('La matière sélectionnée est invalide. Veuillez vérifier la notification.');
-      } else {
-        setNotificationError('Une erreur est survenue lors de la récupération des détails du quiz.');
-      }
+      setNotificationError(
+        err.response?.status === 404
+          ? 'Aucun quiz disponible pour cette matière. Veuillez contacter votre enseignant.'
+          : err.response?.status === 401
+          ? 'Session expirée. Veuillez vous reconnecter.'
+          : err.response?.status === 400
+          ? 'La matière sélectionnée est invalide.'
+          : 'Erreur lors de la récupération des détails du quiz.'
+      );
       return null;
     }
   };
 
   // Open modal and fetch quiz details
   const openQuizModal = async (notification) => {
-    let matiereId = notification.matiereId || null;
-
-    // Log the notification for debugging
     console.log('Processing notification:', notification);
 
-    // If matiereId is not in the notification object, parse the message
-    if (!matiereId) {
-      const match = notification.message.match(/\/quiz\/matiere\/(\d+)/);
-      matiereId = match ? match[1] : null;
-      console.log('Parsed matiereId from URL pattern:', matiereId);
-    }
+    let matiereId = notification.matiereId;
 
-    // If matiereId is still not found, extract the subject name and match with matieres
     if (!matiereId) {
       const subjectMatch = notification.message.match(/pour la matière "([^"]+)"/);
       const subjectName = subjectMatch ? subjectMatch[1] : null;
@@ -169,11 +162,10 @@ function StudentNavbar() {
       }
     }
 
-    // Validate matiereId before proceeding
-    if (!matiereId || isNaN(matiereId) || matiereId === 'undefined') {
-      setNotificationError('Impossible de déterminer l\'identifiant de la matière pour ce quiz.');
+    if (!matiereId || isNaN(matiereId)) {
+      setNotificationError('Identifiant de matière invalide pour ce quiz.');
       console.error('Invalid matiereId:', matiereId);
-      return; // Prevent opening the modal
+      return;
     }
 
     const quizData = await fetchQuizDetails(matiereId);
@@ -184,45 +176,72 @@ function StudentNavbar() {
         notificationId: notification.id,
       });
       setShowModal(true);
-    } else {
-      console.log('Failed to fetch quiz details for matiereId:', matiereId);
     }
   };
 
   // Handle confirm (navigate to quiz page and mark as read)
   const handleConfirm = async () => {
-    if (selectedQuiz) {
-      try {
-        setNotificationLoading(true);
-        const token = localStorage.getItem('token');
+    if (!selectedQuiz) {
+      console.error('No selected quiz');
+      setNotificationError('Aucun quiz sélectionné');
+      setShowModal(false);
+      return;
+    }
 
-        // Validate matiereId before navigation
-        const matiereId = selectedQuiz.matiereId;
-        console.log('Navigating with matiereId:', matiereId); // Debug log
-        if (!matiereId || isNaN(matiereId) || matiereId === 'undefined') {
-          setNotificationError('Identifiant de matière invalide. Impossible de naviguer vers le quiz.');
-          setShowModal(false);
-          setNotificationLoading(false);
-          return;
-        }
+    try {
+      setNotificationLoading(true);
+      const token = localStorage.getItem('token');
+      const matiereId = selectedQuiz.matiereId;
+      const notificationId = selectedQuiz.notificationId;
+      console.log('Confirming quiz for matiereId:', matiereId, 'notificationId:', notificationId);
 
-        // Mark notification as read
-        await axios.patch(
-          `http://localhost:5000/api/notifications/${selectedQuiz.notificationId}/read`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setNotifications(notifications.filter((n) => n.id !== selectedQuiz.notificationId));
+      if (!matiereId || isNaN(matiereId)) {
+        console.error('Invalid matiereId:', matiereId);
+        setNotificationError('Identifiant de matière invalide.');
         setShowModal(false);
-
-        // Navigate to the quiz page
-        navigate(`/quiz/matiere/${matiereId}`);
-      } catch (err) {
-        console.error('Error marking notification as read:', err.response?.data || err.message);
-        setNotificationError('Erreur lors de la mise à jour de la notification');
-      } finally {
         setNotificationLoading(false);
+        return;
       }
+
+      if (!notificationId) {
+        console.error('Invalid notificationId:', notificationId);
+        setNotificationError('Identifiant de notification invalide.');
+        setShowModal(false);
+        setNotificationLoading(false);
+        return;
+      }
+
+      // Mark notification as read
+      console.log('Marking notification as read:', notificationId);
+      await axios.patch(
+        `http://localhost:5000/api/notifications/${notificationId}/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Remove notification from state
+      console.log('Current notifications:', notifications);
+      const updatedNotifications = notifications.filter((n) => n.id !== notificationId);
+      console.log('Updated notifications:', updatedNotifications);
+      setNotifications(updatedNotifications);
+
+      setShowModal(false);
+      setSelectedQuiz(null);
+
+      // Navigate to the quiz page
+      console.log('Navigating to quiz:', `/quiz/matiere/${matiereId}`);
+      navigate(`/quiz/matiere/${matiereId}`);
+    } catch (err) {
+      console.error('Error in handleConfirm:', err.response?.data || err.message);
+      setNotificationError(
+        err.response?.status === 404
+          ? 'Notification non trouvée.'
+          : err.response?.status === 401
+          ? 'Session expirée. Veuillez vous reconnecter.'
+          : 'Erreur lors de la mise à jour de la notification.'
+      );
+    } finally {
+      setNotificationLoading(false);
     }
   };
 
@@ -244,33 +263,33 @@ function StudentNavbar() {
       <BootstrapNavbar
         expand="lg"
         fixed="top"
-     
+        className="bg-white shadow-sm"
       >
         <Container>
           <BootstrapNavbar.Brand href="#home" className="d-flex align-items-center">
             <MortarboardFill
-              style={{ width: '32px', height: '32px' }}
-              className=" me-2"
+              style={{ width: '32px', height: '32px', color: '#3b82f6' }}
+              className="me-2"
             />
-            <span className="fw-bold fs-4">EduLearn</span>
+            <span className="fw-bold fs-4" style={{ color: '#3b82f6' }}>EduLearn</span>
           </BootstrapNavbar.Brand>
 
           <Nav className="ms-auto d-flex flex-row gap-4 align-items-center">
-            <Link to="/" className="nav-link ">Accueil</Link>
-            <Link to="/cours" className="nav-link ">Cours</Link>
+            <Link to="/" className="nav-link">Accueil</Link>
+            <Link to="/cours" className="nav-link">Cours</Link>
 
             {/* Notification Dropdown */}
             <Dropdown align="end">
               <Dropdown.Toggle variant="link" id="dropdown-notifications" className="p-0 border-0 position-relative text-dark">
-                <Bell  style={{ width: '24px', height: '24px' }} />
+                <Bell style={{ width: '24px', height: '24px', color: '#3b82f6' }} />
                 {notifications.length > 0 && (
                   <Badge bg="danger" className="position-absolute top-0 start-100 translate-middle rounded-circle" style={{ fontSize: '10px', padding: '4px 6px' }}>
                     {notifications.length}
                   </Badge>
                 )}
               </Dropdown.Toggle>
-              <Dropdown.Menu className="shadow-sm p-3 rounded border-0" style={{ minWidth: '350px' }}>
-                <Dropdown.Header>Notifications</Dropdown.Header>
+              <Dropdown.Menu className="shadow-sm p-3 rounded border-0" style={{ minWidth: '350px', background: '#f1f5f9' }}>
+                <Dropdown.Header style={{ fontWeight: 'bold', color: '#1f2937' }}>Notifications</Dropdown.Header>
                 {notificationError && (
                   <Dropdown.ItemText className="text-danger">{notificationError}</Dropdown.ItemText>
                 )}
@@ -282,12 +301,13 @@ function StudentNavbar() {
                   notifications.map((notification) => (
                     <Dropdown.ItemText key={notification.id} className="py-2">
                       <div className="d-flex justify-content-between align-items-center">
-                        <span style={{ flex: 1 }}>{notification.message}</span>
+                        <span style={{ flex: 1, color: '#1f2937' }}>{notification.message}</span>
                         <Button
-                          
+                          variant="primary"
                           size="sm"
                           onClick={() => openQuizModal(notification)}
                           disabled={notificationLoading || matieres.length === 0}
+                          style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', border: 'none' }}
                         >
                           Passer
                         </Button>
@@ -317,7 +337,7 @@ function StudentNavbar() {
                   }}
                 />
               </Dropdown.Toggle>
-              <Dropdown.Menu className="shadow-sm p-3 rounded border-0" style={{ minWidth: '200px' }}>
+              <Dropdown.Menu className="shadow-sm p-3 rounded border-0" style={{ minWidth: '200px', background: '#f1f5f9' }}>
                 <div className="d-flex align-items-center px-3 py-3 bg-light rounded">
                   <img
                     src={
@@ -331,7 +351,7 @@ function StudentNavbar() {
                       width: '55px',
                       height: '55px',
                       objectFit: 'cover',
-                      border: '2px solid #ddd',
+                      border: '2px solid #3b82f6',
                     }}
                   />
                   <div>
@@ -355,22 +375,23 @@ function StudentNavbar() {
 
       {/* Quiz Modal */}
       <Modal show={showModal} onHide={handleCancel} centered>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', color: '#ffffff' }}>
           <Modal.Title>Détails du Quiz</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ background: '#f1f5f9' }}>
           {selectedQuiz ? (
             <>
               <p><strong>Titre :</strong> {selectedQuiz.titre}</p>
               <p><strong>Matière :</strong> {selectedQuiz.Matiere?.nom || 'Non spécifié'}</p>
-              <p><strong>Temps estimé :</strong> {selectedQuiz.setDuration}</p>
+              <p><strong>Temps estimé :</strong> {selectedQuiz.setDuration} minutes</p>
               <p><strong>Nombre de questions :</strong> {selectedQuiz.QuizQuestions?.length || 'Non disponible'}</p>
             </>
           ) : (
             <p>Chargement des détails du quiz...</p>
           )}
+          {notificationError && <div className="text-danger mt-2">{notificationError}</div>}
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer style={{ background: '#f1f5f9' }}>
           <Button variant="secondary" onClick={handleCancel} disabled={notificationLoading}>
             Annuler
           </Button>
@@ -378,6 +399,7 @@ function StudentNavbar() {
             variant="primary"
             onClick={handleConfirm}
             disabled={notificationLoading || !selectedQuiz}
+            style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', border: 'none' }}
           >
             Confirmer
           </Button>
