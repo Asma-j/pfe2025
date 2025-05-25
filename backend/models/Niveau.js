@@ -14,9 +14,9 @@ const Niveau = sequelize.define('Niveau', {
     description: {
         type: DataTypes.TEXT,
         allowNull: true,
-    }
+    },
 }, {
-    timestamps: false
+    timestamps: false,
 });
 
 module.exports = Niveau;

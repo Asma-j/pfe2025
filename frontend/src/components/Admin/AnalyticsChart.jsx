@@ -10,7 +10,7 @@ function AnalyticsChart() {
     labels: ['January', 'February', 'March', 'April', 'May', 'June'],
     datasets: [
       {
-        label: 'Student Engagement',
+        label: '	Engagement des étudiants ',
         data: [65, 59, 80, 81, 56, 55],
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
         borderColor: 'rgba(54, 162, 235, 1)',
@@ -24,7 +24,7 @@ function AnalyticsChart() {
     plugins: {
       title: {
         display: true,
-        text: 'Student Engagement Over Time',
+        text: 'Évolution de lengagement des étudiants dans le temps',
       },
     },
   };

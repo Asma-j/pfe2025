@@ -7,14 +7,18 @@ import {
   Form,
   Container,
   Card,
+  ListGroup,
+  Image, // Added Image to the import
 } from 'react-bootstrap';
-import { Plus, Pencil, Trash } from 'react-bootstrap-icons';
+import { Plus, Pencil, Trash, Eye } from 'react-bootstrap-icons';
 import './admin.css';
 
 const GestionNiveau = () => {
   const [niveaux, setNiveaux] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showMatieresModal, setShowMatieresModal] = useState(false);
   const [selectedNiveau, setSelectedNiveau] = useState(null);
+  const [selectedNiveauMatieres, setSelectedNiveauMatieres] = useState(null);
   const [formData, setFormData] = useState({ nom: '', description: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +36,7 @@ const GestionNiveau = () => {
         setLoading(false);
       }
     };
-    fetchNiveaux();
+    fetchNiveaux(); // Corrected from fetchNiveau to fetchNiveaux
   }, []);
 
   // Handle form input changes
@@ -54,11 +58,9 @@ const GestionNiveau = () => {
 
     try {
       if (selectedNiveau) {
-        // Update existing niveau
         const response = await axios.put(`http://localhost:5000/api/niveaux/${selectedNiveau.id}`, data);
         setNiveaux(niveaux.map((n) => (n.id === selectedNiveau.id ? response.data.niveau : n)));
       } else {
-        // Create new niveau
         const response = await axios.post('http://localhost:5000/api/niveaux', data);
         setNiveaux([...niveaux, response.data.niveau]);
       }
@@ -73,7 +75,7 @@ const GestionNiveau = () => {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (window.confirm('Voulez-vous vraiment supprimer ce niveau ?')) {
+    if (window.confirm('Voulez-vous vraiment supprimer ce niveau ? Cela supprimera également toutes les matières associées.')) {
       try {
         await axios.delete(`http://localhost:5000/api/niveaux/${id}`);
         setNiveaux(niveaux.filter((n) => n.id !== id));
@@ -89,6 +91,12 @@ const GestionNiveau = () => {
     setSelectedNiveau(niveau);
     setFormData({ nom: niveau.nom, description: niveau.description });
     setShowModal(true);
+  };
+
+  // Handle view matieres
+  const handleViewMatieres = (niveau) => {
+    setSelectedNiveauMatieres(niveau);
+    setShowMatieresModal(true);
   };
 
   if (loading) return <div className="text-center py-10">Chargement...</div>;
@@ -119,6 +127,7 @@ const GestionNiveau = () => {
                 <th>ID</th>
                 <th>Nom</th>
                 <th>Description</th>
+                <th>Matières</th>
                 <th className="text-center">Actions</th>
               </tr>
             </thead>
@@ -128,7 +137,20 @@ const GestionNiveau = () => {
                   <td>{niveau.id}</td>
                   <td>{niveau.nom}</td>
                   <td>{niveau.description || 'N/A'}</td>
+                  <td>
+                    {niveau.Matieres && niveau.Matieres.length > 0
+                      ? niveau.Matieres.map((m) => m.nom).join(', ')
+                      : 'Aucune matière'}
+                  </td>
                   <td className="text-center">
+                    <Button
+                      variant="outline-info"
+                      size="sm"
+                      className="me-2 btn-action"
+                      onClick={() => handleViewMatieres(niveau)}
+                    >
+                      <Eye size={16} /> Voir Matières
+                    </Button>
                     <Button
                       variant="outline-warning"
                       size="sm"
@@ -153,6 +175,7 @@ const GestionNiveau = () => {
         </Card.Body>
       </Card>
 
+      {/* Modal for creating/updating niveau */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton className="bg-primary text-white">
           <Modal.Title>{selectedNiveau ? 'Modifier Niveau' : 'Ajouter Niveau'}</Modal.Title>
@@ -190,6 +213,44 @@ const GestionNiveau = () => {
             </Button>
           </Form>
         </Modal.Body>
+      </Modal>
+
+      {/* Modal for viewing matieres */}
+      <Modal show={showMatieresModal} onHide={() => setShowMatieresModal(false)} centered>
+        <Modal.Header closeButton className="bg-info text-white">
+          <Modal.Title>Matières de {selectedNiveauMatieres?.nom}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedNiveauMatieres && selectedNiveauMatieres.Matieres?.length > 0 ? (
+            <ListGroup>
+              {selectedNiveauMatieres.Matieres.map((matiere) => (
+                <ListGroup.Item key={matiere.id}>
+                  <strong>{matiere.nom}</strong>: {matiere.description || 'N/A'}
+                  {matiere.image && (
+                    <Image
+                      src={`http://localhost:5000/uploads/${matiere.image}`}
+                      alt={matiere.nom}
+                      width={40}
+                      height={40}
+                      rounded
+                      className="ms-2"
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/50?text=Image+Not+Found';
+                      }}
+                    />
+                  )}
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          ) : (
+            <p>Aucune matière associée à ce niveau.</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowMatieresModal(false)}>
+            Fermer
+          </Button>
+        </Modal.Footer>
       </Modal>
     </Container>
   );

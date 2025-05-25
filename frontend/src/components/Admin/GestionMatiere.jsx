@@ -9,32 +9,38 @@ import {
   Image,
   Container,
   Card,
+  FormSelect,
 } from 'react-bootstrap';
 import { Plus, Pencil, Trash, Upload } from 'react-bootstrap-icons';
 import './admin.css'; // Import custom CSS
 
 const GestionMatiere = () => {
   const [matieres, setMatieres] = useState([]);
+  const [niveaux, setNiveaux] = useState([]); // State for niveaux
   const [showModal, setShowModal] = useState(false);
   const [selectedMatiere, setSelectedMatiere] = useState(null);
-  const [formData, setFormData] = useState({ nom: '', description: '', image: null });
+  const [formData, setFormData] = useState({ nom: '', description: '', image: null, niveauId: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch all matieres
+  // Fetch all matieres and niveaux
   useEffect(() => {
-    const fetchMatieres = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/matieres');
-        setMatieres(response.data);
+        const [matieresResponse, niveauxResponse] = await Promise.all([
+          axios.get('http://localhost:5000/api/matieres'),
+          axios.get('http://localhost:5000/api/niveaux'),
+        ]);
+        setMatieres(matieresResponse.data);
+        setNiveaux(niveauxResponse.data);
       } catch (err) {
-        setError('Erreur lors du chargement des matières');
+        setError('Erreur lors du chargement des données');
         console.error('Fetch error:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchMatieres();
+    fetchData();
   }, []);
 
   // Handle form input changes
@@ -55,6 +61,7 @@ const GestionMatiere = () => {
     const data = new FormData();
     data.append('nom', formData.nom);
     data.append('description', formData.description);
+    data.append('niveauId', formData.niveauId);
     if (formData.image) {
       data.append('image', formData.image);
       console.log('FormData image:', formData.image);
@@ -75,7 +82,7 @@ const GestionMatiere = () => {
         setMatieres([...matieres, response.data.matiere]);
       }
       setShowModal(false);
-      setFormData({ nom: '', description: '', image: null });
+      setFormData({ nom: '', description: '', image: null, niveauId: '' });
       setSelectedMatiere(null);
     } catch (err) {
       setError('Erreur lors de la soumission');
@@ -99,7 +106,12 @@ const GestionMatiere = () => {
   // Handle edit
   const handleEdit = (matiere) => {
     setSelectedMatiere(matiere);
-    setFormData({ nom: matiere.nom, description: matiere.description, image: null });
+    setFormData({
+      nom: matiere.nom,
+      description: matiere.description,
+      image: null,
+      niveauId: matiere.niveauId || '',
+    });
     setShowModal(true);
   };
 
@@ -122,7 +134,7 @@ const GestionMatiere = () => {
               className="btn-add-matiere"
               onClick={() => {
                 setSelectedMatiere(null);
-                setFormData({ nom: '', description: '', image: null });
+                setFormData({ nom: '', description: '', image: null, niveauId: '' });
                 setShowModal(true);
               }}
             >
@@ -136,6 +148,7 @@ const GestionMatiere = () => {
                 <th>ID</th>
                 <th>Nom</th>
                 <th>Description</th>
+                <th>Niveau</th>
                 <th>Image</th>
                 <th className="text-center">Actions</th>
               </tr>
@@ -146,6 +159,7 @@ const GestionMatiere = () => {
                   <td>{matiere.id}</td>
                   <td>{matiere.nom}</td>
                   <td>{matiere.description || 'N/A'}</td>
+                  <td>{matiere.Niveau ? matiere.Niveau.nom : 'N/A'}</td>
                   <td>
                     {matiere.image ? (
                       <Image
@@ -201,6 +215,22 @@ const GestionMatiere = () => {
                 required
                 placeholder="Entrez le nom de la matière"
               />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Niveau</Form.Label>
+              <Form.Select
+                name="niveauId"
+                value={formData.niveauId}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Sélectionnez un niveau</option>
+                {niveaux.map((niveau) => (
+                  <option key={niveau.id} value={niveau.id}>
+                    {niveau.nom}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>

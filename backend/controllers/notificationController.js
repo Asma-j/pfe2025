@@ -7,7 +7,6 @@ exports.getNotifications = async (req, res) => {
       return res.status(400).json({ message: 'userId est requis' });
     }
 
-    // Fetch all notifications for the given userId
     const notifications = await Notification.findAll({
       where: { userId },
       include: [
@@ -24,7 +23,25 @@ exports.getNotifications = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
+exports.getNotificationInscription = async (req, res) => {
+  try {
+    // Fetch notifications for users with status 'pending'
+    const notifications = await Notification.findAll({
+      include: [
+        {
+          model: Utilisateur,
+          attributes: ['id', 'prenom', 'nom', 'email', 'status'],
+          where: { status: 'pending' }, // Filter for pending users
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
+    res.json(notifications);
+  } catch (err) {
+    console.error('Erreur lors de la récupération des notifications :', err);
+    res.status(500).json({ error: err.message });
+  }
+};
 exports.markNotificationAsRead = async (req, res) => {
   try {
     const { notificationId } = req.params;

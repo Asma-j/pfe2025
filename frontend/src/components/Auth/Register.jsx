@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Form, Row, Col, Image } from "react-bootstrap";
-import image from "../images/auth.jpg"; // Ensure this path is correct
+import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import image from "../images/auth.jpg";
 import "./auth.css";
 
 function Register({ show = true, onClose }) {
@@ -35,25 +35,20 @@ function Register({ show = true, onClose }) {
           if (Array.isArray(response.data)) setClasses(response.data);
         })
         .catch((error) => console.error("Erreur classes :", error));
-    } else {
-      setClasses([]);
-      setSelectedClasses([]);
-    }
-  }, [roleType, selectedNiveau]);
 
-  useEffect(() => {
-    if (roleType === "enseignant") {
       axios
-        .get("http://localhost:5000/api/matieres")
+        .get(`http://localhost:5000/api/matieres/niveau/${selectedNiveau}`)
         .then((response) => {
           if (Array.isArray(response.data)) setMatieres(response.data);
         })
         .catch((error) => console.error("Erreur matières :", error));
     } else {
+      setClasses([]);
+      setSelectedClasses([]);
       setMatieres([]);
       setSelectedMatieres([]);
     }
-  }, [roleType]);
+  }, [roleType, selectedNiveau]);
 
   useEffect(() => {
     setSelectedNiveau("");
@@ -213,7 +208,6 @@ function Register({ show = true, onClose }) {
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group className="mb-3">
-                 
                   <div>
                     <Form.Check
                       inline
@@ -301,7 +295,7 @@ function Register({ show = true, onClose }) {
                           />
                         ))
                       ) : (
-                        <div>Aucune matière disponible</div>
+                        <div>Aucune matière disponible pour ce niveau</div>
                       )}
                       {errors.matieres && (
                         <div className="invalid-feedback d-block">{errors.matieres}</div>

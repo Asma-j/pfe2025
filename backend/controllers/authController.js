@@ -5,7 +5,10 @@ const Utilisateur = require('../models/Utilisateur');
 const Role = require('../models/Role');
 const nodemailer = require('nodemailer');
 const Notification = require('../models/Notification');
-
+const UtilisateurClasse = require('../models/UtilisateurClasse');
+const Matiere = require('../models/Matiere');
+const Classe = require('../models/Classe');
+const UtilisateurMatiere = require('../models/UtilisateurMatiere');
 const SECRET_KEY = 'secret'; 
 
 
@@ -23,66 +26,82 @@ exports.register = async (req, res) => {
   const { prenom, nom, email, mot_de_passe, id_role, niveau_id, classes, matieres } = req.body;
 
   if (!prenom || !nom || !email || !mot_de_passe || !id_role || !niveau_id) {
-      return res.status(400).json({ error: 'Tous les champs obligatoires sont requis' });
+    return res.status(400).json({ error: 'Tous les champs obligatoires sont requis' });
   }
 
   try {
-      const utilisateurExiste = await Utilisateur.findOne({ where: { email } });
-      if (utilisateurExiste) {
-          return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+    const utilisateurExiste = await Utilisateur.findOne({ where: { email } });
+    if (utilisateurExiste) {
+      return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+    }
+
+    const role = await Role.findByPk(id_role);
+    if (!role) return res.status(400).json({ error: 'Rôle invalide' });
+
+    // Validate matieres if provided
+    if (matieres && matieres.length > 0) {
+      const validMatieres = await Matiere.findAll({ where: { id: matieres } });
+      if (validMatieres.length !== matieres.length) {
+        return res.status(400).json({ error: 'Une ou plusieurs matières sont invalides' });
       }
+    }
 
-      const role = await Role.findByPk(id_role);
-      if (!role) return res.status(400).json({ error: 'Rôle invalide' });
-
-      const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
-
-      const isAdmin = role.nom_role.toLowerCase() === 'admin';
-      const isEnseignant = role.nom_role.toLowerCase() === 'enseignant';
-
-      const user = await Utilisateur.create({
-          prenom,
-          nom,
-          email,
-          mot_de_passe: hashedPassword,
-          id_role,
-          niveau_id,
-          status: isAdmin ? 'approved' : 'pending',
-      });
-
-      // For enseignant, associate classes and matieres
-      if (isEnseignant && Array.isArray(classes) && classes.length > 0) {
-          const utilisateurClasseData = classes.map(classeId => ({
-              utilisateur_id: user.id,
-              classe_id: classeId,
-          }));
-          await UtilisateurClasse.bulkCreate(utilisateurClasseData);
+    // Validate classes if provided
+    if (classes && classes.length > 0) {
+      const validClasses = await Classe.findAll({ where: { id: classes } });
+      if (validClasses.length !== classes.length) {
+        return res.status(400).json({ error: 'Une ou plusieurs classes sont invalides' });
       }
+    }
 
-      if (isEnseignant && Array.isArray(matieres) && matieres.length > 0) {
-          const utilisateurMatiereData = matieres.map(matiereId => ({
-              utilisateur_id: user.id,
-              matiere_id: matiereId,
-          }));
-          await UtilisateurMatiere.bulkCreate(utilisateurMatiereData);
-      }
+    const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
-      if (!isAdmin) {
-          const notification = await Notification.create({
-              message: `Nouvelle inscription en attente: ${prenom} ${nom} (${email})`,
-              userId: user.id, // Notification tied to the new user
-          });
-          console.log('Notification créée :', notification.toJSON());
-      }
+    const isAdmin = role.nom_role.toLowerCase() === 'admin';
+    const isEnseignant = role.nom_role.toLowerCase() === 'enseignant';
 
-      res.json({
-          message: isAdmin
-              ? 'Compte administrateur créé avec succès.'
-              : 'Inscription en attente d’approbation par l’admin.',
-      });
+    const user = await Utilisateur.create({
+      prenom,
+      nom,
+      email,
+      mot_de_passe: hashedPassword,
+      id_role,
+      niveau_id,
+      status: isAdmin ? 'approved' : 'pending',
+    });
+
+    // For enseignant, associate classes and matieres
+    if (isEnseignant && Array.isArray(classes) && classes.length > 0) {
+      const utilisateurClasseData = classes.map(classeId => ({
+        utilisateur_id: user.id,
+        classe_id: classeId,
+      }));
+      await UtilisateurClasse.bulkCreate(utilisateurClasseData);
+    }
+
+    if (isEnseignant && Array.isArray(matieres) && matieres.length > 0) {
+      const utilisateurMatiereData = matieres.map(matiereId => ({
+        utilisateur_id: user.id,
+        matiere_id: matiereId,
+      }));
+      await UtilisateurMatiere.bulkCreate(utilisateurMatiereData);
+    }
+
+ if (!isAdmin) {
+  const notification = await Notification.create({
+    message: `Nouvelle inscription en attente: ${prenom} ${nom} (${email})`,
+    userId: user.id,
+  });
+  console.log('Notification créée :', notification.toJSON());
+}
+
+    res.json({
+      message: isAdmin
+        ? 'Compte administrateur créé avec succès.'
+        : 'Inscription en attente d’approbation par l’admin.',
+    });
   } catch (err) {
-      console.error('Erreur lors de l’inscription :', err);
-      res.status(500).json({ error: err.message });
+    console.error('Erreur lors de l’inscription :', err);
+    res.status(500).json({ error: err.message });
   }
 };
   

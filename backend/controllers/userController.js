@@ -138,22 +138,50 @@ exports.getStudents = async (req, res) => {
 };
 
 exports.addUser = async (req, res) => {
-  const { prenom, nom, email, mot_de_passe, id_role, niveau_id, matiere_id, classe_ids } = req.body;
+  const { prenom, nom, email, mot_de_passe, id_role, niveau_id, matiere_ids, classe_ids } = req.body;
 
   if (!prenom || !nom || !email || !mot_de_passe || !id_role) {
     return res.status(400).json({ error: 'Tous les champs obligatoires sont requis' });
   }
 
   try {
+    // Validate niveau_id if provided
+    if (niveau_id) {
+      const niveau = await Niveau.findByPk(niveau_id);
+      if (!niveau) {
+        return res.status(400).json({ error: 'Niveau non trouvé' });
+      }
+    }
+
+    // Validate matiere_ids if provided
+    if (matiere_ids && matiere_ids.length > 0) {
+      const matieres = await Matiere.findAll({ where: { id: matiere_ids } });
+      if (matieres.length !== matiere_ids.length) {
+        return res.status(400).json({ error: 'Une ou plusieurs matières sont invalides' });
+      }
+    }
+
+    // Validate classe_ids if provided
+    if (classe_ids && classe_ids.length > 0) {
+      const classes = await Classe.findAll({ where: { id: classe_ids.map(id => parseInt(id)) } });
+      if (classes.length !== classe_ids.length) {
+        return res.status(400).json({ error: 'Une ou plusieurs classes sont invalides' });
+      }
+    }
+
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(mot_de_passe, saltRounds);
 
     const user = await Utilisateur.create({
-      prenom, nom, email, mot_de_passe: hashedPassword, id_role, status: 'pending',
-      niveau_id, matiere_id,
+      prenom,
+      nom,
+      email,
+      mot_de_passe: hashedPassword,
+      id_role,
+      status: 'pending',
+      niveau_id,
+      matiere_id: matiere_ids && matiere_ids.length > 0 ? matiere_ids[0] : null, // Use first matiere_id for compatibility
     });
-
-    console.log('Received classe_ids:', classe_ids);
 
     if (classe_ids && classe_ids.length > 0) {
       const associations = classe_ids.map(classe_id => ({
@@ -161,7 +189,6 @@ exports.addUser = async (req, res) => {
         classe_id: parseInt(classe_id),
       }));
       await UtilisateurClasse.bulkCreate(associations);
-      console.log('Associations created:', associations);
     }
 
     const createdUser = await Utilisateur.findByPk(user.id, {
@@ -169,8 +196,8 @@ exports.addUser = async (req, res) => {
         { model: Role, attributes: ['nom_role'] },
         { model: Niveau, as: 'Niveau' },
         { model: Matiere, as: 'Matiere' },
-        { model: Classe, as: 'AssociatedClasses', through: { attributes: [] } } // Updated alias
-      ]
+        { model: Classe, as: 'AssociatedClasses', through: { attributes: [] } },
+      ],
     });
 
     const formattedUser = {
@@ -187,13 +214,17 @@ exports.addUser = async (req, res) => {
       matiere_id: createdUser.matiere_id,
       matiere_nom: createdUser.Matiere ? createdUser.Matiere.nom : null,
       classe_ids: createdUser.AssociatedClasses ? createdUser.AssociatedClasses.map(classe => classe.id) : [],
-      classe_noms: createdUser.AssociatedClasses ? createdUser.AssociatedClasses.map(classe => classe.nom) : []
+      classe_noms: createdUser.AssociatedClasses ? createdUser.AssociatedClasses.map(classe => classe.nom) : [],
     };
 
     res.json({ message: 'Utilisateur ajouté avec succès', data: formattedUser });
   } catch (err) {
-    console.error('Error adding user:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('Error adding user:', err);
+    if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
+      res.status(400).json({ error: err.errors.map(e => e.message).join(', ') });
+    } else {
+      res.status(500).json({ error: 'Erreur serveur lors de l’ajout de l’utilisateur' });
+    }
   }
 };
 

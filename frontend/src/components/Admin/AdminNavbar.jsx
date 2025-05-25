@@ -1,3 +1,4 @@
+// AdminNavbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Badge, Button, Form, ListGroup, Modal, Dropdown } from 'react-bootstrap';
 import { Bell, Search, Gear } from 'react-bootstrap-icons';
@@ -6,19 +7,20 @@ import './admin.css';
 
 const AdminNavbar = ({
   notifications,
+  setNotifications,
   showNotificationsModal,
   setShowNotificationsModal,
   handleApprove,
   userPhoto,
   setCurrentView,
-  setActiveTab, // Add setActiveTab prop
+  setActiveTab,
 }) => {
   const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch('/api/profile', {
+        const response = await fetch('http://localhost:5000/api/users/profile', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -27,8 +29,8 @@ const AdminNavbar = ({
         if (response.ok) {
           setUserProfile(data);
         }
-      } catch (err) {
-        console.error('Error fetching profile:', err);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
       }
     };
     fetchProfile();
@@ -41,7 +43,7 @@ const AdminNavbar = ({
 
   const handleManageUsers = (tab = 'teachers') => {
     setCurrentView('user');
-    setActiveTab(tab); // Set the active tab (default to 'teachers')
+    setActiveTab(tab);
   };
 
   const handleManageLevels = () => {
@@ -136,7 +138,6 @@ const AdminNavbar = ({
         </div>
       </div>
 
-      {/* Notifications Modal */}
       <Modal
         show={showNotificationsModal}
         onHide={() => setShowNotificationsModal(false)}
@@ -173,7 +174,9 @@ const AdminNavbar = ({
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => handleApprove(notif.userId)}
+                    onClick={async () => {
+                      await handleApprove(notif.userId);
+                    }}
                     className="approve-btn"
                   >
                     Approuver
@@ -182,7 +185,7 @@ const AdminNavbar = ({
               ))}
             </ListGroup>
           ) : (
-            <p className="text-center">Aucune notification</p>
+            <p className="text-center">Aucune inscription</p>
           )}
         </Modal.Body>
       </Modal>

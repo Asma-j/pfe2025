@@ -11,7 +11,8 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
   const [allStudents, setAllStudents] = useState([]);
   const [levels, setLevels] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [subjects, setSubjects] = useState([]);
+  const [subjects, setSubjects] = useState([]); // All subjects fetched initially
+  const [filteredSubjects, setFilteredSubjects] = useState([]); // Subjects filtered by niveau
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -29,7 +30,7 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
     id_role: '',
     niveau_id: '',
     classe_ids: [],
-    matiere_id: ''
+    matiere_ids: [] // Changed from matiere_id to matiere_ids for multiple selections
   });
   const [error, setError] = useState(null);
 
@@ -48,7 +49,8 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
         setStudents(studentsResponse.data);
         setAllStudents(studentsResponse.data);
         setLevels(levelsResponse.data);
-        setSubjects(subjectsResponse.data);
+        setSubjects(subjectsResponse.data); // Store all subjects
+        setFilteredSubjects(subjectsResponse.data); // Initially, filtered subjects are the same as all subjects
         setClasses(classesResponse.data);
         setFilteredStudents(studentsResponse.data);
         setLoading(false);
@@ -86,6 +88,17 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
     setSelectedUser(null);
     setError(null);
     setSelectedClasse('');
+    setFilteredSubjects(subjects); // Reset filtered subjects when switching tabs
+    setNewUser({
+      prenom: '',
+      nom: '',
+      email: '',
+      mot_de_passe: '',
+      id_role: '',
+      niveau_id: '',
+      classe_ids: [],
+      matiere_ids: [] // Reset matiere_ids
+    });
   };
 
   const validatePassword = (password) => /^.{6,}$/.test(password);
@@ -101,7 +114,7 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
         id_role: activeTab === 'teachers' ? 1003 : 2,
         niveau_id: activeTab === 'teachers' ? newUser.niveau_id : newUser.niveau_id || undefined,
         classe_ids: activeTab === 'teachers' ? newUser.classe_ids : undefined,
-        matiere_id: activeTab === 'teachers' ? newUser.matiere_id : undefined
+        matiere_ids: activeTab === 'teachers' ? newUser.matiere_ids : undefined // Send array of matiere_ids
       };
       const response = await axios.post('http://localhost:5000/api/users/addUser', userData);
       const newUserData = response.data.data;
@@ -121,7 +134,7 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
         id_role: '',
         niveau_id: '',
         classe_ids: [],
-        matiere_id: ''
+        matiere_ids: []
       });
       setError(null);
     } catch (error) {
@@ -173,12 +186,23 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
 
   const handleLevelChange = async (e) => {
     const niveau_id = e.target.value;
-    setNewUser({ ...newUser, niveau_id, classe_ids: [] });
-    if (niveau_id && activeTab === 'teachers') {
-      const classesResponse = await axios.get(`http://localhost:5000/api/classes/niveau/${niveau_id}`);
-      setClasses(classesResponse.data);
-    } else {
-      setClasses([]);
+    setNewUser({ ...newUser, niveau_id, classe_ids: [], matiere_ids: [] }); // Reset classe_ids and matiere_ids
+    try {
+      if (niveau_id) {
+        // Fetch classes for the selected niveau
+        const classesResponse = await axios.get(`http://localhost:5000/api/classes/niveau/${niveau_id}`);
+        setClasses(classesResponse.data);
+
+        // Fetch subjects for the selected niveau
+        const subjectsResponse = await axios.get(`http://localhost:5000/api/matieres/niveau/${niveau_id}`);
+        setFilteredSubjects(subjectsResponse.data);
+      } else {
+        setClasses([]);
+        setFilteredSubjects(subjects); // Reset to all subjects if no niveau is selected
+      }
+    } catch (error) {
+      console.error('Error fetching classes or subjects:', error);
+      setError('Erreur lors du chargement des classes ou des matières.');
     }
   };
 
@@ -251,7 +275,7 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
               <th>Email</th>
               <th>Niveau</th>
               {activeTab === 'teachers' && <th>Classes</th>}
-              {activeTab === 'teachers' && <th>Matière</th>}
+              {activeTab === 'teachers' && <th>Matières</th>}
               <th>STATUT</th>
               <th className="text-end">ACTIONS</th>
             </tr>
@@ -273,7 +297,7 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
                   <td className="text-muted">{user.email}</td>
                   <td className="text-muted">{user.niveau_nom || '-'}</td>
                   {activeTab === 'teachers' && <td className="text-muted">{(user.classe_noms || []).join(', ') || '-'}</td>}
-                  {activeTab === 'teachers' && <td className="text-muted">{user.matiere_nom || '-'}</td>}
+                  {activeTab === 'teachers' && <td className="text-muted">{(user.matiere_noms || []).join(', ') || '-'}</td>}
                   <td className="text-muted">{user.status || 'pending'}</td>
                   <td className="text-end">
                     <OverlayTrigger placement="top" overlay={<Tooltip>Modifier le statut</Tooltip>}>
@@ -467,21 +491,31 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
                   </Form.Text>
                 </Form.Group>
               )}
-              {activeTab === 'teachers' && (
-                <Form.Group controlId="formUserMatiere" className="mb-3">
-                  <Form.Label className="form-label">Matière</Form.Label>
-                  <Form.Control
-                    as="select"
-                    value={newUser.matiere_id}
-                    onChange={(e) => setNewUser({ ...newUser, matiere_id: e.target.value })}
-                    className="form-control"
-                    required
-                  >
-                    <option value="">Sélectionner une matière</option>
-                    {subjects.map(subject => (
-                      <option key={subject.id} value={subject.id}>{subject.nom}</option>
+              {activeTab === 'teachers' && newUser.niveau_id && filteredSubjects.length > 0 && (
+                <Form.Group controlId="formUserMatieres" className="mb-3">
+                  <Form.Label className="form-label">Matières associées</Form.Label>
+                  <div className="class-selection-container">
+                    {filteredSubjects.map(subject => (
+                      <Form.Check
+                        key={subject.id}
+                        type="checkbox"
+                        id={`matiere-${subject.id}`}
+                        label={subject.nom}
+                        value={subject.id}
+                        checked={newUser.matiere_ids.includes(subject.id.toString())}
+                        onChange={(e) => {
+                          const updatedMatieres = e.target.checked
+                            ? [...newUser.matiere_ids, e.target.value]
+                            : newUser.matiere_ids.filter(id => id !== e.target.value);
+                          setNewUser({ ...newUser, matiere_ids: updatedMatieres });
+                        }}
+                        className="mb-2"
+                      />
                     ))}
-                  </Form.Control>
+                  </div>
+                  <Form.Text className="text-muted">
+                    Cochez pour sélectionner plusieurs matières.
+                  </Form.Text>
                 </Form.Group>
               )}
             </Form>
@@ -499,7 +533,7 @@ function GestionUtilisateur({ activeTab, setActiveTab }) {
                 !newUser.email ||
                 !newUser.mot_de_passe ||
                 !newUser.niveau_id ||
-                (activeTab === 'teachers' && (newUser.classe_ids.length === 0 || !newUser.matiere_id))
+                (activeTab === 'teachers' && (newUser.classe_ids.length === 0 || newUser.matiere_ids.length === 0))
               }
               className="custom-btn"
             >

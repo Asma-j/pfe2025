@@ -7,6 +7,7 @@ const Utilisateur = require('./Utilisateur');
 const StudentAnswer = require('./StudentAnswer');
 const Classe = require('./Classe');
 const UtilisateurClasse = require('./UtilisateurClasse');
+const Niveau = require('./Niveau');
 
 let associationsDefined = false;
 
@@ -21,7 +22,8 @@ module.exports = function defineAssociations() {
       Utilisateur,
       StudentAnswer,
       Classe,
-      UtilisateurClasse
+      UtilisateurClasse,
+      Niveau
     };
   }
 
@@ -35,7 +37,8 @@ module.exports = function defineAssociations() {
 
   // Log existing associations before defining AssociatedClasses
   console.log('Utilisateur associations before AssociatedClasses:', Object.keys(Utilisateur.associations));
-
+Niveau.hasMany(Matiere, { foreignKey: 'niveauId', onDelete: 'CASCADE' });
+Matiere.belongsTo(Niveau, { foreignKey: 'niveauId' });
   // Utilisateur-Classe many-to-many association
   Utilisateur.belongsToMany(Classe, {
     through: UtilisateurClasse,
@@ -65,6 +68,7 @@ module.exports = function defineAssociations() {
     Utilisateur,
     StudentAnswer,
     Classe,
-    UtilisateurClasse
+    UtilisateurClasse,
+    Niveau
   };
 };

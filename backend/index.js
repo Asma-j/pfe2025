@@ -19,6 +19,7 @@ const paiementRoutes = require('./routes/paiementRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const niveauRoutes = require('./routes/niveauRoutes');
 const presenceRoutes= require('./routes/presenceRoutes')
+const statisticsRoutes = require('./routes/statistics');
 const { startCronJobs } = require('./middleware/cronJobs');
 startCronJobs();
 const app = express();
@@ -33,6 +34,8 @@ connectDB().then(() => {
 });
 
 defineAssociations();
+
+app.use('/api/statistics', statisticsRoutes);
 app.use('/api/zoom', zoomRoutes);
 app.use('/api/presence', presenceRoutes);
 app.use('/api/quiz', quizRoutes);

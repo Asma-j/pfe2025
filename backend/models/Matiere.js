@@ -17,10 +17,18 @@ const Matiere = sequelize.define('Matiere', {
     },
     image: {  
         type: DataTypes.STRING,
-        allowNull: true
-    }
+        allowNull: true,
+    },
+    niveauId: { 
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Niveaux', 
+            key: 'id',
+        },
+    },
 }, {
-    timestamps: false
+    timestamps: false,
 });
 
 module.exports = Matiere;

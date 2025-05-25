@@ -4,6 +4,7 @@ const matiereController = require('../controllers/matiereController');
 const upload = require('../middleware/upload');
 
 router.get('/', matiereController.getAllMatieres);
+router.get('/niveau/:niveauId', matiereController.getMatieresByNiveau);
 router.get('/:id', matiereController.getMatiereById);
 router.post('/', upload, matiereController.createMatiere); 
 router.put('/:id', upload, matiereController.updateMatiere); 

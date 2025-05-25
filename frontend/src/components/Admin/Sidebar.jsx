@@ -22,8 +22,6 @@ const Sidebar = ({ setCurrentView, currentView, setActiveTab }) => {
       </div>
       {[
         { icon: Speedometer, label: 'Tableau de bord', view: 'dashboard' },
-        { icon: People, label: 'Étudiants', view: 'user', tab: 'students' },
-        { icon: People, label: 'Enseignant', view: 'user', tab: 'teachers' },
         { icon: Book, label: 'Cours', view: 'courses' },
         { icon: Calendar, label: 'Emploi du temps', view: 'schedule' },
         { icon: Gear, label: 'Paramètres', view: 'settings' },
