@@ -329,31 +329,36 @@ exports.getStudentsByClasse = async (req, res) => {
       }
     };
     // Récupérer le profil de l'utilisateur connecté
-    exports.getProfile = async (req, res) => {
-      try {
-        const user = await Utilisateur.findByPk(req.user.id, {
-          include: [{ model: Role, attributes: ['nom_role'] }],
-          attributes: ['id', 'prenom', 'nom', 'email', 'photo', 'status', 'id_role'],
-        });
-    
-        if (!user) {
-          return res.status(404).json({ error: 'Utilisateur non trouvé' });
-        }
-    
-        res.json({
-          id: user.id,
-          prenom: user.prenom,
-          nom: user.nom,
-          email: user.email,
-          photo: user.photo,
-          role: user.Role.nom_role,
-          status: user.status,
-        });
-      } catch (err) {
-        console.error('Erreur lors de la récupération du profil :', err);
-        res.status(500).json({ error: err.message });
-      }
-    };
+ exports.getProfile = async (req, res) => {
+  try {
+    const user = await Utilisateur.findByPk(req.user.id, {
+      include: [
+        { model: Role, attributes: ['nom_role'] },
+        { model: Niveau, attributes: ['id', 'nom'], as: 'Niveau', required: false },
+      ],
+      attributes: ['id', 'prenom', 'nom', 'email', 'photo', 'status', 'id_role', 'niveau_id'],
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+
+    res.json({
+      id: user.id,
+      prenom: user.prenom,
+      nom: user.nom,
+      email: user.email,
+      photo: user.photo,
+      role: user.Role.nom_role,
+      status: user.status,
+      niveau_id: user.niveau_id,
+      niveau_nom: user.Niveau?.nom || null,
+    });
+  } catch (err) {
+    console.error('Erreur lors de la récupération du profil :', err);
+    res.status(500).json({ error: err.message });
+  }
+};
   // Mettre à jour le profil de l'utilisateur connecté
   exports.updateProfile = (req, res) => {
 

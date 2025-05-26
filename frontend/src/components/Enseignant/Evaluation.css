@@ -1,0 +1,280 @@
+/* Evaluation.css */
+.evaluation-container {
+  max-width: 1200px;
+margin-right: 150px;
+  padding: 2rem 1rem;
+  background: #f5f7fa;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.evaluation-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.evaluation-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.evaluation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-end;
+}
+
+.form-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.form-select,
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #1a202c;
+  background: #ffffff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%234a5568' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+.generate-button {
+  
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.generate-button:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.generate-button.disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-alert {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.quiz-display {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quiz-card {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.quiz-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 1rem;
+}
+
+.quiz-info {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.questions-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #1a202c;
+  margin-bottom: 1rem;
+}
+
+.questions-list {
+  list-style: none;
+  padding: 0;
+}
+
+.question-item {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.question-item:last-child {
+  border-bottom: none;
+}
+
+.question-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.warning-text {
+  font-size: 0.85rem;
+  color: #d97706;
+  margin-bottom: 0.5rem;
+}
+
+.options-list {
+  list-style: none;
+  padding: 0;
+  margin-left: 1rem;
+}
+
+.option-item {
+  font-size: 0.9rem;
+  color: #4a5568;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.option-item.correct {
+  color: #15803d;
+  font-weight: 500;
+}
+
+.correct-badge {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.error-text {
+  font-size: 0.85rem;
+  color: #b91c1c;
+}
+
+.no-questions,
+.no-quiz {
+  text-align: center;
+  font-size: 1rem;
+  color: #6b7280;
+  padding: 2rem;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 2rem;
+  color: #4a5568;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #3b82f6;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .evaluation-container {
+    padding: 1rem;
+  }
+
+  .evaluation-card,
+  .quiz-display {
+    padding: 1.5rem;
+  }
+
+  .evaluation-title {
+    font-size: 1.5rem;
+  }
+
+  .evaluation-controls {
+    flex-direction: column;
+  }
+
+  .form-group {
+    min-width: 100%;
+  }
+
+  .quiz-title {
+    font-size: 1.25rem;
+  }
+
+  .questions-title {
+    font-size: 1.1rem;
+  }
+}

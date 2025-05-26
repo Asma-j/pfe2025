@@ -1,0 +1,172 @@
+/* teacherCalendar.css */
+.calendar-container {
+  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.calendar-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.calendar-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.calendar-title {
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.rbc-calendar {
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.rbc-event {
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  transition: transform 0.2s ease;
+}
+
+.rbc-event:hover {
+  transform: scale(1.02);
+}
+
+.event-button {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border: none;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.event-button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+}
+
+.event-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.modal-custom {
+  background: rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.3s ease-in;
+}
+
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: none;
+  padding: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.modal-footer {
+  border-top: none;
+  padding: 1rem 1.5rem;
+}
+
+.modal-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+}
+
+.modal-btn:hover {
+  transform: scale(1.05);
+}
+
+.modal-btn-primary {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border: none;
+}
+
+.modal-btn-primary:hover {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+}
+
+.modal-btn-danger {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  border: none;
+}
+
+.modal-btn-danger:hover {
+  background: linear-gradient(90deg, #dc2626, #b91c1c);
+}
+
+.error-alert {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-left: 4px solid #b91c1c;
+  border-radius: 6px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 1rem;
+  }
+
+  .calendar-card {
+    padding: 1rem;
+  }
+
+  .calendar-title {
+    font-size: 1.5rem;
+  }
+
+  .rbc-calendar {
+    height: 400px !important;
+  }
+
+  .modal-content {
+    margin: 1rem;
+  }
+}

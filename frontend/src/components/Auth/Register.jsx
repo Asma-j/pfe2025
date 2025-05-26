@@ -132,7 +132,8 @@ function Register({ show = true, onClose }) {
       onHide={onClose}
       centered
       size="lg"
-      dialogClassName="custom-modal"
+      
+      dialogClassName="custom-modal "
     >
       <Modal.Header closeButton>
         <Modal.Title>Register</Modal.Title>

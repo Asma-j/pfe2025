@@ -55,7 +55,21 @@ body {
   color: #212529;
   transition: color 0.2s ease;
 }
+.niveau-title {
+  font-size: 1.2rem; /* Adjust size to match section-title or as desired */
+  font-weight: 500;
+  color: #333; /* Adjust color to match your theme */
+  margin: 0;
+  padding: 0.5rem 0;
+}
 
+/* Ensure responsiveness */
+@media (max-width: 767px) {
+  .niveau-title {
+    text-align: left; /* Align left on smaller screens */
+    margin-top: 0.4rem;
+  }
+}
 .course-card-link {
   text-decoration: none;
 }

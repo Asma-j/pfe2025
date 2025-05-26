@@ -3,6 +3,7 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import axios from 'axios';
+import './teacherCalendar.css';
 
 const localizer = momentLocalizer(moment);
 
@@ -17,7 +18,6 @@ const TeacherCalendar = () => {
     const fetchPlannings = async () => {
       try {
         const token = localStorage.getItem('token');
-        console.log(token)
         const response = await axios.get('http://localhost:5000/api/plannings', {
           params: { include: 'Cours,Classe' },
           headers: { Authorization: `Bearer ${token}` },
@@ -50,7 +50,6 @@ const TeacherCalendar = () => {
 
   const startMeeting = async (planning) => {
     try {
-      console.log('Starting meeting for planning:', planning);
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Utilisateur non authentifié. Veuillez vous connecter.');
@@ -58,38 +57,31 @@ const TeacherCalendar = () => {
 
       let meetingDetails;
       if (planning.meetingNumber && planning.joinUrl) {
-        console.log('Using existing meeting details:', planning.meetingNumber);
         meetingDetails = {
           meetingNumber: planning.meetingNumber,
           joinUrl: planning.joinUrl,
           password: planning.password,
         };
       } else {
-        console.log('Creating new Zoom meeting...');
         const response = await axios.post(
           'http://localhost:5000/api/zoom/create-meeting',
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log('Zoom API response:', response.data);
         meetingDetails = response.data;
 
-        console.log('Updating planning with meeting details:', meetingDetails);
-        const updateResponse = await axios.put(
+        await axios.put(
           `http://localhost:5000/api/plannings/${planning.id}`,
           meetingDetails,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log('Planning update response:', updateResponse.data);
       }
 
-      console.log('Updating planning status to "En cours"...');
-      const statusResponse = await axios.put(
+      await axios.put(
         `http://localhost:5000/api/plannings/${planning.id}/status`,
         { statut: 'En cours' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log('Status update response:', statusResponse.data);
 
       setMeetingDetails(meetingDetails);
       setSelectedPlanning(planning);
@@ -106,12 +98,11 @@ const TeacherCalendar = () => {
   const endMeeting = async (meetingId, planningId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(
+      await axios.post(
         `http://localhost:5000/api/zoom/end-meeting/${meetingId}`,
         { planningId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log('Meeting ended:', response.data);
       setShowModal(false);
       setEvents((prevEvents) =>
         prevEvents.map((event) =>
@@ -132,7 +123,6 @@ const TeacherCalendar = () => {
       if (!joinUrl) {
         throw new Error('Lien de réunion non disponible.');
       }
-      console.log('Redirecting to Zoom meeting:', joinUrl);
       const newWindow = window.open(joinUrl, '_blank');
       if (!newWindow) {
         throw new Error('Échec de l\'ouverture de la réunion Zoom. Veuillez vérifier les paramètres de votre navigateur.');
@@ -168,56 +158,63 @@ const TeacherCalendar = () => {
   const EventComponent = forwardRef(({ event }, ref) => {
     const enabled = isMeetingButtonEnabled(event.resource);
     return (
-      <div ref={ref}>
-        <span>{event.title}</span>
-        <div>
-          <button
-            className={`btn btn-primary btn-sm mt-1 ${!enabled ? 'disabled' : ''}`}
-            disabled={!enabled}
-            onClick={() => startMeeting(event.resource)}
-          >
-            Démarrer la réunion
-          </button>
-        </div>
+      <div ref={ref} className="d-flex flex-column">
+        <span className="mb-1">{event.title}</span>
+        <button
+          className={`event-button text-white ${!enabled ? 'disabled' : ''}`}
+          disabled={!enabled}
+          onClick={() => startMeeting(event.resource)}
+        >
+          Démarrer la réunion
+        </button>
       </div>
     );
   });
 
   return (
-    <div className="card p-3">
-      <h5>Emploi du temps</h5>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: 500 }}
-        eventPropGetter={(event) => {
-          let style = {};
-          switch (event.resource.statut) {
-            case 'Planifié':
-              style = { backgroundColor: '#007bff', borderColor: '#0056b3' };
-              break;
-            case 'En cours':
-              style = { backgroundColor: '#ffc107', borderColor: '#e0a800' };
-              break;
-            case 'Terminé':
-              style = { backgroundColor: '#28a745', borderColor: '#218838' };
-              break;
-            case 'Annulé':
-              style = { backgroundColor: '#dc3545', borderColor: '#c82333' };
-              break;
-            default:
-              style = { backgroundColor: '#6c757d', borderColor: '#5a6268' };
-          }
-          return { style };
-        }}
-        components={{ event: EventComponent }}
-      />
+    <div className="calendar-container">
+      <div className="calendar-card">
+        <h5 className="calendar-title">Emploi du temps</h5>
+        {error && (
+          <div className="error-alert">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11a1 1 0 112 0v4a1 1 0 11-2 0V7zm1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+            </svg>
+            {error}
+          </div>
+        )}
+        <Calendar
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 500 }}
+          eventPropGetter={(event) => {
+            let style = {};
+            switch (event.resource.statut) {
+              case 'Planifié':
+                style = { backgroundColor: '#3b82f6', borderColor: '#2563eb' };
+                break;
+              case 'En cours':
+                style = { backgroundColor: '#f59e0b', borderColor: '#d97706' };
+                break;
+              case 'Terminé':
+                style = { backgroundColor: '#10b981', borderColor: '#059669' };
+                break;
+              case 'Annulé':
+                style = { backgroundColor: '#ef4444', borderColor: '#dc2626' };
+                break;
+              default:
+                style = { backgroundColor: '#6b7280', borderColor: '#4b5563' };
+            }
+            return { style };
+          }}
+          components={{ event: EventComponent }}
+        />
+      </div>
 
-      <div className={`modal ${showModal ? 'd-block' : 'd-none'}`} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-        <div className="modal-dialog">
+      <div className={`modal fade ${showModal ? 'show' : ''} modal-custom`} style={{ display: showModal ? 'block' : 'none' }}>
+        <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Rejoindre la réunion</h5>
@@ -230,7 +227,7 @@ const TeacherCalendar = () => {
               </p>
               {meetingDetails ? (
                 <div>
-                  <p><strong>Lien de la réunion :</strong> <a href={meetingDetails.joinUrl} target="_blank" rel="noopener noreferrer">{meetingDetails.joinUrl}</a></p>
+                  <p><strong>Lien de la réunion :</strong> <a href={meetingDetails.joinUrl} target="_blank" rel="noopener noreferrer" className="text-primary">{meetingDetails.joinUrl}</a></p>
                   <p><strong>Numéro de la réunion :</strong> {meetingDetails.meetingNumber}</p>
                   <p><strong>Mot de passe :</strong> {meetingDetails.password}</p>
                 </div>
@@ -239,15 +236,15 @@ const TeacherCalendar = () => {
               )}
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+              <button className="modal-btn btn btn-secondary" onClick={() => setShowModal(false)}>
                 Annuler
               </button>
-              <button className="btn btn-primary" onClick={() => joinMeeting(meetingDetails)}>
+              <button className="modal-btn modal-btn-primary btn btn-primary" onClick={() => joinMeeting(meetingDetails)}>
                 Rejoindre la réunion
               </button>
               {meetingDetails && selectedPlanning?.statut === 'En cours' && (
                 <button
-                  className="btn btn-danger"
+                  className="modal-btn modal-btn-danger btn btn-danger"
                   onClick={() => endMeeting(meetingDetails.meetingNumber, selectedPlanning.id)}
                 >
                   Mettre fin à la réunion

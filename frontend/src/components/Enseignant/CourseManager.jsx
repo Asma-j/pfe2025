@@ -3,6 +3,7 @@ import { Table, Button, Form, Modal } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import axios from 'axios';
 import './Course.css';
+
 const CourseManager = () => {
   const [courses, setCourses] = useState([]);
   const [matieres, setMatieres] = useState([]);
@@ -133,9 +134,6 @@ const CourseManager = () => {
 
   // Edit course
   const handleEditCourse = (course) => {
-    console.log('Editing course:', course); // Debug log
-    setEditCourse(course);
-    // Ensure files is an array
     let filesArray = [];
     if (course.files) {
       if (Array.isArray(course.files)) {
@@ -152,6 +150,7 @@ const CourseManager = () => {
         }
       }
     }
+    setEditCourse(course);
     setNewCourse({
       titre: course.titre,
       description: course.description,
@@ -222,9 +221,7 @@ const CourseManager = () => {
       setEditCourse(null);
       setShowModal(false);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message;
-      setError(errorMessage);
-      console.error('Error updating course:', err);
+      setError(err.response?.data?.message || err.message);
     }
   };
 
@@ -260,303 +257,298 @@ const CourseManager = () => {
   };
 
   return (
-    <div className="card p-3">
-      <h5>Gestion des cours</h5>
-      <div className="filter-and-button mb-3">
-  <Form.Group className="matiere-filter">
-    <Form.Label>Sélectionner une matière</Form.Label>
-    <Form.Select
-      value={selectedMatiereId}
-      onChange={(e) => setSelectedMatiereId(e.target.value)}
-      className="w-100"
-    >
-      <option value="">Toutes les matières</option>
-      {matieres.map((matiere) => (
-        <option key={matiere.id} value={matiere.id}>
-          {matiere.nom}
-        </option>
-      ))}
-    </Form.Select>
-  </Form.Group>
-
-  <Button
-    variant="primary"
-    onClick={() => setShowModal(true)}
-    className="compact-btn"
-  >
-    <FaPlus /> Ajouter
-  </Button>
-</div>
-
-      {selectedMatiereId && (
-        <h6 className="mb-3">
-          Cours pour la matière : <strong>{selectedMatiereName}</strong>
-        </h6>
-      )}
-
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
+    <div className="course-container ">
+      <div className="card">
+        <h5 className="card-title">Gestion des cours</h5>
+        <div className="filter-and-button">
+          <Form.Group className="matiere-filter">
+            <Form.Label>Sélectionner une matière</Form.Label>
+            <Form.Select
+              value={selectedMatiereId}
+              onChange={(e) => setSelectedMatiereId(e.target.value)}
+            >
+              <option value="">Toutes les matières</option>
+              {matieres.map((matiere) => (
+                <option key={matiere.id} value={matiere.id}>
+                  {matiere.nom}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+          <Button variant="primary" onClick={() => setShowModal(true)} className="compact-btn">
+            <FaPlus /> Ajouter
+          </Button>
         </div>
-      )}
 
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Titre</th>
-            <th>Description</th>
-            <th>Prix</th>
-            <th>Module</th>
-            <th>Statut</th>
-            <th>Matière</th>
-            <th>Niveau</th>
-            <th>Créateur</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {courses.map((course) => (
-            <tr key={course.id}>
-              <td>{course.id}</td>
-              <td>{course.titre}</td>
-              <td>{course.description}</td>
-              <td>{course.prix}</td>
-              <td>{course.module}</td>
-              <td>{course.status}</td>
-              <td>{course.Matiere ? course.Matiere.nom : 'N/A'}</td>
-              <td>{course.Niveau ? course.Niveau.nom : 'N/A'}</td>
-              <td>
-                {course.Creator ? `${course.Creator.prenom} ${course.Creator.nom}` : 'N/A'}
-              </td>
-              <td className="d-flex align-items-center gap-2">
-  <Button
-    variant="warning"
-    onClick={() => handleEditCourse(course)}
-  >
-    <FaEdit />
-  </Button>
-  <Button
-    variant="danger"
-    onClick={() => handleDeleteCourse(course.id)}
-  >
-    <FaTrash />
-  </Button>
-</td>
+        {selectedMatiereId && (
+          <h6 className="mb-3">
+            Cours pour la matière : <strong>{selectedMatiereName}</strong>
+          </h6>
+        )}
+
+        {error && (
+          <div className="error-alert">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11a1 1 0 112 0v4a1 1 0 11-2 0V7zm1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+            </svg>
+            {error}
+          </div>
+        )}
+
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Titre</th>
+              <th>Description</th>
+              <th>Prix</th>
+              <th>Module</th>
+              <th>Statut</th>
+              <th>Matière</th>
+              <th>Niveau</th>
+              <th>Créateur</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {courses.map((course) => (
+              <tr key={course.id}>
+                <td>{course.id}</td>
+                <td>{course.titre}</td>
+                <td>{course.description}</td>
+                <td>{course.prix}</td>
+                <td>{course.module}</td>
+                <td>
+                  <span className={`status-badge status-${course.status.toLowerCase()}`}>
+                    {course.status}
+                  </span>
+                </td>
+                <td>{course.Matiere ? course.Matiere.nom : 'N/A'}</td>
+                <td>{course.Niveau ? course.Niveau.nom : 'N/A'}</td>
+                <td>
+                  {course.Creator ? `${course.Creator.prenom} ${course.Creator.nom}` : 'N/A'}
+                </td>
+                <td className="d-flex align-items-center gap-2">
+                  <Button variant="warning" onClick={() => handleEditCourse(course)} className="action-btn">
+                    <FaEdit />
+                  </Button>
+                  <Button variant="danger" onClick={() => handleDeleteCourse(course.id)} className="action-btn">
+                    <FaTrash />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
 
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>{editCourse ? 'Modifier le cours' : 'Ajouter un cours'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Titre du cours</Form.Label>
-              <Form.Control
-               className='w-50'
-                type="text"
-                value={newCourse.titre}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, titre: e.target.value })
-                }
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-               className='w-50'
-                as="textarea"
-                rows={3}
-                value={newCourse.description}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, description: e.target.value })
-                }
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Prix</Form.Label>
-              <Form.Control
-               className='w-50'
-                type="number"
-                step="0.01"
-                value={newCourse.prix}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, prix: e.target.value })
-                }
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Module</Form.Label>
-              <Form.Control
-               className='w-50'
-                type="text"
-                value={newCourse.module}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, module: e.target.value })
-                }
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Statut</Form.Label>
-              <Form.Select
-               className='w-50'
-                value={newCourse.status}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, status: e.target.value })
-                }
-              >
-                <option value="Gratuit">Gratuit</option>
-                <option value="Payé">Payé</option>
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Matière</Form.Label>
-              <Form.Select
-               className='w-50'
-                value={newCourse.matiere_id}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, matiere_id: e.target.value })
-                }
-                required
-              >
-                <option value="">Sélectionner une matière</option>
-                {matieres.map((matiere) => (
-                  <option key={matiere.id} value={matiere.id}>
-                    {matiere.nom}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Niveau</Form.Label>
-              <Form.Select
-               className='w-50'
-                value={newCourse.niveau_id}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, niveau_id: e.target.value })
-                }
-                required
-              >
-                <option value="">Sélectionner un niveau</option>
-                {niveaux.map((niveau) => (
-                  <option key={niveau.id} value={niveau.id}>
-                    {niveau.nom}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Image</Form.Label>
-              <Form.Control
-               className='w-50'
-                type="file"
-                name="image"
-                onChange={handleImageChange}
-                accept="image/*"
-              />
-              {editCourse && newCourse.image && typeof newCourse.image === 'string' && (
-                <div className="mt-2">
-                  <p>Image actuelle :</p>
-                  <img
-                    src={`http://localhost:5000/Uploads/${newCourse.image}`}
-                    alt="Aperçu"
-                    style={{ maxWidth: '100px', maxHeight: '100px' }}
-                  />
-                </div>
-              )}
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Fichiers (PDF, Word, etc.)</Form.Label>
-              <Form.Control
-               className='w-50'
-                type="file"
-                name="files"
-                multiple
-                onChange={handleFilesChange}
-                accept=".pdf,.doc,.docx"
-              />
-              {editCourse && Array.isArray(newCourse.files) && newCourse.files.length > 0 && (
-                <div className="mt-2">
-                  <p>Fichiers actuels :</p>
-                  <ul>
-                    {newCourse.files.map((file, index) => (
-                      <li key={index}>
-                        {typeof file === 'string' ? file : file.name}
-                      </li>
-                    ))}
-                  </ul>
-                  <Form.Check
-                    type="checkbox"
-                    label="Supprimer les fichiers existants"
-                    checked={newCourse.clearFiles}
-                    onChange={(e) =>
-                      setNewCourse({ ...newCourse, clearFiles: e.target.checked })
-                    }
-                  />
-                </div>
-              )}
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Vidéo</Form.Label>
-              <Form.Control
-               className='w-50'
-                type="file"
-                name="video"
-                onChange={handleVideoChange}
-                accept="video/*"
-              />
-              {editCourse && newCourse.video && typeof newCourse.video === 'string' && (
-                <div className="mt-2">
-                  <p>Vidéo actuelle :</p>
-                  <video
-                    src={`http://localhost:5000/Uploads/${newCourse.video}`}
-                    controls
-                    style={{ maxWidth: '100px', maxHeight: '100px' }}
-                  />
-                  <Form.Check
-                    type="checkbox"
-                    label="Supprimer la vidéo existante"
-                    checked={newCourse.clearVideo}
-                    onChange={(e) =>
-                      setNewCourse({ ...newCourse, clearVideo: e.target.checked })
-                    }
-                  />
-                </div>
-              )}
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={editCourse ? handleUpdateCourse : handleAddCourse}
-            disabled={
-              editCourse
-                ? newCourse.matiere_id == null || newCourse.matiere_id === '' ||
-                  newCourse.niveau_id == null || newCourse.niveau_id === ''
-                : newCourse.matiere_id == null || newCourse.matiere_id === '' ||
-                  newCourse.niveau_id == null || newCourse.niveau_id === '' ||
-                  !newCourse.titre ||
-                  !newCourse.description ||
-                  !newCourse.prix ||
-                  !newCourse.module
-            }
+     <Modal show={showModal} onHide={handleCloseModal}>
+  <Modal.Header closeButton>
+    <Modal.Title>{editCourse ? 'Modifier le cours' : 'Ajouter un cours'}</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <Form>
+      {/* Row 1: Titre */}
+      <div className="row mb-3">
+        <Form.Group className="col-12">
+          <Form.Label>Titre du cours</Form.Label>
+          <Form.Control
+            type="text"
+            value={newCourse.titre}
+            onChange={(e) => setNewCourse({ ...newCourse, titre: e.target.value })}
+            required
+          />
+        </Form.Group>
+      </div>
+
+      {/* Row 2: Description */}
+      <div className="row mb-3">
+        <Form.Group className="col-12">
+          <Form.Label>Description</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={3}
+            value={newCourse.description}
+            onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+            required
+          />
+        </Form.Group>
+      </div>
+
+      {/* Row 3: Prix and Module */}
+      <div className="row mb-3">
+        <Form.Group className="col-md-6">
+          <Form.Label>Prix</Form.Label>
+          <Form.Control
+            type="number"
+            step="0.01"
+            value={newCourse.prix}
+            onChange={(e) => setNewCourse({ ...newCourse, prix: e.target.value })}
+            required
+          />
+        </Form.Group>
+        <Form.Group className="col-md-6">
+          <Form.Label>Module</Form.Label>
+          <Form.Control
+            type="text"
+            value={newCourse.module}
+            onChange={(e) => setNewCourse({ ...newCourse, module: e.target.value })}
+            required
+          />
+        </Form.Group>
+      </div>
+
+      {/* Row 4: Statut and Matière */}
+      <div className="row mb-3">
+        <Form.Group className="col-md-6">
+          <Form.Label>Statut</Form.Label>
+          <Form.Select
+            value={newCourse.status}
+            onChange={(e) => setNewCourse({ ...newCourse, status: e.target.value })}
           >
-            {editCourse ? 'Modifier' : 'Ajouter'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+            <option value="Gratuit">Gratuit</option>
+            <option value="Payé">Payé</option>
+          </Form.Select>
+        </Form.Group>
+        <Form.Group className="col-md-6">
+          <Form.Label>Matière</Form.Label>
+          <Form.Select
+            value={newCourse.matiere_id}
+            onChange={(e) => setNewCourse({ ...newCourse, matiere_id: e.target.value })}
+            required
+          >
+            <option value="">Sélectionner une matière</option>
+            {matieres.map((matiere) => (
+              <option key={matiere.id} value={matiere.id}>
+                {matiere.nom}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+      </div>
+
+      {/* Row 5: Niveau and Image */}
+      <div className="row mb-3">
+        <Form.Group className="col-md-6">
+          <Form.Label>Niveau</Form.Label>
+          <Form.Select
+            value={newCourse.niveau_id}
+            onChange={(e) => setNewCourse({ ...newCourse, niveau_id: e.target.value })}
+            required
+          >
+            <option value="">Sélectionner un niveau</option>
+            {niveaux.map((niveau) => (
+              <option key={niveau.id} value={niveau.id}>
+                {niveau.nom}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+        <Form.Group className="col-md-6">
+          <Form.Label>Image</Form.Label>
+          <Form.Control
+            type="file"
+            name="image"
+            onChange={handleImageChange}
+            accept="image/*"
+          />
+          {editCourse && newCourse.image && typeof newCourse.image === 'string' && (
+            <div className="mt-2">
+              <p>Image actuelle :</p>
+              <img
+                src={`http://localhost:5000/Uploads/${newCourse.image}`}
+                alt="Aperçu"
+                className="preview-media"
+              />
+            </div>
+          )}
+        </Form.Group>
+      </div>
+
+      {/* Row 6: Fichiers and Vidéo */}
+      <div className="row mb-3">
+        <Form.Group className="col-md-6">
+          <Form.Label>Fichiers (PDF, Word, etc.)</Form.Label>
+          <Form.Control
+            type="file"
+            name="files"
+            multiple
+            onChange={handleFilesChange}
+            accept=".pdf,.doc,.docx"
+          />
+          {editCourse && Array.isArray(newCourse.files) && newCourse.files.length > 0 && (
+            <div className="mt-2">
+              <p>Fichiers actuels :</p>
+              <ul>
+                {newCourse.files.map((file, index) => (
+                  <li key={index}>
+                    {typeof file === 'string' ? file : file.name}
+                  </li>
+                ))}
+              </ul>
+              <Form.Check
+                type="checkbox"
+                label="Supprimer les fichiers existants"
+                checked={newCourse.clearFiles}
+                onChange={(e) =>
+                  setNewCourse({ ...newCourse, clearFiles: e.target.checked })
+                }
+              />
+            </div>
+          )}
+        </Form.Group>
+        <Form.Group className="col-md-6">
+          <Form.Label>Vidéo</Form.Label>
+          <Form.Control
+            type="file"
+            name="video"
+            onChange={handleVideoChange}
+            accept="video/*"
+          />
+          {editCourse && newCourse.video && typeof newCourse.video === 'string' && (
+            <div className="mt-2">
+              <p>Vidéo actuelle :</p>
+              <video
+                src={`http://localhost:5000/Uploads/${newCourse.video}`}
+                controls
+                className="preview-media"
+              />
+              <Form.Check
+                type="checkbox"
+                label="Supprimer la vidéo existante"
+                checked={newCourse.clearVideo}
+                onChange={(e) =>
+                  setNewCourse({ ...newCourse, clearVideo: e.target.checked })}
+              />
+            </div>
+          )}
+        </Form.Group>
+      </div>
+    </Form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={handleCloseModal} className="modal-btn modal-btn-secondary">
+      Annuler
+    </Button>
+    <Button
+      variant="primary"
+      onClick={editCourse ? handleUpdateCourse : handleAddCourse}
+      className="modal-btn modal-btn-primary"
+      disabled={
+        editCourse
+          ? !newCourse.matiere_id || !newCourse.niveau_id
+          : !newCourse.matiere_id ||
+            !newCourse.niveau_id ||
+            !newCourse.titre ||
+            !newCourse.description ||
+            !newCourse.prix ||
+            !newCourse.module
+      }
+    >
+      {editCourse ? 'Modifier le cours' : 'Ajouter'}
+    </Button>
+  </Modal.Footer>
+</Modal>
+      </div>
     </div>
   );
 };

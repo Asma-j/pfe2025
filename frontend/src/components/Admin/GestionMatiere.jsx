@@ -165,8 +165,8 @@ const GestionMatiere = () => {
                       <Image
                         src={`http://localhost:5000/uploads/${matiere.image}`}
                         alt={matiere.nom}
-                        width={40}
-                        height={40}
+                        width={65}
+                        height={50}
                         rounded
                         onError={handleImageError}
                       />

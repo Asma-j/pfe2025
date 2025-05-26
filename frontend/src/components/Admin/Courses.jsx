@@ -6,7 +6,7 @@ import'./Course.css'
 
 function CourseCard({ course }) {
   return (
-    <Card className="course-card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+    <Card className="course-card shadow-sm border-0 rounded-4 overflow-hidden ">
       <Card.Img 
         variant="top" 
         src={`http://localhost:5000/uploads/${course.image}`} 
@@ -15,7 +15,7 @@ function CourseCard({ course }) {
       />
 
       <Card.Body className="p-4">
-        <Card.Title className="mb-1 fw-bold fs-4">{course.titre}</Card.Title>
+        <Card.Title className="mb-1 fw-bold fs-4 ">{course.titre}</Card.Title>
         <Card.Subtitle className="mb-3 text-muted">{course.instructor || 'Instructeur inconnu'}</Card.Subtitle>
 
         <div className="d-flex justify-content-between mb-3 text-secondary small">
@@ -23,23 +23,10 @@ function CourseCard({ course }) {
             <FaUsers className="text-info" />
             <span>{course.students || 0} étudiants</span>
           </div>
-          <div className="d-flex align-items-center gap-2">
-            <FaClock className="text-info" />
-            <span>{course.duration || 'Durée inconnue'}</span>
-          </div>
+      
         </div>
 
-        <div className="mb-3">
-          <div className="d-flex justify-content-between small text-muted mb-1">
-            <span>Progression</span>
-            <span>{course.progress || 0}%</span>
-          </div>
-          <ProgressBar 
-            now={course.progress || 0} 
-            variant="info" 
-            className="progress-bar-rounded" 
-          />
-        </div>
+      
 
         <div className="d-flex justify-content-end gap-2">
           <Button variant="outline-info" size="sm">Voir les détails</Button>
@@ -179,10 +166,10 @@ function Courses() {
   }
 
   return (
-    <div className="container my-5">
+    <div className="container my-4">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
-          <h1 className="mb-1">📚Cours</h1>
+          <h2 className="">📚Cours</h2>
         </div>
       </div>
 
@@ -211,18 +198,7 @@ function Courses() {
                 </div>
               </div>
               <div className="d-flex gap-2">
-                <FaEdit
-                  className="text-white cursor-pointer"
-                  size={20}
-                  title="Modifier"
-                  onClick={() => handleShowEditModal(matiere)}
-                />
-                <FaTrash
-                  className="text-white cursor-pointer"
-                  size={20}
-                  title="Supprimer"
-                  onClick={() => handleDelete(matiere.id)}
-                />
+                
                 {matiere.isCoursesCollapsed ? (
                   <FaChevronDown
                     className="text-white cursor-pointer"

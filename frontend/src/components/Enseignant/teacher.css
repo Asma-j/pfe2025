@@ -9,7 +9,122 @@
   }
   
 
-  
+  /* Navbar */
+.navbar-teacher-container {
+    width: 1230px;
+    margin-top: 20px;
+    margin-left: 20px;
+  padding: 15px 30px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.search-form-teacher {
+  width: 300px;
+}
+
+.search-input-teacher {
+  border-radius: 20px 0 0 20px;
+  border: 1px solid #ced4da;
+  padding: 8px 15px;
+}
+
+.search-btn-teacher {
+  border-radius: 0 20px 20px 0;
+  border: 1px solid #007bff;
+  background: #007bff;
+  padding: 8px 15px;
+  transition: all 0.3s ease;
+}
+
+.search-btn-teacher:hover {
+  background: #0056b3;
+}
+
+.notification-bell-teacher {
+  position: relative;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.notification-bell-teacher:hover {
+  background: rgba(0, 123, 255, 0.1);
+}
+
+.badge-custom-teacher {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+}
+
+.settings-icon-teacher {
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+}
+
+.settings-icon-teacher:hover {
+  background: rgba(0, 123, 255, 0.1);
+}
+
+.settings-icon-teacher .bi {
+  color: #333;
+}
+
+.profile-img-teacher {
+  border: 2px solid #007bff;
+  transition: transform 0.3s ease;
+}
+
+.profile-img-teacher:hover {
+  transform: scale(1.1);
+}
+
+.dropdown-menu-custom-teacher {
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  padding: 10px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.dropdown-header-teacher {
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+.dropdown-item-teacher{
+  padding: 8px 20px;
+  font-size: 0.95rem;
+  transition: background 0.3s ease;
+}
+
+.dropdown-item-teacher:hover {
+  background: #f8f9fa;
+  color: #007bff;
+}
+
+.dropdown-item-teacher .bi {
+  color: #007bff;
+}
+
+.modal-custom-teacher {
+  border-radius: 12px;
+}
+
+.notification-item-teacher {
+  padding: 15px;
+  transition: background 0.3s ease;
+}
+
+.notification-item-teacher:hover {
+  background: #f8f9fa;
+}
+
+.approve-btn {
+  padding: 5px 15px;
+  font-size: 0.875rem;
+}
   .main-content {
     flex: 1;
     background-color: #f8f9fa;
