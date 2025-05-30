@@ -259,7 +259,7 @@ const CourseManager = () => {
   return (
     <div className="course-container ">
       <div className="card">
-        <h5 className="card-title">Gestion des cours</h5>
+        <h5 className="card1-title">Gestion des cours</h5>
         <div className="filter-and-button">
           <Form.Group className="matiere-filter">
             <Form.Label>Sélectionner une matière</Form.Label>

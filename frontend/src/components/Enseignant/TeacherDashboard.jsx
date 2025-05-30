@@ -191,7 +191,7 @@ function TeacherDashboard() {
                                                     onClick={() => {
                                                         localStorage.removeItem('token');
                                                         localStorage.removeItem('role');
-                                                        window.location.href = '/login';
+                                                        window.location.href = '/';
                                                     }}
                                                 >
                                                     Déconnexion

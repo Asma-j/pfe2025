@@ -21,6 +21,7 @@ Utilisateur.belongsTo(Role, { foreignKey: 'id_role' });
 Utilisateur.belongsTo(Niveau, { foreignKey: 'niveau_id' });
 Utilisateur.belongsTo(Matiere, { foreignKey: 'matiere_id' });
 
+
 // Remove belongsToMany association from here; it will be defined in index.js
 
 module.exports = Utilisateur;

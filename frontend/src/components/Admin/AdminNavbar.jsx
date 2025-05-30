@@ -38,7 +38,7 @@ const AdminNavbar = ({
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   const handleManageUsers = (tab = 'teachers') => {

@@ -82,4 +82,5 @@ Cours.belongsTo(Matiere, { foreignKey: 'matiere_id', onDelete: 'RESTRICT', onUpd
 Cours.belongsTo(Utilisateur, { foreignKey: 'created_by', as: 'Creator', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
 Cours.belongsTo(Niveau, { foreignKey: 'niveau_id', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
 
+
 module.exports = Cours;

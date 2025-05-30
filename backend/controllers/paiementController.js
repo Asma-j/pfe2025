@@ -23,7 +23,8 @@ exports.createPaiement = async (req, res) => {
             montant,
             methode_paiement,
             utilisateur_id,
-            cours_id
+            cours_id,
+            status: 'Complété'
         });
 
         res.status(201).json({ message: 'Payment created successfully', paiement });
@@ -49,22 +50,29 @@ exports.getAllPaiements = async (req, res) => {
 
 // Get payment by ID
 exports.getPaiementById = async (req, res) => {
-    try {
-        const paiement = await Paiement.findByPk(req.params.id, {
-            include: [
-                { model: Utilisateur, attributes: ['id', 'prenom', 'nom', 'email'] },
-                { model: Cours, attributes: ['id', 'titre'] }
-            ]
-        });
-        
-        if (!paiement) {
-            return res.status(404).json({ message: 'Payment not found' });
-        }
-        
-        res.status(200).json(paiement);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching payment', error: error.message });
+  try {
+    const { id } = req.params;
+
+    // Validate that id is a number
+    if (isNaN(id)) {
+      return res.status(400).json({ message: 'Invalid payment ID. Must be a number.' });
     }
+
+    const paiement = await Paiement.findByPk(id, {
+      include: [
+        { model: Utilisateur, attributes: ['id', 'prenom', 'nom', 'email'] },
+        { model: Cours, attributes: ['id', 'titre'] },
+      ],
+    });
+
+    if (!paiement) {
+      return res.status(404).json({ message: 'Payment not found' });
+    }
+
+    res.status(200).json(paiement);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching payment', error: error.message });
+  }
 };
 
 // Update payment status
@@ -87,7 +95,33 @@ exports.updatePaiementStatus = async (req, res) => {
         res.status(500).json({ message: 'Error updating payment', error: error.message });
     }
 };
+// Check if user has paid for a course
+exports.checkPaymentStatus = async (req, res) => {
+  try {
+    const { utilisateur_id, cours_id } = req.query;
 
+    if (!utilisateur_id || !cours_id) {
+      return res.status(400).json({ message: 'Utilisateur ID and Cours ID are required' });
+    }
+
+    console.log(`Received checkPaymentStatus request: utilisateur_id=${utilisateur_id}, cours_id=${cours_id}`);
+
+    const paiement = await Paiement.findOne({
+      where: {
+        utilisateur_id,
+        cours_id,
+        status: 'Complété',
+      },
+    });
+
+    console.log(`Payment result: ${paiement ? JSON.stringify(paiement) : 'No payment found'}`);
+
+    res.status(200).json({ hasPaid: !!paiement });
+  } catch (error) {
+    console.error('Error in checkPaymentStatus:', error);
+    res.status(500).json({ message: 'Error checking payment status', error: error.message, stack: error.stack });
+  }
+};
 // Delete payment
 exports.deletePaiement = async (req, res) => {
     try {

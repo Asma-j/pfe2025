@@ -134,33 +134,34 @@ exports.register = async (req, res) => {
     }
   };
 
-  exports.login = async (req, res) => {
-    const { email, mot_de_passe } = req.body;
-  
-    if (!email || !mot_de_passe) {
-      return res.status(400).json({ error: "Email et mot de passe sont requis" });
-    }
-  
-    try {
-      const user = await Utilisateur.findOne({
-        where: { email },
-        include: [{ model: Role, attributes: ['nom_role'] }],
-      });
-  
-      if (!user) return res.status(401).json({ error: "Utilisateur non trouvé" });
-  
-      const isMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
-      if (!isMatch) return res.status(401).json({ error: "Mot de passe incorrect" });
-  
-      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-  
-      res.json({
-        message: "Connexion réussie",
-        token,
-        role: user.Role.nom_role, // ✅ ici on renvoie le nom du rôle
-      });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  };
+exports.login = async (req, res) => {
+  const { email, mot_de_passe } = req.body;
+
+  if (!email || !mot_de_passe) {
+    return res.status(400).json({ error: "Email et mot de passe sont requis" });
+  }
+
+  try {
+    const user = await Utilisateur.findOne({
+      where: { email },
+      include: [{ model: Role, attributes: ['nom_role'] }],
+    });
+
+    if (!user) return res.status(401).json({ error: "Utilisateur non trouvé" });
+
+    const isMatch = await bcrypt.compare(mot_de_passe, user.mot_de_passe);
+    if (!isMatch) return res.status(401).json({ error: "Mot de passe incorrect" });
+
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+    res.json({
+      message: "Connexion réussie",
+      token,
+      userId: user.id, // Add userId to the response
+      role: user.Role.nom_role,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
   

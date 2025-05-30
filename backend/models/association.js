@@ -1,4 +1,3 @@
-// models/association.js
 const Quiz = require('./Quiz');
 const QuizQuestion = require('./QuizQuestion');
 const Cours = require('./Cours');
@@ -8,6 +7,7 @@ const StudentAnswer = require('./StudentAnswer');
 const Classe = require('./Classe');
 const UtilisateurClasse = require('./UtilisateurClasse');
 const Niveau = require('./Niveau');
+const Paiement = require('./Paiement'); // Add this line
 
 let associationsDefined = false;
 
@@ -23,7 +23,8 @@ module.exports = function defineAssociations() {
       StudentAnswer,
       Classe,
       UtilisateurClasse,
-      Niveau
+      Niveau,
+      Paiement // Add Paiement to the return object
     };
   }
 
@@ -37,8 +38,9 @@ module.exports = function defineAssociations() {
 
   // Log existing associations before defining AssociatedClasses
   console.log('Utilisateur associations before AssociatedClasses:', Object.keys(Utilisateur.associations));
-Niveau.hasMany(Matiere, { foreignKey: 'niveauId', onDelete: 'CASCADE' });
-Matiere.belongsTo(Niveau, { foreignKey: 'niveauId' });
+  Niveau.hasMany(Matiere, { foreignKey: 'niveauId', onDelete: 'CASCADE' });
+  Matiere.belongsTo(Niveau, { foreignKey: 'niveauId' });
+
   // Utilisateur-Classe many-to-many association
   Utilisateur.belongsToMany(Classe, {
     through: UtilisateurClasse,
@@ -53,6 +55,10 @@ Matiere.belongsTo(Niveau, { foreignKey: 'niveauId' });
     otherKey: 'utilisateur_id',
     as: 'Utilisateurs'
   });
+
+  // Paiement associations
+  Paiement.belongsTo(Utilisateur, { foreignKey: 'utilisateur_id', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
+  Paiement.belongsTo(Cours, { foreignKey: 'cours_id', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
 
   // Log associations after defining AssociatedClasses
   console.log('Utilisateur associations after AssociatedClasses:', Object.keys(Utilisateur.associations));
@@ -69,6 +75,7 @@ Matiere.belongsTo(Niveau, { foreignKey: 'niveauId' });
     StudentAnswer,
     Classe,
     UtilisateurClasse,
-    Niveau
+    Niveau,
+    Paiement 
   };
 };

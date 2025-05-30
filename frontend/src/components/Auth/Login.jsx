@@ -22,10 +22,13 @@ function Login({ show = true, onClose }) {
         mot_de_passe: motDePasse
       });
   
-      const { token, role } = response.data;
-  
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', role); 
+   const { token, role, userId } = response.data; // Assuming userId is part of the response
+
+    // Store token, role, and userId in localStorage
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', role);
+    localStorage.setItem('userId', userId);
+    console.log("userId",userId)
   
       // Redirection selon le rôle
       if (role === 'admin') {
