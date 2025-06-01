@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import image from '../images/auth.jpg';
 import './auth.css';
+import { getSessionId } from './session';
 
 function Login({ show = true, onClose }) {
   const [email, setEmail] = useState('');
@@ -12,36 +13,31 @@ function Login({ show = true, onClose }) {
 
   if (!show) return null;
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-  
-    try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        mot_de_passe: motDePasse
-      });
-  
-   const { token, role, userId } = response.data; // Assuming userId is part of the response
-
-    // Store token, role, and userId in localStorage
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', role);
-    localStorage.setItem('userId', userId);
-    console.log("userId",userId)
-  
-      // Redirection selon le rôle
-      if (role === 'admin') {
-        navigate('/admin');
-      } else if (role === 'Etudiant') {
-        navigate('/cours');
-      } else {
-        navigate('/teacher');
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || "Une erreur s'est produite");
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setError('');
+  try {
+    const response = await axios.post('http://localhost:5000/api/auth/login', {
+      email,
+      mot_de_passe: motDePasse,
+    });
+    const { token, role, userId } = response.data;
+    const sessionId = getSessionId();
+    localStorage.setItem(`token_${sessionId}`, token);
+    localStorage.setItem(`role_${sessionId}`, role);
+    localStorage.setItem(`userId_${sessionId}`, userId);
+    sessionStorage.setItem('sessionId', sessionId); // Persist sessionId
+    if (role === 'admin') {
+      navigate('/admin');
+    } else if (role === 'Etudiant') {
+      navigate('/cours');
+    } else {
+      navigate('/teacher');
     }
-  };
+  } catch (err) {
+    setError(err.response?.data?.error || "Une erreur s'est produite");
+  }
+};
   
 
   return (

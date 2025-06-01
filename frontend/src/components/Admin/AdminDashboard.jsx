@@ -22,6 +22,7 @@ import GestionNiveau from './GestionNiveau';
 import GestionClasse from './GestionClasse';
 import GestionUtilisateur from './GestionUtilisateur';
 import AnalyticsChart from './AnalyticsChart';
+import { getSessionId } from '../Auth/session';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const AdminDashboard = () => {
@@ -30,6 +31,7 @@ const AdminDashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [userPhoto, setUserPhoto] = useState(null);
+  const sessionId = getSessionId();
   const [stats, setStats] = useState({
     totalStudents: 0,
     activeCourses: 0,
@@ -39,9 +41,10 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+
+const token = localStorage.getItem(`token_${sessionId}`);
     if (!token) {
-      window.location.href = '/login';
+      window.location.href = '/';
       return;
     }
 
