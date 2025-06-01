@@ -79,6 +79,22 @@
 .description-card:hover {
   transform: translateY(-3px);
 }
+.payment-form .form-control {
+  border-radius: 10px;
+  box-shadow: none;
+  border: 1px solid #ccc;
+  transition: border-color 0.3s ease;
+}
+
+.payment-form .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.payment-form button {
+  border-radius: 8px;
+  font-weight: 500;
+}
 
 .attachment-section h5 {
   margin-top: 1.5rem;

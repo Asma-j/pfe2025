@@ -27,6 +27,7 @@ const CourseManager = () => {
   });
   const [editCourse, setEditCourse] = useState(null);
   const [error, setError] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Set axios default headers
   const token = localStorage.getItem('token');
@@ -73,6 +74,89 @@ const CourseManager = () => {
     }
   }, [selectedMatiereId, matieres]);
 
+  const generateAICourseContent = async () => {
+    if (!newCourse.matiere_id || !newCourse.niveau_id) {
+      setError('Veuillez sélectionner une matière et un niveau avant de générer le contenu.');
+      return;
+    }
+
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/cours/generate-course-content',
+        {
+          matiere_id: parseInt(newCourse.matiere_id),
+          niveau_id: parseInt(newCourse.niveau_id),
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          timeout: 120000, // 2-minute timeout
+        }
+      );
+
+      console.log('Backend NLP response:', response.data);
+
+      const aiContent = response.data;
+
+      if (!aiContent.titre || !aiContent.description || !aiContent.module) {
+        throw new Error('Contenu NLP incomplet ou mal formé');
+      }
+
+      let imageFile = null;
+      let pdfFile = null;
+      let videoFile = null;
+
+      // Fetch and create File object for image if image_path exists
+      if (aiContent.image_path) {
+        const imgResponse = await fetch(`http://localhost:5000/Uploads/${aiContent.image_path}`);
+        if (!imgResponse.ok) throw new Error('Failed to fetch generated image');
+        const imgBlob = await imgResponse.blob();
+        imageFile = new File([imgBlob], aiContent.image_path, { type: 'image/png' });
+      }
+
+      // Fetch and create File object for PDF if pdf_path exists
+      if (aiContent.pdf_path) {
+        const pdfResponse = await fetch(`http://localhost:5000/Uploads/${aiContent.pdf_path}`);
+        if (!pdfResponse.ok) throw new Error('Failed to fetch generated PDF');
+        const pdfBlob = await pdfResponse.blob();
+        pdfFile = new File([pdfBlob], aiContent.pdf_path, { type: 'application/pdf' });
+      }
+
+      // Fetch and create File object for video if video_path exists
+      if (aiContent.video_path) {
+        const videoResponse = await fetch(`http://localhost:5000/Uploads/${aiContent.video_path}`);
+        if (!videoResponse.ok) throw new Error('Failed to fetch generated video');
+        const videoBlob = await videoResponse.blob();
+        videoFile = new File([videoBlob], aiContent.video_path, { type: 'video/mp4' });
+      }
+
+      // Update newCourse with the generated content and files
+      setNewCourse((prev) => ({
+        ...prev,
+        titre: aiContent.titre.substring(0, 255),
+        description: aiContent.description,
+        module: aiContent.module,
+        image: imageFile || prev.image, // Use generated image if available
+        files: pdfFile ? [pdfFile] : prev.files, // Use generated PDF if available
+        video: videoFile || prev.video, // Use generated video if available
+      }));
+    } catch (err) {
+      console.error('NLP generation error:', err);
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        'Erreur inconnue lors de la génération du contenu NLP';
+      const rawOutput = err.response?.data?.rawOutput || 'Aucune sortie brute disponible';
+      setError(`Erreur: ${errorMessage}. Détails: ${rawOutput}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Handle file changes
   const handleImageChange = (e) => {
     setNewCourse((prev) => ({ ...prev, image: e.target.files[0] }));
@@ -90,10 +174,10 @@ const CourseManager = () => {
   const handleAddCourse = async () => {
     try {
       const formData = new FormData();
-      formData.append('titre', newCourse.titre);
-      formData.append('description', newCourse.description);
-      formData.append('prix', newCourse.prix);
-      formData.append('module', newCourse.module);
+      formData.append('titre', newCourse.titre || '');
+      formData.append('description', newCourse.description || '');
+      formData.append('prix', newCourse.prix || '0');
+      formData.append('module', newCourse.module || '');
       formData.append('status', newCourse.status);
       formData.append('matiere_id', newCourse.matiere_id);
       formData.append('niveau_id', newCourse.niveau_id);
@@ -127,6 +211,7 @@ const CourseManager = () => {
         clearVideo: false,
       });
       setShowModal(false);
+      setError(null);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     }
@@ -220,6 +305,7 @@ const CourseManager = () => {
       });
       setEditCourse(null);
       setShowModal(false);
+      setError(null);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     }
@@ -257,7 +343,7 @@ const CourseManager = () => {
   };
 
   return (
-    <div className="course-container ">
+    <div className="course-container">
       <div className="card">
         <h5 className="card1-title">Gestion des cours</h5>
         <div className="filter-and-button">
@@ -289,7 +375,11 @@ const CourseManager = () => {
         {error && (
           <div className="error-alert">
             <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11a1 1 0 112 0v4a1 1 0 11-2 0V7zm1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11a1 1 0 112 0v4a1 1 0 11-2 0V7zm1 8a1 1 0 100-2 1 1 0 000 2z"
+                clipRule="evenodd"
+              />
             </svg>
             {error}
           </div>
@@ -329,10 +419,18 @@ const CourseManager = () => {
                   {course.Creator ? `${course.Creator.prenom} ${course.Creator.nom}` : 'N/A'}
                 </td>
                 <td className="d-flex align-items-center gap-2">
-                  <Button variant="warning" onClick={() => handleEditCourse(course)} className="action-btn">
+                  <Button
+                    variant="warning"
+                    onClick={() => handleEditCourse(course)}
+                    className="action-btn"
+                  >
                     <FaEdit />
                   </Button>
-                  <Button variant="danger" onClick={() => handleDeleteCourse(course.id)} className="action-btn">
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDeleteCourse(course.id)}
+                    className="action-btn"
+                  >
                     <FaTrash />
                   </Button>
                 </td>
@@ -341,213 +439,232 @@ const CourseManager = () => {
           </tbody>
         </Table>
 
-     <Modal show={showModal} onHide={handleCloseModal}>
-  <Modal.Header closeButton>
-    <Modal.Title>{editCourse ? 'Modifier le cours' : 'Ajouter un cours'}</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <Form>
-      {/* Row 1: Titre */}
-      <div className="row mb-3">
-        <Form.Group className="col-12">
-          <Form.Label>Titre du cours</Form.Label>
-          <Form.Control
-            type="text"
-            value={newCourse.titre}
-            onChange={(e) => setNewCourse({ ...newCourse, titre: e.target.value })}
-            required
-          />
-        </Form.Group>
-      </div>
+        <Modal show={showModal} onHide={handleCloseModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>{editCourse ? 'Modifier le cours' : 'Ajouter un cours'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              {/* AI Generate Button */}
+              <Button
+                variant="info"
+                onClick={generateAICourseContent}
+                disabled={isGenerating || !newCourse.matiere_id || !newCourse.niveau_id}
+                className="mb-3"
+              >
+                {isGenerating ? 'Génération en cours...' : 'Générer contenu avec AI'}
+              </Button>
 
-      {/* Row 2: Description */}
-      <div className="row mb-3">
-        <Form.Group className="col-12">
-          <Form.Label>Description</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={newCourse.description}
-            onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-            required
-          />
-        </Form.Group>
-      </div>
+              {/* Row 1: Titre */}
+              <div className="row mb-3">
+                <Form.Group className="col-.
 
-      {/* Row 3: Prix and Module */}
-      <div className="row mb-3">
-        <Form.Group className="col-md-6">
-          <Form.Label>Prix</Form.Label>
-          <Form.Control
-            type="number"
-            step="0.01"
-            value={newCourse.prix}
-            onChange={(e) => setNewCourse({ ...newCourse, prix: e.target.value })}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="col-md-6">
-          <Form.Label>Module</Form.Label>
-          <Form.Control
-            type="text"
-            value={newCourse.module}
-            onChange={(e) => setNewCourse({ ...newCourse, module: e.target.value })}
-            required
-          />
-        </Form.Group>
-      </div>
+12">
+                  <Form.Label>Titre du cours</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={newCourse.titre}
+                    onChange={(e) => setNewCourse({ ...newCourse, titre: e.target.value })}
+                  />
+                </Form.Group>
+              </div>
 
-      {/* Row 4: Statut and Matière */}
-      <div className="row mb-3">
-        <Form.Group className="col-md-6">
-          <Form.Label>Statut</Form.Label>
-          <Form.Select
-            value={newCourse.status}
-            onChange={(e) => setNewCourse({ ...newCourse, status: e.target.value })}
-          >
-            <option value="Gratuit">Gratuit</option>
-            <option value="Payé">Payé</option>
-          </Form.Select>
-        </Form.Group>
-        <Form.Group className="col-md-6">
-          <Form.Label>Matière</Form.Label>
-          <Form.Select
-            value={newCourse.matiere_id}
-            onChange={(e) => setNewCourse({ ...newCourse, matiere_id: e.target.value })}
-            required
-          >
-            <option value="">Sélectionner une matière</option>
-            {matieres.map((matiere) => (
-              <option key={matiere.id} value={matiere.id}>
-                {matiere.nom}
-              </option>
-            ))}
-          </Form.Select>
-        </Form.Group>
-      </div>
+              {/* Row 2: Description */}
+              <div className="row mb-3">
+                <Form.Group className="col-12">
+                  <Form.Label>Description</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={newCourse.description}
+                    onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                  />
+                </Form.Group>
+              </div>
 
-      {/* Row 5: Niveau and Image */}
-      <div className="row mb-3">
-        <Form.Group className="col-md-6">
-          <Form.Label>Niveau</Form.Label>
-          <Form.Select
-            value={newCourse.niveau_id}
-            onChange={(e) => setNewCourse({ ...newCourse, niveau_id: e.target.value })}
-            required
-          >
-            <option value="">Sélectionner un niveau</option>
-            {niveaux.map((niveau) => (
-              <option key={niveau.id} value={niveau.id}>
-                {niveau.nom}
-              </option>
-            ))}
-          </Form.Select>
-        </Form.Group>
-        <Form.Group className="col-md-6">
-          <Form.Label>Image</Form.Label>
-          <Form.Control
-            type="file"
-            name="image"
-            onChange={handleImageChange}
-            accept="image/*"
-          />
-          {editCourse && newCourse.image && typeof newCourse.image === 'string' && (
-            <div className="mt-2">
-              <p>Image actuelle :</p>
-              <img
-                src={`http://localhost:5000/Uploads/${newCourse.image}`}
-                alt="Aperçu"
-                className="preview-media"
-              />
-            </div>
-          )}
-        </Form.Group>
-      </div>
+              {/* Row 3: Prix and Module */}
+              <div className="row mb-3">
+                <Form.Group className="col-md-6">
+                  <Form.Label>Prix</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    value={newCourse.prix}
+                    onChange={(e) => setNewCourse({ ...newCourse, prix: e.target.value })}
+                  />
+                </Form.Group>
+                <Form.Group className="col-md-6">
+                  <Form.Label>Module</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={newCourse.module}
+                    onChange={(e) => setNewCourse({ ...newCourse, module: e.target.value })}
+                  />
+                </Form.Group>
+              </div>
 
-      {/* Row 6: Fichiers and Vidéo */}
-      <div className="row mb-3">
-        <Form.Group className="col-md-6">
-          <Form.Label>Fichiers (PDF, Word, etc.)</Form.Label>
-          <Form.Control
-            type="file"
-            name="files"
-            multiple
-            onChange={handleFilesChange}
-            accept=".pdf,.doc,.docx"
-          />
-          {editCourse && Array.isArray(newCourse.files) && newCourse.files.length > 0 && (
-            <div className="mt-2">
-              <p>Fichiers actuels :</p>
-              <ul>
-                {newCourse.files.map((file, index) => (
-                  <li key={index}>
-                    {typeof file === 'string' ? file : file.name}
-                  </li>
-                ))}
-              </ul>
-              <Form.Check
-                type="checkbox"
-                label="Supprimer les fichiers existants"
-                checked={newCourse.clearFiles}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, clearFiles: e.target.checked })
-                }
-              />
-            </div>
-          )}
-        </Form.Group>
-        <Form.Group className="col-md-6">
-          <Form.Label>Vidéo</Form.Label>
-          <Form.Control
-            type="file"
-            name="video"
-            onChange={handleVideoChange}
-            accept="video/*"
-          />
-          {editCourse && newCourse.video && typeof newCourse.video === 'string' && (
-            <div className="mt-2">
-              <p>Vidéo actuelle :</p>
-              <video
-                src={`http://localhost:5000/Uploads/${newCourse.video}`}
-                controls
-                className="preview-media"
-              />
-              <Form.Check
-                type="checkbox"
-                label="Supprimer la vidéo existante"
-                checked={newCourse.clearVideo}
-                onChange={(e) =>
-                  setNewCourse({ ...newCourse, clearVideo: e.target.checked })}
-              />
-            </div>
-          )}
-        </Form.Group>
-      </div>
-    </Form>
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="secondary" onClick={handleCloseModal} className="modal-btn modal-btn-secondary">
-      Annuler
-    </Button>
-    <Button
-      variant="primary"
-      onClick={editCourse ? handleUpdateCourse : handleAddCourse}
-      className="modal-btn modal-btn-primary"
-      disabled={
-        editCourse
-          ? !newCourse.matiere_id || !newCourse.niveau_id
-          : !newCourse.matiere_id ||
-            !newCourse.niveau_id ||
-            !newCourse.titre ||
-            !newCourse.description ||
-            !newCourse.prix ||
-            !newCourse.module
-      }
-    >
-      {editCourse ? 'Modifier le cours' : 'Ajouter'}
-    </Button>
-  </Modal.Footer>
-</Modal>
+              {/* Row 4: Statut and Matière */}
+              <div className="row mb-3">
+                <Form.Group className="col-md-6">
+                  <Form.Label>Statut</Form.Label>
+                  <Form.Select
+                    value={newCourse.status}
+                    onChange={(e) => setNewCourse({ ...newCourse, status: e.target.value })}
+                  >
+                    <option value="Gratuit">Gratuit</option>
+                    <option value="Payé">Payé</option>
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="col-md-6">
+                  <Form.Label>Matière</Form.Label>
+                  <Form.Select
+                    value={newCourse.matiere_id}
+                    onChange={(e) => setNewCourse({ ...newCourse, matiere_id: e.target.value })}
+                    required
+                  >
+                    <option value="">Sélectionner une matière</option>
+                    {matieres.map((matiere) => (
+                      <option key={matiere.id} value={matiere.id}>
+                        {matiere.nom}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+
+              {/* Row 5: Niveau and Image */}
+              <div className="row mb-3">
+                <Form.Group className="col-md-6">
+                  <Form.Label>Niveau</Form.Label>
+                  <Form.Select
+                    value={newCourse.niveau_id}
+                    onChange={(e) => setNewCourse({ ...newCourse, niveau_id: e.target.value })}
+                    required
+                  >
+                    <option value="">Sélectionner un niveau</option>
+                    {niveaux.map((niveau) => (
+                      <option key={niveau.id} value={niveau.id}>
+                        {niveau.nom}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="col-md-6">
+                  <Form.Label>Image</Form.Label>
+                  <Form.Control
+                    type="file"
+                    name="image"
+                    onChange={handleImageChange}
+                    accept="image/*"
+                  />
+                  {(newCourse.image || (editCourse && newCourse.image)) && (
+                    <div className="mt-2">
+                      <p>Image actuelle :</p>
+                      {typeof newCourse.image === 'string' ? (
+                        <img
+                          src={`http://localhost:5000/Uploads/${newCourse.image}`}
+                          alt="Aperçu"
+                          className="preview-media"
+                        />
+                      ) : (
+                        <img
+                          src={URL.createObjectURL(newCourse.image)}
+                          alt="Aperçu"
+                          className="preview-media"
+                        />
+                      )}
+                    </div>
+                  )}
+                </Form.Group>
+              </div>
+
+              {/* Row 6: Fichiers and Vidéo */}
+              <div className="row mb-3">
+                <Form.Group className="col-md-6">
+                  <Form.Label>Fichiers (PDF, Word, etc.)</Form.Label>
+                  <Form.Control
+                    type="file"
+                    name="files"
+                    multiple
+                    onChange={handleFilesChange}
+                    accept=".pdf,.doc,.docx"
+                  />
+                  {(newCourse.files.length > 0 || (editCourse && Array.isArray(newCourse.files) && newCourse.files.length > 0)) && (
+                    <div className="mt-2">
+                      <p>Fichiers actuels :</p>
+                      <ul>
+                        {newCourse.files.map((file, index) => (
+                          <li key={index}>
+                            {typeof file === 'string' ? file : file.name}
+                          </li>
+                        ))}
+                      </ul>
+                      <Form.Check
+                        type="checkbox"
+                        label="Supprimer les fichiers existants"
+                        checked={newCourse.clearFiles}
+                        onChange={(e) =>
+                          setNewCourse({ ...newCourse, clearFiles: e.target.checked })
+                        }
+                      />
+                    </div>
+                  )}
+                </Form.Group>
+                <Form.Group className="col-md-6">
+                  <Form.Label>Vidéo</Form.Label>
+                  <Form.Control
+                    type="file"
+                    name="video"
+                    onChange={handleVideoChange}
+                    accept="video/*"
+                  />
+                  {(newCourse.video || (editCourse && newCourse.video)) && (
+                    <div className="mt-2">
+                      <p>Vidéo actuelle :</p>
+                      {typeof newCourse.video === 'string' ? (
+                        <video
+                          src={`http://localhost:5000/Uploads/${newCourse.video}`}
+                          controls
+                          className="preview-media"
+                        />
+                      ) : (
+                        <video
+                          src={URL.createObjectURL(newCourse.video)}
+                          controls
+                          className="preview-media"
+                        />
+                      )}
+                      <Form.Check
+                        type="checkbox"
+                        label="Supprimer la vidéo existante"
+                        checked={newCourse.clearVideo}
+                        onChange={(e) =>
+                          setNewCourse({ ...newCourse, clearVideo: e.target.checked })}
+                      />
+                    </div>
+                  )}
+                </Form.Group>
+              </div>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={handleCloseModal}
+              className="modal-btn modal-btn-secondary"
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="primary"
+              onClick={editCourse ? handleUpdateCourse : handleAddCourse}
+              className="modal-btn modal-btn-primary"
+              disabled={!newCourse.matiere_id || !newCourse.niveau_id}
+            >
+              {editCourse ? 'Modifier le cours' : 'Ajouter'}
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );

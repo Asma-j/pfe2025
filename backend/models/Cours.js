@@ -5,70 +5,73 @@ const Utilisateur = require('./Utilisateur');
 const Niveau = require('./Niveau');
 
 const Cours = sequelize.define('Cours', {
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
+   id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  titre: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [3, 255],
     },
-    titre: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-            len: [3, 255], // Minimum 3, maximum 255 characters
-        },
     },
-    description: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-    },
+   description:
+{
+type: DataTypes.TEXT,
+allowNull: false,
+},
     prix: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-        validate: {
-            min: 0, // Price cannot be negative
-        },
-    },
-    module: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-            notEmpty: true,
-            len: [1, 100],
-        },
-    },
-    status: {
-        type: DataTypes.ENUM('Payé', 'Gratuit'),
-        allowNull: false,
-    },
-    date_creation: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-    },
-    matiere_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    created_by: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    image: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    files: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: [],
-    },
-    video: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    niveau_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
+type: DataTypes.FLOAT,
+allowNull: false,
+validate: {
+min: 0,
+},
+},
+module:
+{
+type: DataTypes.STRING(255), // Or DataTypes.TEXT
+allowNull: false,
+validate: {
+notEmpty: true,
+len: [1, 255], // Increased to 255
+},
+},
+status: {
+type: DataTypes.ENUM('Payé', 'Gratuit'),
+allowNull: false,
+},
+date_creation: {
+type: DataTypes.DATE,
+defaultValue: DataTypes.NOW,
+},
+matiere_id: {
+type: DataTypes.INTEGER,
+allowNull: false,
+},
+created_by: {
+type: DataTypes.INTEGER,
+allowNull: false,
+},
+image: {
+type: DataTypes.STRING,
+allowNull: true,
+},
+files:
+{
+type: DataTypes.JSON,
+allowNull: true,
+defaultValue: [],
+},
+video: {
+type: DataTypes.STRING,
+allowNull: true,
+},
+niveau_id: {
+type: DataTypes.INTEGER,
+allowNull: false,
+},
 }, {
     timestamps: false,
     indexes: [

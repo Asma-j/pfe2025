@@ -21,6 +21,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import { jwtDecode } from "jwt-decode"; // Fixed: Use named import
+import "./content.css";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -250,80 +251,75 @@ useEffect(() => {
           </div>
         </div>
 
-        <Modal show={showModal} onHide={handleModalClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>Formulaire de paiement</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form onSubmit={handlePaymentSubmit}>
-              <h5>Choisissez votre mode de paiement</h5>
-              <Row className="mb-3">
-                <Col md={4}>
-                  <Button
-                    variant={paymentMethod === "credit" ? "primary" : "light"}
-                    onClick={() => setPaymentMethod("credit")}
-                    className="w-100"
-                  >
-                    <FaCcVisa className="me-2" /> Carte de Crédit
-                  </Button>
-                </Col>
-                <Col md={4}>
-                  <Button
-                    variant={paymentMethod === "paypal" ? "primary" : "light"}
-                    onClick={() => setPaymentMethod("paypal")}
-                    className="w-100"
-                  >
-                    <FaPaypal className="me-2" /> PayPal
-                  </Button>
-                </Col>
-              </Row>
-              {paymentMethod === "credit" ? (
-                <>
-                  <Form.Group controlId="formName">
-                    <Form.Label>Nom complet</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Entrez votre nom complet"
-                      required
-                    />
-                  </Form.Group>
-                  <Form.Group controlId="formEmail">
-                    <Form.Label>Email</Form.Label>
-                    <Form.Control
-                      type="email"
-                      placeholder="Entrez votre email"
-                      required
-                    />
-                  </Form.Group>
-                  <Form.Group controlId="formCreditCard">
-                    <Form.Label>Numéro de carte de crédit</Form.Label>
-                    <Form.Control type="text" placeholder="Numéro de carte" required />
-                  </Form.Group>
-                  <Form.Group controlId="formExpiry">
-                    <Form.Label>Date d'expiration</Form.Label>
-                    <Form.Control type="text" placeholder="MM/AA" required />
-                  </Form.Group>
-                  <Form.Group controlId="formCVC">
-                    <Form.Label>CVC</Form.Label>
-                    <Form.Control type="text" placeholder="CVC" required />
-                  </Form.Group>
-                </>
-              ) : (
-                <Form.Group controlId="formPaypalEmail">
-                  <Form.Label>Adresse email PayPal</Form.Label>
-                  <Form.Control
-                    type="email"
-                    placeholder="Entrez votre email PayPal"
-                    required
-                  />
-                </Form.Group>
-              )}
-              <Button variant="primary" type="submit" className="mt-3">
-                Payer maintenant
-              </Button>
-            </Form>
-          </Modal.Body>
-        </Modal>
+<Modal show={showModal} onHide={handleModalClose} centered>
+  <Modal.Header closeButton className=" text-white">
+    <Modal.Title>Formulaire de paiement</Modal.Title>
+  </Modal.Header>
+  <Modal.Body className="p-4">
+    <Form onSubmit={handlePaymentSubmit} className="payment-form">
+      <h5 className="mb-4 text-center">Choisissez votre mode de paiement</h5>
+      <Row className="mb-4 text-center">
+        <Col>
+          <Button
+            variant={paymentMethod === "credit" ? "primary" : "outline-secondary"}
+            onClick={() => setPaymentMethod("credit")}
+            className="w-100 py-2"
+          >
+            <FaCcVisa className="me-2" /> Carte de Crédit
+          </Button>
+        </Col>
+   
+      </Row>
+
+      {paymentMethod === "credit" && (
+        <>
+          <Form.Group className="mb-3">
+            <Form.Label>Nom complet</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Entrez votre nom complet"
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              placeholder="Entrez votre email"
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Numéro de carte</Form.Label>
+            <Form.Control type="text" placeholder="1234 5678 9012 3456" required />
+          </Form.Group>
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Expiration</Form.Label>
+                <Form.Control type="text" placeholder="MM/AA" required />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>CVC</Form.Label>
+                <Form.Control type="text" placeholder="123" required />
+              </Form.Group>
+            </Col>
+          </Row>
+        </>
+      )}
+
+    
+
+      <Button variant="success" type="submit" className="w-100 mt-3">
+        Payer maintenant
+      </Button>
+    </Form>
+  </Modal.Body>
+</Modal>
+
+
       </div>
       <Footer />
     </div>

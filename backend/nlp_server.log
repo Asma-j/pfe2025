@@ -1,0 +1,710 @@
+2025-05-30 21:16:37,202 - INFO - Starting course content generation
+2025-05-30 21:16:37,208 - INFO - Loading distilgpt2 model
+2025-05-30 21:16:38,358 - INFO - Model loaded successfully
+2025-05-30 21:16:38,358 - INFO - Generating text with distilgpt2
+2025-05-30 21:16:58,605 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "1". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description
+2025-05-30 21:16:58,605 - WARNING - No JSON found in generated text
+2025-05-30 21:16:58,605 - INFO - Generating PDF
+2025-05-30 21:16:58,621 - INFO - PDF generated: course_pdf_1748632618.pdf
+2025-05-30 21:16:58,621 - INFO - Course content generation completed
+2025-05-30 21:24:09,629 - INFO - Starting course content generation
+2025-05-30 21:24:09,645 - INFO - Loading distilgpt2 model
+2025-05-30 21:24:11,084 - INFO - Model loaded successfully
+2025-05-30 21:24:11,084 - INFO - Generating text with distilgpt2
+2025-05-30 21:24:52,424 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "1". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description
+2025-05-30 21:24:52,425 - WARNING - No JSON found in generated text
+2025-05-30 21:24:52,425 - INFO - Generating PDF
+2025-05-30 21:24:52,437 - INFO - PDF generated: course_pdf_1748633092.pdf
+2025-05-30 21:24:52,437 - INFO - Course content generation completed
+2025-05-30 21:28:31,391 - INFO - Starting course content generation
+2025-05-30 21:28:31,407 - INFO - Loading distilgpt2 model
+2025-05-30 21:28:38,706 - INFO - Model loaded successfully
+2025-05-30 21:28:38,706 - INFO - Generating text with distilgpt2
+2025-05-30 21:29:14,210 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "1". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description (100-150 words), 3-5 short module titles, and a video script (50-100 words). Return a JSON object with a course title, description
+2025-05-30 21:29:14,211 - WARNING - No JSON found in generated text
+2025-05-30 21:29:14,212 - INFO - Generating PDF
+2025-05-30 21:29:14,225 - INFO - PDF generated: course_pdf_1748633354.pdf
+2025-05-30 21:29:14,225 - INFO - Course content generation completed
+2025-05-30 21:35:07,171 - INFO - Starting course content generation
+2025-05-30 21:35:07,174 - INFO - Extracted matiere: html, niveau: 1
+2025-05-30 21:35:07,174 - INFO - Using template for matiere: html
+2025-05-30 21:35:07,174 - INFO - Loading distilgpt2 model
+2025-05-30 21:35:08,352 - INFO - Model loaded successfully
+2025-05-30 21:35:08,353 - INFO - Generating text with distilgpt2
+2025-05-30 21:35:10,239 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "1". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 1) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-05-30 21:35:10,240 - WARNING - No JSON found in generated text
+2025-05-30 21:35:10,240 - INFO - Generating PDF
+2025-05-30 21:35:10,256 - INFO - PDF generated: course_pdf_1748633710.pdf
+2025-05-30 21:35:10,256 - INFO - Course content generation completed
+2025-05-30 21:35:48,843 - INFO - Starting course content generation
+2025-05-30 21:35:48,847 - INFO - Extracted matiere: nodejs, niveau: 1
+2025-05-30 21:35:48,847 - INFO - Using template for matiere: nodejs
+2025-05-30 21:35:48,847 - INFO - Loading distilgpt2 model
+2025-05-30 21:35:50,141 - INFO - Model loaded successfully
+2025-05-30 21:35:50,141 - INFO - Generating text with distilgpt2
+2025-05-30 21:35:52,099 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "NodeJS" au niveau "1". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Nodejs course (level 1) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-05-30 21:35:52,100 - WARNING - No JSON found in generated text
+2025-05-30 21:35:52,100 - INFO - Generating PDF
+2025-05-30 21:35:52,119 - INFO - PDF generated: course_pdf_1748633752.pdf
+2025-05-30 21:35:52,119 - INFO - Course content generation completed
+2025-05-30 21:36:38,793 - INFO - Starting course content generation
+2025-05-30 21:36:38,797 - INFO - Extracted matiere: nodejs, niveau: 2
+2025-05-30 21:36:38,797 - INFO - Using template for matiere: nodejs
+2025-05-30 21:36:38,798 - INFO - Loading distilgpt2 model
+2025-05-30 21:36:39,980 - INFO - Model loaded successfully
+2025-05-30 21:36:39,981 - INFO - Generating text with distilgpt2
+2025-05-30 21:36:41,833 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "NodeJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Nodejs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-05-30 21:36:41,834 - WARNING - No JSON found in generated text
+2025-05-30 21:36:41,835 - INFO - Generating PDF
+2025-05-30 21:36:41,864 - INFO - PDF generated: course_pdf_1748633801.pdf
+2025-05-30 21:36:41,865 - INFO - Course content generation completed
+2025-05-30 21:41:18,262 - INFO - Starting course content generation
+2025-05-30 21:41:18,267 - INFO - Extracted matiere: nodejs, niveau: 2
+2025-05-30 21:41:18,268 - INFO - Using template for matiere: nodejs, niveau: 2
+2025-05-30 21:41:18,268 - INFO - Loading distilgpt2 model
+2025-05-30 21:41:19,687 - INFO - Model loaded successfully
+2025-05-30 21:41:19,688 - INFO - Generating text with distilgpt2
+2025-05-30 21:41:22,060 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "NodeJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Nodejs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-05-30 21:41:22,060 - WARNING - No JSON found in generated text
+2025-05-30 21:41:22,061 - INFO - Generating PDF
+2025-05-30 21:41:22,075 - INFO - PDF generated: course_pdf_1748634082.pdf
+2025-05-30 21:41:22,075 - INFO - Course content generation completed
+2025-05-30 21:41:58,779 - INFO - Starting course content generation
+2025-05-30 21:41:58,783 - INFO - Extracted matiere: nodejs, niveau: 2
+2025-05-30 21:41:58,783 - INFO - Using template for matiere: nodejs, niveau: 2
+2025-05-30 21:41:58,783 - INFO - Loading distilgpt2 model
+2025-05-30 21:42:00,500 - INFO - Model loaded successfully
+2025-05-30 21:42:00,500 - INFO - Generating text with distilgpt2
+2025-05-30 21:42:02,616 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "NodeJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Nodejs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-05-30 21:42:02,616 - WARNING - No JSON found in generated text
+2025-05-30 21:42:02,617 - INFO - Generating PDF
+2025-05-30 21:42:02,630 - INFO - PDF generated: course_pdf_1748634122.pdf
+2025-05-30 21:42:02,630 - INFO - Course content generation completed
+2025-05-30 21:42:28,665 - INFO - Starting course content generation
+2025-05-30 21:42:28,670 - INFO - Extracted matiere: nodejs, niveau: 2
+2025-05-30 21:42:28,671 - INFO - Loading distilgpt2 model
+2025-05-30 21:42:29,874 - INFO - Model loaded successfully
+2025-05-30 21:42:29,875 - INFO - Generating text with distilgpt2
+2025-05-30 21:43:28,021 - INFO - Raw generated text: Generate a JSON object for a Nodejs course (level 2) with the following fields:
+        - "titre": A short course title (max 50 characters).
+        - "description": A course description (100-150 words).
+        - "module": A string of 3-4 short module titles, separated by "\n", total length max 100 characters.
+        - "video_script": A video script (50-100 words).
+        Output only the JSON string, enclosed in curly braces {}, with no additional text.
+        Example: {"titre":"HTML Basics","description":"This course introduces HTML...","module":"1. Tags\n2. Structure\n3. Forms","video_script":"Welcome to HTML..."}
+2025-05-30 21:43:28,022 - WARNING - Missing required JSON fields
+2025-05-30 21:43:28,022 - INFO - Generating PDF
+2025-05-30 21:43:28,037 - INFO - Generated PDF: course_pdf_1748634208.pdf
+2025-05-30 21:43:28,037 - INFO - Course content generation completed
+2025-05-30 21:43:54,474 - INFO - Starting course content generation
+2025-05-30 21:43:54,480 - INFO - Extracted matiere: nodejs, niveau: 3
+2025-05-30 21:43:54,480 - INFO - Loading distilgpt2 model
+2025-05-30 21:43:55,965 - INFO - Model loaded successfully
+2025-05-30 21:43:55,965 - INFO - Generating text with distilgpt2
+2025-05-30 21:45:00,982 - INFO - Starting course content generation
+2025-05-30 21:45:00,987 - INFO - Extracted matiere: nodejs, niveau: 3
+2025-05-30 21:45:00,987 - INFO - Loading distilgpt2 model
+2025-05-30 21:45:02,291 - INFO - Model loaded successfully
+2025-05-30 21:45:02,420 - INFO - Generating text with distilgpt2
+2025-05-30 21:45:58,323 - INFO - Generating PDF
+2025-05-30 21:45:58,591 - INFO - PDF generated: course_pdf_1748634358.pdf
+2025-05-30 21:45:58,591 - INFO - Course content generation completed
+2025-05-30 21:48:21,490 - INFO - Starting course content generation
+2025-05-30 21:48:21,502 - INFO - Extracted matiere: nodejs, niveau: 3
+2025-05-30 21:48:21,503 - INFO - Using template for matiere: nodejs, niveau: 3
+2025-05-30 21:48:21,503 - INFO - Loading distilgpt2 model
+2025-05-30 21:48:22,720 - INFO - Model loaded successfully
+2025-05-30 21:48:22,720 - INFO - Generating text with distilgpt2
+2025-05-30 21:48:24,783 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "NodeJS" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Nodejs course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-05-30 21:48:24,784 - WARNING - No JSON found in generated text
+2025-05-30 21:48:24,784 - INFO - Generating PDF
+2025-05-30 21:48:24,806 - INFO - PDF generated: course_pdf_1748634504.pdf
+2025-05-30 21:48:24,806 - INFO - Course content generation completed
+2025-06-01 14:59:01,540 - INFO - Starting course content generation
+2025-06-01 14:59:01,545 - INFO - Extracted matiere: python, niveau: 3
+2025-06-01 14:59:01,545 - INFO - Using template for matiere: python, niveau: 3
+2025-06-01 14:59:01,545 - INFO - Loading distilgpt2 model
+2025-06-01 14:59:02,733 - INFO - Model loaded successfully
+2025-06-01 14:59:02,734 - INFO - Generating text with distilgpt2
+2025-06-01 14:59:04,753 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "python" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Python course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 14:59:04,753 - WARNING - No JSON found in generated text
+2025-06-01 14:59:04,754 - INFO - Generating PDF
+2025-06-01 14:59:04,762 - INFO - PDF generated: course_pdf_1748782744.pdf
+2025-06-01 14:59:04,762 - INFO - Course content generation completed
+2025-06-01 14:59:57,087 - INFO - Starting course content generation
+2025-06-01 14:59:57,093 - INFO - Extracted matiere: python, niveau: 1
+2025-06-01 14:59:57,094 - INFO - Using template for matiere: python, niveau: 1
+2025-06-01 14:59:57,094 - INFO - Loading distilgpt2 model
+2025-06-01 14:59:58,738 - INFO - Model loaded successfully
+2025-06-01 14:59:58,738 - INFO - Generating text with distilgpt2
+2025-06-01 15:00:00,030 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "python" au niveau "1". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Python course (level 1) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 15:00:00,030 - WARNING - No JSON found in generated text
+2025-06-01 15:00:00,030 - INFO - Generating PDF
+2025-06-01 15:00:00,044 - INFO - PDF generated: course_pdf_1748782800.pdf
+2025-06-01 15:00:00,044 - INFO - Course content generation completed
+2025-06-01 15:00:06,066 - INFO - Starting course content generation
+2025-06-01 15:00:06,071 - INFO - Extracted matiere: python, niveau: 1
+2025-06-01 15:00:06,071 - INFO - Using template for matiere: python, niveau: 1
+2025-06-01 15:00:06,072 - INFO - Loading distilgpt2 model
+2025-06-01 15:00:07,232 - INFO - Model loaded successfully
+2025-06-01 15:00:07,232 - INFO - Generating text with distilgpt2
+2025-06-01 15:00:08,575 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "python" au niveau "1". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Python course (level 1) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 15:00:08,576 - WARNING - No JSON found in generated text
+2025-06-01 15:00:08,576 - INFO - Generating PDF
+2025-06-01 15:00:08,588 - INFO - PDF generated: course_pdf_1748782808.pdf
+2025-06-01 15:00:08,589 - INFO - Course content generation completed
+2025-06-01 15:16:56,115 - INFO - Starting course content generation
+2025-06-01 15:16:56,119 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 15:16:56,120 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 15:16:56,120 - INFO - Loading distilgpt2 model
+2025-06-01 15:16:57,187 - INFO - Model loaded successfully
+2025-06-01 15:16:57,188 - INFO - Generating text with distilgpt2
+2025-06-01 15:16:58,352 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 15:16:58,353 - WARNING - No JSON found in generated text
+2025-06-01 15:16:58,353 - INFO - Generating PDF
+2025-06-01 15:16:58,366 - INFO - PDF generated: course_pdf_1748783818.pdf
+2025-06-01 15:16:58,366 - INFO - Course content generation completed
+2025-06-01 15:24:00,558 - INFO - Starting course content generation
+2025-06-01 15:24:00,564 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 15:24:00,564 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 15:24:00,565 - INFO - Loading distilgpt2 model
+2025-06-01 15:24:01,531 - INFO - Model loaded successfully
+2025-06-01 15:24:01,532 - INFO - Generating text with distilgpt2
+2025-06-01 15:24:02,813 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 15:24:02,814 - WARNING - No JSON found in generated text
+2025-06-01 15:24:02,814 - INFO - Generating PDF
+2025-06-01 15:24:02,825 - INFO - PDF generated: course_pdf_1748784242.pdf
+2025-06-01 15:24:02,825 - INFO - Course content generation completed
+2025-06-01 15:39:38,200 - INFO - Starting course content generation
+2025-06-01 15:39:38,222 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 15:39:38,222 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 15:39:38,222 - INFO - Loading distilgpt2 model
+2025-06-01 15:39:39,294 - INFO - Model loaded successfully
+2025-06-01 15:39:39,294 - INFO - Generating text with distilgpt2
+2025-06-01 15:39:40,373 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 15:39:40,373 - WARNING - No JSON found in generated text
+2025-06-01 15:39:40,374 - INFO - Generating PDF
+2025-06-01 15:39:40,382 - INFO - PDF generated: course_pdf_1748785180.pdf
+2025-06-01 15:39:40,383 - INFO - Generating placeholder image
+2025-06-01 15:39:40,488 - INFO - Image generated: course_image_1748785180.png
+2025-06-01 15:39:40,489 - INFO - Generating placeholder video
+2025-06-01 15:39:40,529 - ERROR - Video generation error: MoviePy Error: creation of None failed because of the following error:
+
+[WinError 2] Le fichier spécifié est introuvable.
+
+.This error can be due to the fact that ImageMagick is not installed on your computer, or (for Windows users) that you didn't specify the path to the ImageMagick binary in file conf.py, or that the path you specified is incorrect
+2025-06-01 15:39:40,529 - INFO - Course content generation completed
+2025-06-01 15:44:06,969 - INFO - Starting course content generation
+2025-06-01 15:44:06,969 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 15:44:06,969 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 15:44:06,969 - INFO - Loading distilgpt2 model
+2025-06-01 15:44:08,157 - INFO - Model loaded successfully
+2025-06-01 15:44:08,157 - INFO - Generating text with distilgpt2
+2025-06-01 15:44:09,220 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 15:44:09,220 - WARNING - No JSON found in generated text
+2025-06-01 15:44:09,220 - INFO - Generating PDF
+2025-06-01 15:44:09,236 - INFO - PDF generated: course_pdf_1748785449.pdf
+2025-06-01 15:44:09,236 - INFO - Generating placeholder image
+2025-06-01 15:44:09,267 - INFO - Image generated: course_image_1748785449.png
+2025-06-01 15:44:09,267 - INFO - Generating placeholder video
+2025-06-01 15:44:09,283 - ERROR - Video generation error: MoviePy Error: creation of None failed because of the following error:
+
+[WinError 2] Le fichier spécifié est introuvable.
+
+.This error can be due to the fact that ImageMagick is not installed on your computer, or (for Windows users) that you didn't specify the path to the ImageMagick binary in file conf.py, or that the path you specified is incorrect
+2025-06-01 15:44:09,283 - INFO - Course content generation completed
+2025-06-01 16:02:47,952 - INFO - Starting course content generation
+2025-06-01 16:02:47,956 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 16:02:47,957 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 16:02:47,957 - INFO - Loading distilgpt2 model
+2025-06-01 16:02:49,147 - INFO - Model loaded successfully
+2025-06-01 16:02:49,147 - INFO - Generating text with distilgpt2
+2025-06-01 16:02:50,329 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:02:50,329 - WARNING - No JSON found in generated text
+2025-06-01 16:02:50,329 - INFO - Generating PDF
+2025-06-01 16:02:50,339 - INFO - PDF generated: course_pdf_1748786570.pdf
+2025-06-01 16:02:50,339 - INFO - Generating placeholder image
+2025-06-01 16:02:50,376 - INFO - Image generated: course_image_1748786570.png
+2025-06-01 16:02:50,376 - INFO - Generating placeholder video
+2025-06-01 16:02:50,392 - ERROR - Video generation error: MoviePy Error: creation of None failed because of the following error:
+
+[WinError 2] Le fichier spécifié est introuvable.
+
+.This error can be due to the fact that ImageMagick is not installed on your computer, or (for Windows users) that you didn't specify the path to the ImageMagick binary in file conf.py, or that the path you specified is incorrect
+2025-06-01 16:02:50,393 - INFO - Course content generation completed
+2025-06-01 16:04:42,893 - INFO - Starting course content generation
+2025-06-01 16:04:42,897 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 16:04:42,897 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 16:04:42,898 - INFO - Loading distilgpt2 model
+2025-06-01 16:04:43,705 - INFO - Model loaded successfully
+2025-06-01 16:04:43,706 - INFO - Generating text with distilgpt2
+2025-06-01 16:04:44,652 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:04:44,652 - WARNING - No JSON found in generated text
+2025-06-01 16:04:44,652 - INFO - Generating PDF
+2025-06-01 16:04:44,659 - INFO - PDF generated: course_pdf_1748786684.pdf
+2025-06-01 16:04:44,660 - INFO - Generating placeholder image
+2025-06-01 16:04:44,691 - INFO - Image generated: course_image_1748786684.png
+2025-06-01 16:04:44,691 - INFO - Generating placeholder video
+2025-06-01 16:04:44,813 - ERROR - Video generation error: MoviePy Error: creation of None failed because of the following error:
+
+magick.exe: UnableToOpenConfigureFile `colors.xml' @ warning/configure.c/GetConfigureOptions/722.
+magick.exe: UnableToOpenModuleFile 'C:\Program Files\ImageMagick-7.1.1-Q16-HDRI\modules\coders\IM_MOD_RL_TXT_.dll': No such file or directory @ warning/module.c/GetMagickModulePath/678.
+magick.exe: NoDecodeDelegateForThisImageFormat `TXT' @ error/constitute.c/ReadImage/746.
+.
+
+.This error can be due to the fact that ImageMagick is not installed on your computer, or (for Windows users) that you didn't specify the path to the ImageMagick binary in file conf.py, or that the path you specified is incorrect
+2025-06-01 16:04:44,813 - INFO - Course content generation completed
+2025-06-01 16:05:06,860 - INFO - Starting course content generation
+2025-06-01 16:05:06,864 - INFO - Extracted matiere: reactjs, niveau: 2
+2025-06-01 16:05:06,865 - INFO - Using template for matiere: reactjs, niveau: 2
+2025-06-01 16:05:06,865 - INFO - Loading distilgpt2 model
+2025-06-01 16:05:07,869 - INFO - Model loaded successfully
+2025-06-01 16:05:07,870 - INFO - Generating text with distilgpt2
+2025-06-01 16:05:08,809 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "ReactJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Reactjs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:05:08,809 - WARNING - No JSON found in generated text
+2025-06-01 16:05:08,810 - INFO - Generating PDF
+2025-06-01 16:05:08,817 - INFO - PDF generated: course_pdf_1748786708.pdf
+2025-06-01 16:05:08,817 - INFO - Generating placeholder image
+2025-06-01 16:05:08,847 - INFO - Image generated: course_image_1748786708.png
+2025-06-01 16:05:08,847 - INFO - Generating placeholder video
+2025-06-01 16:05:09,033 - ERROR - Video generation error: MoviePy Error: creation of None failed because of the following error:
+
+magick.exe: UnableToOpenConfigureFile `colors.xml' @ warning/configure.c/GetConfigureOptions/722.
+magick.exe: UnableToOpenModuleFile 'C:\Program Files\ImageMagick-7.1.1-Q16-HDRI\modules\coders\IM_MOD_RL_TXT_.dll': No such file or directory @ warning/module.c/GetMagickModulePath/678.
+magick.exe: NoDecodeDelegateForThisImageFormat `TXT' @ error/constitute.c/ReadImage/746.
+.
+
+.This error can be due to the fact that ImageMagick is not installed on your computer, or (for Windows users) that you didn't specify the path to the ImageMagick binary in file conf.py, or that the path you specified is incorrect
+2025-06-01 16:05:09,033 - INFO - Course content generation completed
+2025-06-01 16:07:00,334 - INFO - Starting course content generation
+2025-06-01 16:07:00,334 - INFO - Extracted matiere: reactjs, niveau: 2
+2025-06-01 16:07:00,334 - INFO - Using template for matiere: reactjs, niveau: 2
+2025-06-01 16:07:00,334 - INFO - Loading distilgpt2 model
+2025-06-01 16:07:01,178 - INFO - Model loaded successfully
+2025-06-01 16:07:01,178 - INFO - Generating text with distilgpt2
+2025-06-01 16:07:02,101 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "ReactJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Reactjs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:07:02,101 - WARNING - No JSON found in generated text
+2025-06-01 16:07:02,101 - INFO - Generating PDF
+2025-06-01 16:07:02,101 - INFO - PDF generated: course_pdf_1748786822.pdf
+2025-06-01 16:07:02,101 - INFO - Generating placeholder image
+2025-06-01 16:07:02,132 - INFO - Image generated: course_image_1748786822.png
+2025-06-01 16:07:02,132 - INFO - Generating placeholder video
+2025-06-01 16:07:02,226 - ERROR - Video generation error: MoviePy Error: creation of None failed because of the following error:
+
+magick.exe: UnableToOpenConfigureFile `colors.xml' @ warning/configure.c/GetConfigureOptions/722.
+magick.exe: UnableToOpenModuleFile 'C:\Program Files\ImageMagick-7.1.1-Q16-HDRI\modules\coders\IM_MOD_RL_TXT_.dll': No such file or directory @ warning/module.c/GetMagickModulePath/678.
+magick.exe: NoDecodeDelegateForThisImageFormat `TXT' @ error/constitute.c/ReadImage/746.
+.
+
+.This error can be due to the fact that ImageMagick is not installed on your computer, or (for Windows users) that you didn't specify the path to the ImageMagick binary in file conf.py, or that the path you specified is incorrect
+2025-06-01 16:07:02,226 - INFO - Course content generation completed
+2025-06-01 16:07:52,126 - INFO - Starting course content generation
+2025-06-01 16:07:52,126 - INFO - Extracted matiere: reactjs, niveau: 2
+2025-06-01 16:07:52,126 - INFO - Using template for matiere: reactjs, niveau: 2
+2025-06-01 16:07:52,126 - INFO - Loading distilgpt2 model
+2025-06-01 16:07:52,907 - INFO - Model loaded successfully
+2025-06-01 16:07:52,907 - INFO - Generating text with distilgpt2
+2025-06-01 16:07:53,907 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "ReactJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Reactjs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:07:53,907 - WARNING - No JSON found in generated text
+2025-06-01 16:07:53,907 - INFO - Generating PDF
+2025-06-01 16:07:53,923 - INFO - PDF generated: course_pdf_1748786873.pdf
+2025-06-01 16:07:53,923 - INFO - Generating placeholder image
+2025-06-01 16:07:53,954 - INFO - Image generated: course_image_1748786873.png
+2025-06-01 16:07:53,954 - INFO - Generating placeholder video
+2025-06-01 16:07:54,048 - ERROR - Video generation error: MoviePy Error: creation of None failed because of the following error:
+
+magick.exe: UnableToOpenConfigureFile `colors.xml' @ warning/configure.c/GetConfigureOptions/722.
+magick.exe: UnableToOpenModuleFile 'C:\Program Files\ImageMagick-7.1.1-Q16-HDRI\modules\coders\IM_MOD_RL_TXT_.dll': No such file or directory @ warning/module.c/GetMagickModulePath/678.
+magick.exe: NoDecodeDelegateForThisImageFormat `TXT' @ error/constitute.c/ReadImage/746.
+.
+
+.This error can be due to the fact that ImageMagick is not installed on your computer, or (for Windows users) that you didn't specify the path to the ImageMagick binary in file conf.py, or that the path you specified is incorrect
+2025-06-01 16:07:54,048 - INFO - Course content generation completed
+2025-06-01 16:15:12,407 - INFO - Starting course content generation
+2025-06-01 16:15:12,411 - INFO - Extracted matiere: reactjs, niveau: 2
+2025-06-01 16:15:12,411 - INFO - Using template for matiere: reactjs, niveau: 2
+2025-06-01 16:15:12,411 - INFO - Loading distilgpt2 model
+2025-06-01 16:15:13,392 - INFO - Model loaded successfully
+2025-06-01 16:15:13,392 - INFO - Generating text with distilgpt2
+2025-06-01 16:15:14,400 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "ReactJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Reactjs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:15:14,401 - WARNING - No JSON found in generated text
+2025-06-01 16:15:14,401 - INFO - Generating PDF
+2025-06-01 16:15:14,407 - INFO - PDF generated: course_pdf_1748787314.pdf
+2025-06-01 16:15:14,408 - INFO - Generating placeholder image
+2025-06-01 16:15:14,445 - INFO - Image generated: course_image_1748787314.png
+2025-06-01 16:15:14,445 - INFO - Generating placeholder video
+2025-06-01 16:15:16,428 - INFO - Video generated: course_video_1748787314.mp4
+2025-06-01 16:15:16,428 - INFO - Course content generation completed
+2025-06-01 16:21:42,282 - INFO - Starting course content generation
+2025-06-01 16:21:42,286 - INFO - Extracted matiere: reactjs, niveau: 2
+2025-06-01 16:21:42,286 - INFO - Using template for matiere: reactjs, niveau: 2
+2025-06-01 16:21:42,286 - INFO - Loading distilgpt2 model
+2025-06-01 16:21:43,065 - INFO - Model loaded successfully
+2025-06-01 16:21:43,066 - INFO - Generating text with distilgpt2
+2025-06-01 16:21:44,015 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "ReactJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Reactjs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:21:44,015 - WARNING - No JSON found in generated text
+2025-06-01 16:21:44,015 - INFO - Generating PDF
+2025-06-01 16:21:44,023 - INFO - PDF generated: course_pdf_1748787704.pdf
+2025-06-01 16:21:44,023 - INFO - Generating placeholder image
+2025-06-01 16:21:44,053 - INFO - Image generated: course_image_1748787704.png
+2025-06-01 16:21:44,053 - INFO - Generating placeholder video
+2025-06-01 16:21:46,678 - INFO - Video generated: course_video_1748787704.mp4
+2025-06-01 16:21:46,678 - INFO - Course content generation completed
+2025-06-01 16:22:24,490 - INFO - Starting course content generation
+2025-06-01 16:22:24,494 - INFO - Extracted matiere: python, niveau: 2
+2025-06-01 16:22:24,494 - INFO - Using template for matiere: python, niveau: 2
+2025-06-01 16:22:24,494 - INFO - Loading distilgpt2 model
+2025-06-01 16:22:25,342 - INFO - Model loaded successfully
+2025-06-01 16:22:25,342 - INFO - Generating text with distilgpt2
+2025-06-01 16:22:26,257 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "python" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Python course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:22:26,257 - WARNING - No JSON found in generated text
+2025-06-01 16:22:26,257 - INFO - Generating PDF
+2025-06-01 16:22:26,265 - INFO - PDF generated: course_pdf_1748787746.pdf
+2025-06-01 16:22:26,266 - INFO - Generating placeholder image
+2025-06-01 16:22:26,295 - INFO - Image generated: course_image_1748787746.png
+2025-06-01 16:22:26,295 - INFO - Generating placeholder video
+2025-06-01 16:22:27,979 - INFO - Video generated: course_video_1748787746.mp4
+2025-06-01 16:22:27,979 - INFO - Course content generation completed
+2025-06-01 16:27:11,495 - INFO - Starting course content generation
+2025-06-01 16:27:11,498 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:27:11,498 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:27:11,498 - INFO - Loading distilgpt2 model
+2025-06-01 16:27:12,509 - INFO - Model loaded successfully
+2025-06-01 16:27:12,509 - INFO - Generating text with distilgpt2
+2025-06-01 16:27:13,667 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words). Return the result in valid JSON format like: {"titre": "Example Title", "description": "Example description of 100-150 words...", "module": "1. Module1\n2. Module2\n3. Module3", "video_script": "Example video script of 50-100 words..."}.
+2025-06-01 16:27:13,667 - INFO - Generating PDF
+2025-06-01 16:27:13,674 - INFO - PDF generated: php_course_pdf_1748788033.pdf
+2025-06-01 16:27:13,674 - INFO - Generating detailed image
+2025-06-01 16:27:13,720 - INFO - Image generated: php_course_image.png
+2025-06-01 16:27:13,720 - INFO - Generating detailed video
+2025-06-01 16:27:17,342 - INFO - Video generated: php_course_video.mp4
+2025-06-01 16:27:17,342 - INFO - Course content generation completed
+2025-06-01 16:27:56,998 - INFO - Starting course content generation
+2025-06-01 16:27:57,002 - INFO - Extracted matiere: reactjs, niveau: 2
+2025-06-01 16:27:57,002 - INFO - Using template for matiere: reactjs, niveau: 2
+2025-06-01 16:27:57,002 - INFO - Loading distilgpt2 model
+2025-06-01 16:27:57,816 - INFO - Model loaded successfully
+2025-06-01 16:27:57,816 - INFO - Generating text with distilgpt2
+2025-06-01 16:27:59,121 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "ReactJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Reactjs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words). Return the result in valid JSON format like: {"titre": "Example Title", "description": "Example description of 100-150 words...", "module": "1. Module1\n2. Module2\n3. Module3", "video_script": "Example video script of 50-100 words..."}.
+2025-06-01 16:27:59,122 - INFO - Generating PDF
+2025-06-01 16:27:59,127 - INFO - PDF generated: reactjs_course_pdf_1748788079.pdf
+2025-06-01 16:27:59,127 - INFO - Generating detailed image
+2025-06-01 16:27:59,171 - INFO - Image generated: reactjs_course_image.png
+2025-06-01 16:27:59,173 - INFO - Generating detailed video
+2025-06-01 16:28:02,981 - INFO - Video generated: reactjs_course_video.mp4
+2025-06-01 16:28:02,981 - INFO - Course content generation completed
+2025-06-01 16:29:21,703 - INFO - Starting course content generation
+2025-06-01 16:29:21,707 - INFO - Extracted matiere: reactjs, niveau: 2
+2025-06-01 16:29:21,707 - INFO - Using template for matiere: reactjs, niveau: 2
+2025-06-01 16:29:21,707 - INFO - Loading distilgpt2 model
+2025-06-01 16:29:22,534 - INFO - Model loaded successfully
+2025-06-01 16:29:22,534 - INFO - Generating text with distilgpt2
+2025-06-01 16:29:23,527 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "ReactJS" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Reactjs course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:29:23,528 - WARNING - No JSON found in generated text
+2025-06-01 16:29:23,528 - INFO - Generating PDF
+2025-06-01 16:29:23,542 - INFO - PDF generated: reactjs_course_pdf_1748788163.pdf
+2025-06-01 16:29:23,542 - INFO - Generating placeholder image
+2025-06-01 16:29:23,581 - INFO - Image generated: reactjs_course_image_1748788163.png
+2025-06-01 16:29:23,581 - INFO - Generating placeholder video
+2025-06-01 16:29:26,137 - INFO - Video generated: reactjs_course_video_1748788163.mp4
+2025-06-01 16:29:26,137 - INFO - Course content generation completed
+2025-06-01 16:30:15,379 - INFO - Starting course content generation
+2025-06-01 16:30:15,382 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:30:15,383 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:30:15,383 - INFO - Loading distilgpt2 model
+2025-06-01 16:30:16,207 - INFO - Model loaded successfully
+2025-06-01 16:30:16,207 - INFO - Generating text with distilgpt2
+2025-06-01 16:30:17,151 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:30:17,152 - WARNING - No JSON found in generated text
+2025-06-01 16:30:17,152 - INFO - Generating PDF
+2025-06-01 16:30:17,159 - INFO - PDF generated: php_course_pdf_1748788217.pdf
+2025-06-01 16:30:17,160 - INFO - Generating placeholder image
+2025-06-01 16:30:17,210 - INFO - Image generated: php_course_image_1748788217.png
+2025-06-01 16:30:17,210 - INFO - Generating placeholder video
+2025-06-01 16:30:18,927 - INFO - Video generated: php_course_video_1748788217.mp4
+2025-06-01 16:30:18,927 - INFO - Course content generation completed
+2025-06-01 16:33:21,461 - INFO - Starting course content generation
+2025-06-01 16:33:21,465 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:33:21,465 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:33:21,465 - INFO - Loading distilgpt2 model
+2025-06-01 16:33:22,682 - INFO - Model loaded successfully
+2025-06-01 16:33:22,683 - INFO - Generating text with distilgpt2
+2025-06-01 16:33:23,688 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:33:23,689 - WARNING - No JSON found in generated text
+2025-06-01 16:33:23,689 - INFO - Generating PDF
+2025-06-01 16:33:23,701 - INFO - PDF generated: php_course_pdf_1748788403.pdf
+2025-06-01 16:33:23,701 - INFO - Generating placeholder image
+2025-06-01 16:33:23,747 - INFO - Image generated: php_course_image_1748788403.png
+2025-06-01 16:33:23,747 - INFO - Generating placeholder video
+2025-06-01 16:33:25,986 - INFO - Video generated: php_course_video_1748788403.mp4
+2025-06-01 16:33:25,986 - INFO - Course content generation completed
+2025-06-01 16:36:50,807 - INFO - Starting course content generation
+2025-06-01 16:36:50,811 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:36:50,811 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:36:50,811 - INFO - Loading distilgpt2 model
+2025-06-01 16:36:51,672 - INFO - Model loaded successfully
+2025-06-01 16:36:51,672 - INFO - Generating text with distilgpt2
+2025-06-01 16:36:52,586 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:36:52,586 - WARNING - No JSON found in generated text
+2025-06-01 16:36:52,586 - INFO - Generating PDF
+2025-06-01 16:36:52,595 - INFO - PDF generated: php_course_pdf_1748788612.pdf
+2025-06-01 16:36:52,595 - INFO - Generating placeholder image
+2025-06-01 16:36:52,638 - INFO - Image generated: php_course_image_1748788612.png
+2025-06-01 16:36:52,638 - INFO - Generating placeholder video
+2025-06-01 16:36:54,418 - INFO - Video generated: php_course_video_1748788612.mp4
+2025-06-01 16:36:54,418 - INFO - Course content generation completed
+2025-06-01 16:38:19,356 - INFO - Starting course content generation
+2025-06-01 16:38:19,367 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:38:19,367 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:38:19,367 - INFO - Loading distilgpt2 model
+2025-06-01 16:38:20,189 - INFO - Model loaded successfully
+2025-06-01 16:38:20,189 - INFO - Generating text with distilgpt2
+2025-06-01 16:38:21,104 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:38:21,104 - WARNING - No JSON found in generated text
+2025-06-01 16:38:21,104 - INFO - Generating PDF
+2025-06-01 16:38:21,115 - INFO - PDF generated: php_course_pdf_1748788701.pdf
+2025-06-01 16:38:21,115 - INFO - Generating placeholder image
+2025-06-01 16:38:21,155 - INFO - Image generated: php_course_image_1748788701.png
+2025-06-01 16:38:21,155 - INFO - Generating placeholder video
+2025-06-01 16:38:22,817 - INFO - Video generated: php_course_video_1748788701.mp4
+2025-06-01 16:38:22,817 - INFO - Course content generation completed
+2025-06-01 16:38:52,230 - INFO - Starting course content generation
+2025-06-01 16:38:52,234 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:38:52,234 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:38:52,234 - INFO - Loading distilgpt2 model
+2025-06-01 16:38:53,122 - INFO - Model loaded successfully
+2025-06-01 16:38:53,122 - INFO - Generating text with distilgpt2
+2025-06-01 16:38:54,127 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:38:54,128 - WARNING - No JSON found in generated text
+2025-06-01 16:38:54,128 - INFO - Generating PDF
+2025-06-01 16:38:54,137 - INFO - PDF generated: php_course_pdf_1748788734.pdf
+2025-06-01 16:38:54,137 - INFO - Generating placeholder image
+2025-06-01 16:38:54,171 - INFO - Image generated: php_course_image_1748788734.png
+2025-06-01 16:38:54,171 - INFO - Generating placeholder video
+2025-06-01 16:38:55,849 - INFO - Video generated: php_course_video_1748788734.mp4
+2025-06-01 16:38:55,850 - INFO - Course content generation completed
+2025-06-01 16:39:38,761 - INFO - Starting course content generation
+2025-06-01 16:39:38,766 - INFO - Extracted matiere: python, niveau: 2
+2025-06-01 16:39:38,766 - INFO - Using template for matiere: python, niveau: 2
+2025-06-01 16:39:38,766 - INFO - Loading distilgpt2 model
+2025-06-01 16:39:39,538 - INFO - Model loaded successfully
+2025-06-01 16:39:39,539 - INFO - Generating text with distilgpt2
+2025-06-01 16:39:40,520 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "python" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Python course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:39:40,521 - WARNING - No JSON found in generated text
+2025-06-01 16:39:40,521 - INFO - Generating PDF
+2025-06-01 16:39:40,533 - INFO - PDF generated: python_course_pdf_1748788780.pdf
+2025-06-01 16:39:40,533 - INFO - Generating placeholder image
+2025-06-01 16:39:40,576 - INFO - Image generated: python_course_image_1748788780.png
+2025-06-01 16:39:40,576 - INFO - Generating placeholder video
+2025-06-01 16:39:42,725 - INFO - Video generated: python_course_video_1748788780.mp4
+2025-06-01 16:39:42,726 - INFO - Course content generation completed
+2025-06-01 16:40:37,692 - INFO - Starting course content generation
+2025-06-01 16:40:37,696 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:40:37,696 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:40:37,696 - INFO - Loading distilgpt2 model
+2025-06-01 16:40:38,553 - INFO - Model loaded successfully
+2025-06-01 16:40:38,553 - INFO - Generating text with distilgpt2
+2025-06-01 16:40:39,518 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:40:39,518 - WARNING - No JSON found in generated text
+2025-06-01 16:40:39,518 - INFO - Generating PDF
+2025-06-01 16:40:39,530 - INFO - PDF generated: php_course_pdf_1748788839.pdf
+2025-06-01 16:40:39,530 - INFO - Generating placeholder image
+2025-06-01 16:40:39,568 - INFO - Image generated: php_course_image_1748788839.png
+2025-06-01 16:40:39,568 - INFO - Generating placeholder video
+2025-06-01 16:40:41,217 - INFO - Video generated: php_course_video_1748788839.mp4
+2025-06-01 16:40:41,217 - INFO - Course content generation completed
+2025-06-01 16:42:13,187 - INFO - Starting course content generation
+2025-06-01 16:42:13,191 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:42:13,191 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:42:13,191 - INFO - Loading distilgpt2 model
+2025-06-01 16:42:13,967 - INFO - Model loaded successfully
+2025-06-01 16:42:13,967 - INFO - Generating text with distilgpt2
+2025-06-01 16:42:14,943 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:42:14,944 - WARNING - No JSON found in generated text
+2025-06-01 16:42:14,944 - INFO - Generating PDF
+2025-06-01 16:42:14,954 - INFO - PDF generated: php_course_pdf_1748788934.pdf
+2025-06-01 16:42:14,955 - INFO - Generating placeholder image
+2025-06-01 16:42:14,987 - INFO - Image generated: php_course_image_1748788934.png
+2025-06-01 16:42:14,987 - INFO - Generating placeholder video
+2025-06-01 16:42:15,914 - INFO - Video generated: php_course_video_1748788934.mp4
+2025-06-01 16:42:15,914 - INFO - Course content generation completed
+2025-06-01 16:42:45,187 - INFO - Starting course content generation
+2025-06-01 16:42:45,191 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:42:45,191 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:42:45,191 - INFO - Loading distilgpt2 model
+2025-06-01 16:42:46,364 - INFO - Model loaded successfully
+2025-06-01 16:42:46,364 - INFO - Generating text with distilgpt2
+2025-06-01 16:42:47,298 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:42:47,299 - WARNING - No JSON found in generated text
+2025-06-01 16:42:47,299 - INFO - Generating PDF
+2025-06-01 16:42:47,310 - INFO - PDF generated: php_course_pdf_1748788967.pdf
+2025-06-01 16:42:47,310 - INFO - Generating placeholder image
+2025-06-01 16:42:47,343 - INFO - Image generated: php_course_image_1748788967.png
+2025-06-01 16:42:47,343 - INFO - Generating placeholder video
+2025-06-01 16:42:49,144 - INFO - Video generated: php_course_video_1748788967.mp4
+2025-06-01 16:42:49,144 - INFO - Course content generation completed
+2025-06-01 16:43:35,233 - INFO - Starting course content generation
+2025-06-01 16:43:35,237 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:43:35,237 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:43:35,237 - INFO - Loading distilgpt2 model
+2025-06-01 16:43:36,236 - INFO - Model loaded successfully
+2025-06-01 16:43:36,236 - INFO - Generating text with distilgpt2
+2025-06-01 16:43:37,262 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:43:37,262 - WARNING - No JSON found in generated text
+2025-06-01 16:43:37,263 - INFO - Generating PDF
+2025-06-01 16:43:37,273 - INFO - PDF generated: php_course_pdf_1748789017.pdf
+2025-06-01 16:43:37,273 - INFO - Generating placeholder image
+2025-06-01 16:43:37,311 - INFO - Image generated: php_course_image_1748789017.png
+2025-06-01 16:43:37,311 - INFO - Generating placeholder video
+2025-06-01 16:43:38,632 - INFO - Video generated: php_course_video_1748789017.mp4
+2025-06-01 16:43:38,632 - INFO - Course content generation completed
+2025-06-01 16:44:05,892 - INFO - Starting course content generation
+2025-06-01 16:44:05,896 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:44:05,896 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:44:05,896 - INFO - Loading distilgpt2 model
+2025-06-01 16:44:07,360 - INFO - Model loaded successfully
+2025-06-01 16:44:07,360 - INFO - Generating text with distilgpt2
+2025-06-01 16:44:08,551 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:44:08,551 - WARNING - No JSON found in generated text
+2025-06-01 16:44:08,551 - INFO - Generating PDF
+2025-06-01 16:44:08,564 - INFO - PDF generated: php_course_pdf_1748789048.pdf
+2025-06-01 16:44:08,565 - INFO - Generating placeholder image
+2025-06-01 16:44:08,609 - INFO - Image generated: php_course_image_1748789048.png
+2025-06-01 16:44:08,610 - INFO - Generating placeholder video
+2025-06-01 16:44:10,246 - INFO - Video generated: php_course_video_1748789048.mp4
+2025-06-01 16:44:10,247 - INFO - Course content generation completed
+2025-06-01 16:52:06,646 - INFO - Loading distilgpt2 model
+2025-06-01 16:52:07,443 - INFO - Model loaded successfully
+2025-06-01 16:52:07,443 - INFO - Starting course content generation
+2025-06-01 16:52:07,443 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:52:07,443 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:52:07,443 - INFO - Generating text with distilgpt2
+2025-06-01 16:52:08,553 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:52:08,553 - WARNING - No JSON found in generated text
+2025-06-01 16:52:08,553 - INFO - Generating PDF
+2025-06-01 16:52:08,553 - INFO - PDF generated: php_course_pdf_1748789528.pdf
+2025-06-01 16:52:08,553 - INFO - Generating placeholder image
+2025-06-01 16:52:08,599 - INFO - Image generated: php_course_image_1748789528.png
+2025-06-01 16:52:08,599 - INFO - Generating placeholder video
+2025-06-01 16:52:09,358 - INFO - Video generated: php_course_video_1748789528.mp4
+2025-06-01 16:52:09,358 - INFO - Course content generation completed
+2025-06-01 16:52:41,488 - INFO - Loading distilgpt2 model
+2025-06-01 16:52:42,267 - INFO - Model loaded successfully
+2025-06-01 16:52:42,267 - INFO - Starting course content generation
+2025-06-01 16:52:42,267 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:52:42,267 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:52:42,267 - INFO - Generating text with distilgpt2
+2025-06-01 16:52:43,440 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:52:43,440 - WARNING - No JSON found in generated text
+2025-06-01 16:52:43,440 - INFO - Generating PDF
+2025-06-01 16:52:43,440 - INFO - PDF generated: php_course_pdf_1748789563.pdf
+2025-06-01 16:52:43,440 - INFO - Generating placeholder image
+2025-06-01 16:52:43,471 - INFO - Image generated: php_course_image_1748789563.png
+2025-06-01 16:52:43,471 - INFO - Generating placeholder video
+2025-06-01 16:52:44,212 - INFO - Video generated: php_course_video_1748789563.mp4
+2025-06-01 16:52:44,212 - INFO - Course content generation completed
+2025-06-01 16:53:29,337 - INFO - Loading distilgpt2 model
+2025-06-01 16:53:30,110 - INFO - Model loaded successfully
+2025-06-01 16:53:30,110 - INFO - Starting course content generation
+2025-06-01 16:53:30,110 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:53:30,110 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:53:30,110 - INFO - Generating text with distilgpt2
+2025-06-01 16:53:31,169 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:53:31,169 - WARNING - No JSON found in generated text
+2025-06-01 16:53:31,169 - INFO - Generating PDF
+2025-06-01 16:53:31,185 - INFO - PDF generated: php_course_pdf_1748789611.pdf
+2025-06-01 16:53:31,185 - INFO - Generating placeholder image
+2025-06-01 16:53:31,232 - INFO - Image generated: php_course_image_1748789611.png
+2025-06-01 16:53:31,232 - INFO - Generating placeholder video
+2025-06-01 16:53:31,927 - INFO - Video generated: php_course_video_1748789611.mp4
+2025-06-01 16:53:31,927 - INFO - Course content generation completed
+2025-06-01 16:54:20,071 - INFO - Loading distilgpt2 model
+2025-06-01 16:54:20,813 - INFO - Model loaded successfully
+2025-06-01 16:54:20,813 - INFO - Starting course content generation
+2025-06-01 16:54:20,813 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 16:54:20,813 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 16:54:20,813 - INFO - Generating text with distilgpt2
+2025-06-01 16:54:21,705 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:54:21,705 - WARNING - No JSON found in generated text
+2025-06-01 16:54:21,705 - INFO - Generating PDF
+2025-06-01 16:54:21,705 - INFO - PDF generated: php_course_pdf_1748789661.pdf
+2025-06-01 16:54:21,705 - INFO - Generating placeholder image
+2025-06-01 16:54:21,737 - INFO - Image generated: php_course_image_1748789661.png
+2025-06-01 16:54:21,737 - INFO - Generating placeholder video
+2025-06-01 16:54:22,418 - INFO - Video generated: php_course_video_1748789661.mp4
+2025-06-01 16:54:22,418 - INFO - Course content generation completed
+2025-06-01 16:56:21,399 - INFO - Loading distilgpt2 model
+2025-06-01 16:56:22,497 - INFO - Model loaded successfully
+2025-06-01 16:56:22,497 - INFO - Starting course content generation
+2025-06-01 16:56:22,497 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 16:56:22,497 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 16:56:22,497 - INFO - Generating text with distilgpt2
+2025-06-01 16:56:23,673 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:56:23,673 - WARNING - No JSON found in generated text
+2025-06-01 16:56:23,673 - INFO - Generating PDF
+2025-06-01 16:56:23,689 - INFO - PDF generated: html_course_pdf_1748789783.pdf
+2025-06-01 16:56:23,689 - INFO - Generating placeholder image
+2025-06-01 16:56:23,720 - INFO - Image generated: html_course_image_1748789783.png
+2025-06-01 16:56:23,720 - INFO - Generating placeholder video
+2025-06-01 16:56:24,750 - INFO - Video generated: html_course_video_1748789783.mp4
+2025-06-01 16:56:24,750 - INFO - Course content generation completed
+2025-06-01 16:56:52,031 - INFO - Loading distilgpt2 model
+2025-06-01 16:56:53,317 - INFO - Model loaded successfully
+2025-06-01 16:56:53,317 - INFO - Starting course content generation
+2025-06-01 16:56:53,320 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 16:56:53,320 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 16:56:53,320 - INFO - Generating text with distilgpt2
+2025-06-01 16:56:54,454 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:56:54,454 - WARNING - No JSON found in generated text
+2025-06-01 16:56:54,454 - INFO - Generating PDF
+2025-06-01 16:56:54,454 - INFO - PDF generated: html_course_pdf_1748789814.pdf
+2025-06-01 16:56:54,454 - INFO - Generating placeholder image
+2025-06-01 16:56:54,500 - INFO - Image generated: html_course_image_1748789814.png
+2025-06-01 16:56:54,500 - INFO - Generating placeholder video
+2025-06-01 16:56:55,203 - INFO - Video generated: html_course_video_1748789814.mp4
+2025-06-01 16:56:55,203 - INFO - Course content generation completed
+2025-06-01 16:57:31,496 - INFO - Loading distilgpt2 model
+2025-06-01 16:57:32,809 - INFO - Model loaded successfully
+2025-06-01 16:57:32,809 - INFO - Starting course content generation
+2025-06-01 16:57:32,809 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 16:57:32,809 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 16:57:32,809 - INFO - Generating text with distilgpt2
+2025-06-01 16:57:33,747 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 16:57:33,747 - WARNING - No JSON found in generated text
+2025-06-01 16:57:33,747 - INFO - Generating PDF
+2025-06-01 16:57:33,763 - INFO - PDF generated: html_course_pdf_1748789853.pdf
+2025-06-01 16:57:33,763 - INFO - Generating placeholder image
+2025-06-01 16:57:33,809 - INFO - Image generated: html_course_image_1748789853.png
+2025-06-01 16:57:33,809 - INFO - Generating placeholder video
+2025-06-01 16:57:34,429 - INFO - Video generated: html_course_video_1748789853.mp4
+2025-06-01 16:57:34,429 - INFO - Course content generation completed
+2025-06-01 17:00:32,746 - INFO - Loading distilgpt2 model
+2025-06-01 17:00:33,497 - INFO - Model loaded successfully
+2025-06-01 17:00:33,497 - INFO - Starting course content generation
+2025-06-01 17:00:33,497 - INFO - Extracted matiere: html, niveau: 3
+2025-06-01 17:00:33,497 - INFO - Using template for matiere: html, niveau: 3
+2025-06-01 17:00:33,497 - INFO - Generating text with distilgpt2
+2025-06-01 17:00:34,497 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "HTML" au niveau "3". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Html course (level 3) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 17:00:34,497 - WARNING - No JSON found in generated text
+2025-06-01 17:00:34,497 - INFO - Generating PDF
+2025-06-01 17:00:34,497 - INFO - PDF generated: html_course_pdf_1748790034.pdf
+2025-06-01 17:00:34,497 - INFO - Generating placeholder image
+2025-06-01 17:00:34,528 - INFO - Image generated: html_course_image_1748790034.png
+2025-06-01 17:00:34,544 - INFO - Generating placeholder video
+2025-06-01 17:00:35,261 - INFO - Video generated: html_course_video_1748790034.mp4
+2025-06-01 17:00:35,261 - INFO - Course content generation completed
+2025-06-01 17:01:50,976 - INFO - Loading distilgpt2 model
+2025-06-01 17:01:51,930 - INFO - Model loaded successfully
+2025-06-01 17:01:51,930 - INFO - Starting course content generation
+2025-06-01 17:01:51,930 - INFO - Extracted matiere: php, niveau: 2
+2025-06-01 17:01:51,930 - INFO - Using template for matiere: php, niveau: 2
+2025-06-01 17:01:51,930 - INFO - Generating text with distilgpt2
+2025-06-01 17:01:52,883 - INFO - Raw generated text: Génère une suggestion pour un cours intitulé pour une matière "php" au niveau "2". Fournis un titre, une description (100-150 mots), et une structure de modules (3-5 modules avec titres courts). Generate a JSON object for a Php course (level 2) with a title, description (100-150 words), 3-4 short module titles, and a video script (50-100 words).
+2025-06-01 17:01:52,883 - WARNING - No JSON found in generated text
+2025-06-01 17:01:52,883 - INFO - Generating PDF
+2025-06-01 17:01:52,883 - INFO - PDF generated: php_course_pdf_1748790112.pdf
+2025-06-01 17:01:52,883 - INFO - Generating placeholder image
+2025-06-01 17:01:52,914 - INFO - Image generated: php_course_image_1748790112.png
+2025-06-01 17:01:52,914 - INFO - Generating placeholder video
+2025-06-01 17:01:53,669 - INFO - Video generated: php_course_video_1748790112.mp4
+2025-06-01 17:01:53,670 - INFO - Course content generation completed
