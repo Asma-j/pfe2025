@@ -5,6 +5,8 @@ const axiosRetry = require('axios-retry').default;
 const Bottleneck = require('bottleneck');
 const { Op } = require('sequelize');
 const he = require('he');
+const { pipeline } = require('transformers'); 
+
 
 axiosRetry(axios, {
   retries: 3,
@@ -21,9 +23,18 @@ const limiter = new Bottleneck({
   minTime: 2000,
 });
 
+let questionGenerator;
+try {
+  console.log('Loading question generation model...');
+  questionGenerator = pipeline('text2text-generation', 't5-small'); // T5 is better for question generation
+  console.log('Question generation model loaded successfully');
+} catch (err) {
+  console.error('Failed to load question generation model:', err);
+}
+
 exports.generateQuiz = async (req, res) => {
   const cleanText = (text) => {
-    if (!text) return 'Reponse correcte par defaut';
+    if (!text) return 'Default correct answer';
     let cleaned = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
     cleaned = cleaned.replace(/[^a-zA-Z0-9\s.,]/g, '');
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
@@ -33,7 +44,7 @@ exports.generateQuiz = async (req, res) => {
     if (limitedText.length > maxLength) {
       return limitedText.substring(0, maxLength - 3) + '...';
     }
-    return limitedText.length > 0 ? limitedText : 'Reponse correcte par defaut';
+    return limitedText.length > 0 ? limitedText : 'Default correct answer';
   };
 
   function generateDynamicDistractors(correctAnswer, subjectTag) {
@@ -69,24 +80,110 @@ exports.generateQuiz = async (req, res) => {
     return distractors;
   }
 
-  try {
-    const { matiere_id, setDuration } = req.body;
-    console.log('Generation du quiz pour matiere_id:', matiere_id, 'setDuration:', setDuration);
+  async function generateQuestionsFromCourseContent(course, subjectTag, level, numQuestions = 3) {
+    const questions = [];
+    const content = [
+      course.titre || '',
+      course.description || '',
+      course.module || '',
+      course.video_script || '',
+    ].join(' ').trim();
 
+    if (!content) {
+      console.log('No content available for course:', course.id);
+      return questions;
+    }
+
+    // Map level to difficulty description
+    const levelMap = {
+      '1': 'beginner-level, focusing on basic concepts and definitions',
+      '2': 'intermediate-level, focusing on practical applications and problem-solving',
+      '3': 'advanced-level, focusing on complex scenarios and optimizations',
+    };
+    const levelDescription = levelMap[level] || 'general-level';
+
+    try {
+      for (let i = 0; i < numQuestions; i++) {
+        const prompt = `Generate a ${levelDescription} multiple-choice question based on the following content about ${subjectTag}: "${content.substring(0, 500)}". Provide the question, one correct answer, and three incorrect answers. Format as JSON: { "question": "", "correct_answer": "", "incorrect_answers": ["", "", ""] }`;
+        const response = await questionGenerator(prompt, {
+          max_length: 300,
+          num_return_sequences: 1,
+        });
+
+        const generated = response[0].generated_text;
+        let parsed;
+        try {
+          parsed = JSON.parse(generated);
+        } catch (err) {
+          console.warn('Failed to parse generated question:', generated);
+          continue;
+        }
+
+        if (
+          parsed.question &&
+          parsed.correct_answer &&
+          Array.isArray(parsed.incorrect_answers) &&
+          parsed.incorrect_answers.length === 3
+        ) {
+          const options = [
+            { text: cleanText(parsed.correct_answer), isCorrect: true },
+            ...parsed.incorrect_answers.map(text => ({ text: cleanText(text), isCorrect: false })),
+          ].sort(() => Math.random() - 0.5);
+
+          questions.push({
+            text: cleanText(parsed.question),
+            options,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error generating questions from course content:', err);
+    }
+
+    return questions;
+  }
+
+  try {
+    const { matiere_id, setDuration, niveau } = req.body;
+    console.log('Generating quiz for matiere_id:', matiere_id, 'setDuration:', setDuration, 'niveau:', niveau);
+
+    // Validate input
+    if (!matiere_id || !setDuration || !niveau) {
+      return res.status(400).json({ message: 'matiere_id, setDuration, and niveau are required' });
+    }
+    if (!['1', '2', '3'].includes(niveau)) {
+      return res.status(400).json({ message: 'Invalid niveau; must be 1, 2, or 3' });
+    }
+
+    // Fetch subject
     const matiere = await Matiere.findByPk(matiere_id);
     if (!matiere) {
-      console.log('Matiere non trouvee pour l ID:', matiere_id);
-      return res.status(404).json({ message: 'Matiere non trouvee' });
+      console.log('Subject not found for ID:', matiere_id);
+      return res.status(404).json({ message: 'Subject not found' });
     }
-    console.log('Matiere trouvee:', matiere.nom);
+    console.log('Subject found:', matiere.nom);
 
-    const courses = await Cours.findAll({ where: { matiere_id } });
+    // Fetch courses for the specified level
+    const courses = await Cours.findAll({
+      where: {
+        matiere_id,
+        niveau, // Assumes Cours model has a niveau field
+      },
+    });
+
     if (!courses.length) {
-      console.log('Aucun cours trouve pour matiere_id:', matiere_id);
-      return res.status(404).json({ message: 'Aucun cours trouve pour cette matiere' });
-    }
-    console.log('Cours trouves:', courses.length);
+      console.log(`No courses found for matiere_id: ${matiere_id} and niveau: ${niveau}`);
 
+      const fallbackCourses = await Cours.findAll({ where: { matiere_id } });
+      if (!fallbackCourses.length) {
+        return res.status(404).json({ message: 'No courses found for this subject' });
+      }
+      console.log('Falling back to all courses:', fallbackCourses.length);
+      courses.push(...fallbackCourses);
+    }
+    console.log('Courses found:', courses.length);
+
+    // Map subject to Stack Overflow tag
     const tagMap = {
       'NodeJS': 'node.js',
       'ReactJS': 'reactjs',
@@ -94,202 +191,173 @@ exports.generateQuiz = async (req, res) => {
       'Java': 'java',
       'JavaScript': 'javascript',
     };
-
     const subjectTag = tagMap[matiere.nom] || matiere.nom.toLowerCase().replace(/\s+/g, '');
-    console.log('Utilisation du tag Stack Overflow:', subjectTag);
+    console.log('Using Stack Overflow tag:', subjectTag);
 
-    let stackOverflowQuestions;
-    try {
-      const response = await limiter.schedule(() =>
-        axios.get('https://api.stackexchange.com/2.3/questions', {
-          params: {
-            order: 'desc',
-            sort: 'votes',
-            site: 'stackoverflow',
-            pagesize: 50,
-            tagged: subjectTag,
-            key: process.env.STACK_OVERFLOW_API_KEY,
-          },
-        })
-      );
-      console.log('Statut de la reponse API Stack Overflow:', response.status);
-      console.log('Donnees de la reponse API Stack Overflow:', response.data);
-
-      stackOverflowQuestions = response.data.items;
-    } catch (apiError) {
-      console.error('Echec de la recuperation des questions depuis Stack Overflow:', apiError.message);
-      stackOverflowQuestions = [
-        {
-          question_id: 'fallback-1',
-          title: `Qu est ce que ${matiere.nom} ?`,
-          answers: [{ body: `${matiere.nom} est une technologie ou un langage utilise en programmation.`, is_accepted: true }],
-        },
-        {
-          question_id: 'fallback-2',
-          title: `Quelle est une fonctionnalite cle de ${matiere.nom} ?`,
-          answers: [{ body: `Une fonctionnalite cle de ${matiere.nom} est sa capacite a gerer des taches specifiques.`, is_accepted: true }],
-        },
-        {
-          question_id: 'fallback-3',
-          title: `Comment ${matiere.nom} est il utilise dans le developpement ?`,
-          answers: [{ body: `${matiere.nom} est utilise pour creer des applications de maniere efficace.`, is_accepted: true }],
-        },
-      ];
+    // Generate questions from course content
+    let allQuestions = [];
+    for (const course of courses) {
+      const courseQuestions = await generateQuestionsFromCourseContent(course, subjectTag, niveau);
+      allQuestions = [...allQuestions, ...courseQuestions];
+      console.log(`Generated ${courseQuestions.length} questions for course ${course.id}`);
     }
 
-    if (!stackOverflowQuestions || stackOverflowQuestions.length === 0) {
-      console.log('Aucune question trouvee via l API Stack Overflow, utilisation des questions de secours');
-      stackOverflowQuestions = [
-        {
-          question_id: 'fallback-1',
-          title: `Qu est ce que ${matiere.nom} ?`,
-          answers: [{ body: `${matiere.nom} est une technologie ou un langage utilise en programmation.`, is_accepted: true }],
-        },
-        {
-          question_id: 'fallback-2',
-          title: `Quelle est une fonctionnalite cle de ${matiere.nom} ?`,
-          answers: [{ body: `Une fonctionnalite cle de ${matiere.nom} est sa capacite a gerer des taches specifiques.`, is_accepted: true }],
-        },
-        {
-          question_id: 'fallback-3',
-          title: `Comment ${matiere.nom} est il utilise dans le developpement ?`,
-          answers: [{ body: `${matiere.nom} est utilise pour creer des applications de maniere efficace.`, is_accepted: true }],
-        },
-      ];
-    }
-    console.log('Questions recuperees:', stackOverflowQuestions.length);
-
-    const selectedQuestions = stackOverflowQuestions
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 20);
-    console.log('Questions selectionnees:', selectedQuestions.length);
-
-    const cours_id = courses[0].id;
-    console.log('Cours_id selectionne:', cours_id);
-
-    const existingQuizzes = await Quiz.findAll({ where: { matiere_id } });
-    if (existingQuizzes.length > 0) {
-      console.log(`Trouve ${existingQuizzes.length} quiz existants pour matiere_id ${matiere_id}, suppression...`);
-      for (const quiz of existingQuizzes) {
-        await QuizQuestion.destroy({ where: { quiz_id: quiz.id } });
-        await quiz.destroy();
-      }
-      console.log('Quiz existants supprimes');
-    }
-
-    console.log('Creating quiz with setDuration:', setDuration);
-    const quiz = await Quiz.create({
-      matiere_id,
-      cours_id,
-      titre: `Evaluation complete de ${matiere.nom}`,
-      setDuration: setDuration || 30,
-    });
-    console.log('Quiz created with setDuration:', quiz.setDuration);
-
-    let createdQuestionCount = 0;
-
-    for (const q of selectedQuestions) {
-      console.log('Traitement de la question ID:', q.question_id);
-      let answerResponse;
+    // Supplement with Stack Overflow questions if needed
+    const minQuestions = 10;
+    if (allQuestions.length < minQuestions) {
+      console.log('Insufficient course-based questions, fetching from Stack Overflow');
+      let stackOverflowQuestions;
       try {
-        answerResponse = await limiter.schedule(() =>
-          axios.get(`https://api.stackexchange.com/2.3/questions/${q.question_id}/answers`, {
+        // Adjust Stack Overflow query based on level
+        const levelFilters = {
+          '1': { min_votes: 10, max_votes: 50 }, // Beginner: simpler questions
+          '2': { min_votes: 50, max_votes: 100 }, // Intermediate: moderately complex
+          '3': { min_votes: 100 }, // Advanced: complex questions
+        };
+        const filter = levelFilters[niveau] || {};
+
+        const response = await limiter.schedule(() =>
+          axios.get('https://api.stackexchange.com/2.3/questions', {
             params: {
               order: 'desc',
               sort: 'votes',
               site: 'stackoverflow',
-              filter: 'withbody',
+              pagesize: 50,
+              tagged: subjectTag,
               key: process.env.STACK_OVERFLOW_API_KEY,
+              ...filter,
             },
           })
         );
-        console.log('Statut de la reponse API pour la question', q.question_id, ':', answerResponse.status);
-      } catch (err) {
-        console.warn(`Echec de la recuperation des reponses pour la question ${q.question_id}:`, err.message);
-        answerResponse = { data: { items: [] } };
-      }
-
-      const answers = answerResponse.data.items || q.answers || [];
-      console.log('Reponses trouvees pour la question', q.question_id, ':', answers.length);
-
-      const acceptedAnswer = answers.find(ans => ans.is_accepted) || answers[0] || null;
-
-      let correctAnswerText = 'Reponse correcte par defaut';
-      if (acceptedAnswer && acceptedAnswer.body) {
-        correctAnswerText = sanitizeHtml(acceptedAnswer.body, {
-          allowedTags: [],
-          allowedAttributes: {},
-          transformTags: {
-            'code': (tagName, attribs) => ({ tagName: 'span', attribs }),
-            'pre': (tagName, attribs) => ({ tagName: 'span', attribs }),
+        console.log('Stack Overflow API response status:', response.status);
+        stackOverflowQuestions = response.data.items;
+      } catch (apiError) {
+        console.error('Failed to fetch questions from Stack Overflow:', apiError.message);
+        stackOverflowQuestions = [
+          {
+            question_id: `fallback-1-${niveau}`,
+            title: `What is ${matiere.nom} at level ${niveau}?`,
+            answers: [{ body: `${matiere.nom} is a technology or language used in programming at level ${niveau}.`, is_accepted: true }],
           },
-        });
-        correctAnswerText = cleanText(correctAnswerText);
-      }
-      console.log('Reponse nettoyee pour la question', q.question_id, ':', correctAnswerText);
-
-      const distractors = generateDynamicDistractors(correctAnswerText, subjectTag);
-
-      const options = [
-        { text: correctAnswerText, isCorrect: true },
-        { text: distractors[0], isCorrect: false },
-        { text: distractors[1], isCorrect: false },
-        { text: distractors[2], isCorrect: false },
-      ].sort(() => Math.random() - 0.5);
-      console.log('Options generees pour la question', q.question_id, ':', options);
-
-      const isValidOptions = Array.isArray(options) && options.every(opt => opt.text && typeof opt.isCorrect === 'boolean');
-      if (!isValidOptions) {
-        console.warn(`Structure d options invalide pour la question ${q.question_id}:`, options);
-        continue;
+          {
+            question_id: `fallback-2-${niveau}`,
+            title: `What is a key feature of ${matiere.nom} at level ${niveau}?`,
+            answers: [{ body: `A key feature of ${matiere.nom} is its ability to handle specific tasks at level ${niveau}.`, is_accepted: true }],
+          },
+          {
+            question_id: `fallback-3-${niveau}`,
+            title: `How is ${matiere.nom} used in development at level ${niveau}?`,
+            answers: [{ body: `${matiere.nom} is used to create applications efficiently at level ${niveau}.`, is_accepted: true }],
+          },
+        ];
       }
 
-      let serializedOptions;
-      try {
-        serializedOptions = JSON.stringify(options);
-        JSON.parse(serializedOptions);
-      } catch (err) {
-        console.warn(`JSON invalide pour la question ${q.question_id}:`, options, err);
-        continue;
-      }
+      const selectedQuestions = stackOverflowQuestions
+        .sort(() => 0.5 - Math.random())
+        .slice(0, minQuestions - allQuestions.length);
 
-      console.log(`Creation de la question ${q.question_id}, reponse nettoyee:`, correctAnswerText);
+      for (const q of selectedQuestions) {
+        let answerResponse;
+        try {
+          answerResponse = await limiter.schedule(() =>
+            axios.get(`https://api.stackexchange.com/2.3/questions/${q.question_id}/answers`, {
+              params: {
+                order: 'desc',
+                sort: 'votes',
+                site: 'stackoverflow',
+                filter: 'withbody',
+                key: process.env.STACK_OVERFLOW_API_KEY,
+              },
+            })
+          );
+        } catch (err) {
+          console.warn(`Failed to fetch answers for question ${q.question_id}:`, err.message);
+          answerResponse = { data: { items: [] } };
+        }
 
-      try {
-        const cleanedTitle = cleanText(q.title || 'Question par defaut');
-        await QuizQuestion.create({
-          quiz_id: quiz.id,
-          text: cleanedTitle,
+        const answers = answerResponse.data.items || q.answers || [];
+        const acceptedAnswer = answers.find(ans => ans.is_accepted) || answers[0] || null;
+
+        let correctAnswerText = 'Default correct answer';
+        if (acceptedAnswer && acceptedAnswer.body) {
+          correctAnswerText = sanitizeHtml(acceptedAnswer.body, {
+            allowedTags: [],
+            allowedAttributes: {},
+            transformTags: {
+              'code': (tagName, attribs) => ({ tagName: 'span', attribs }),
+              'pre': (tagName, attribs) => ({ tagName: 'span', attribs }),
+            },
+          });
+          correctAnswerText = cleanText(correctAnswerText);
+        }
+
+        const distractors = generateDynamicDistractors(correctAnswerText, subjectTag);
+        const options = [
+          { text: correctAnswerText, isCorrect: true },
+          { text: distractors[0], isCorrect: false },
+          { text: distractors[1], isCorrect: false },
+          { text: distractors[2], isCorrect: false },
+        ].sort(() => Math.random() - 0.5);
+
+        allQuestions.push({
+          text: cleanText(q.title || 'Default question'),
           options,
         });
+      }
+    }
+
+    // Delete existing quizzes
+    const existingQuizzes = await Quiz.findAll({ where: { matiere_id } });
+    if (existingQuizzes.length > 0) {
+      console.log(`Found ${existingQuizzes.length} existing quizzes for matiere_id ${matiere_id}, deleting...`);
+      for (const quiz of existingQuizzes) {
+        await QuizQuestion.destroy({ where: { quiz_id: quiz.id } });
+        await quiz.destroy();
+      }
+      console.log('Existing quizzes deleted');
+    }
+
+    // Create new quiz
+    const cours_id = courses[0].id;
+    const levelName = { '1': 'Beginner', '2': 'Intermediate', '3': 'Advanced' }[niveau] || 'General';
+    const quiz = await Quiz.create({
+      matiere_id,
+      cours_id,
+      titre: `${levelName} ${matiere.nom} Assessment`,
+      setDuration: setDuration || 30,
+    });
+    console.log('Quiz created with ID:', quiz.id);
+
+    // Save questions
+    let createdQuestionCount = 0;
+    for (const q of allQuestions) {
+      try {
+        await QuizQuestion.create({
+          quiz_id: quiz.id,
+          text: q.text,
+          options: q.options,
+        });
         createdQuestionCount++;
-        console.log(`Question ${q.question_id} creee avec succes pour le quiz ${quiz.id}`);
+        console.log(`Question created for quiz ${quiz.id}`);
       } catch (err) {
-        console.error(`Echec de la creation de la question ${q.question_id} pour le quiz ${quiz.id}:`, err);
+        console.error('Failed to create question:', err);
         continue;
       }
     }
 
-    console.log('Nombre total de questions creees:', createdQuestionCount);
-
     if (createdQuestionCount === 0) {
-      console.log('Aucune question creee; suppression du quiz:', quiz.id);
-      try {
-        await Quiz.destroy({ where: { id: quiz.id } });
-        console.log('Quiz supprime avec succes');
-      } catch (err) {
-        console.error('Echec de la suppression du quiz:', err);
-      }
-      return res.status(400).json({ message: 'Aucune question valide disponible pour ce quiz' });
+      console.log('No questions created; deleting quiz:', quiz.id);
+      await Quiz.destroy({ where: { id: quiz.id } });
+      return res.status(400).json({ message: 'No valid questions available for this quiz' });
     }
 
     res.status(201).json({
-      message: `Quiz genere avec ${createdQuestionCount} question(s)`,
+      message: `Quiz generated with ${createdQuestionCount} question(s)`,
       quiz,
     });
   } catch (error) {
-    console.error('Erreur lors de la generation du quiz :', error);
-    res.status(500).json({ message: 'Erreur lors de la generation du quiz', error: error.message });
+    console.error('Error generating quiz:', error);
+    res.status(500).json({ message: 'Error generating quiz', error: error.message });
   }
 };
 

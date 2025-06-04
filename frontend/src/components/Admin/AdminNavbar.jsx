@@ -4,7 +4,7 @@ import { Badge, Button, Form, ListGroup, Modal, Dropdown } from 'react-bootstrap
 import { Bell, Search, Gear } from 'react-bootstrap-icons';
 import profil from '../images/businessman-310819_1280.png';
 import './admin.css';
-import { getSessionId } from '../Auth/session';
+
 
 const AdminNavbar = ({
   notifications,
@@ -17,11 +17,11 @@ const AdminNavbar = ({
   setActiveTab,
 }) => {
   const [userProfile, setUserProfile] = useState(null);
- const sessionId = getSessionId();
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem(`token_${sessionId}`);
+        const token = localStorage.getItem(`token`);
         const response = await fetch('http://localhost:5000/api/users/profile', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem({token})}`,
@@ -39,9 +39,7 @@ const AdminNavbar = ({
   }, []);
 
    const handleLogout = () => {
-localStorage.removeItem(`token_${sessionId}`);
-localStorage.removeItem(`role_${sessionId}`);
-sessionStorage.removeItem('sessionId');
+localStorage.removeItem(`token`);
     window.location.href = '/';
   };
 

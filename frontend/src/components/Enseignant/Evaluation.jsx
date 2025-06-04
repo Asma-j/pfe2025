@@ -5,9 +5,17 @@ const Evaluation = () => {
   const [matieres, setMatieres] = useState([]);
   const [selectedMatiere, setSelectedMatiere] = useState('');
   const [quizDuration, setQuizDuration] = useState(30); // Default duration in minutes
+  const [niveau, setNiveau] = useState(''); // New state for level
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Define level options
+  const levelOptions = [
+    { value: '1', label: 'Beginner' },
+    { value: '2', label: 'Intermediate' },
+    { value: '3', label: 'Advanced' },
+  ];
 
   useEffect(() => {
     const fetchMatieres = async () => {
@@ -22,6 +30,7 @@ const Evaluation = () => {
           setMatieres(data);
           if (data.length > 0) {
             setSelectedMatiere(data[0].id);
+            setNiveau('1'); // Default to Beginner
           }
         } else {
           setError(data.message || 'Erreur lors du chargement des matières');
@@ -35,7 +44,7 @@ const Evaluation = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedMatiere) return;
+    if (!selectedMatiere || !niveau) return;
 
     const fetchQuiz = async () => {
       setLoading(true);
@@ -72,11 +81,15 @@ const Evaluation = () => {
     };
 
     fetchQuiz();
-  }, [selectedMatiere]);
+  }, [selectedMatiere, niveau]); // Add niveau to dependencies
 
   const handleGenerateQuiz = async () => {
     if (!selectedMatiere) {
       setError('Veuillez sélectionner une matière');
+      return;
+    }
+    if (!niveau) {
+      setError('Veuillez sélectionner un niveau');
       return;
     }
 
@@ -90,7 +103,11 @@ const Evaluation = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ matiere_id: selectedMatiere, setDuration: quizDuration }),
+        body: JSON.stringify({
+          matiere_id: selectedMatiere,
+          setDuration: quizDuration,
+          niveau, // Include niveau in the request
+        }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -164,6 +181,24 @@ const Evaluation = () => {
             </select>
           </div>
           <div className="form-group">
+            <label htmlFor="niveau" className="form-label">
+              Sélectionner un Niveau
+            </label>
+            <select
+              id="niveau"
+              value={niveau}
+              onChange={(e) => setNiveau(e.target.value)}
+              className="form-select"
+            >
+              <option value="">-- Choisir un niveau --</option>
+              {levelOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
             <label htmlFor="quizDuration" className="form-label">
               Durée du Quiz (en minutes)
             </label>
@@ -179,8 +214,8 @@ const Evaluation = () => {
           </div>
           <button
             onClick={handleGenerateQuiz}
-            disabled={loading || !selectedMatiere}
-            className={`generate-button ${loading || !selectedMatiere ? 'disabled' : ''}`}
+            disabled={loading || !selectedMatiere || !niveau}
+            className={`generate-button ${loading || !selectedMatiere || !niveau ? 'disabled' : ''}`}
           >
             {loading ? (
               <span className="loading-spinner">Génération en cours...</span>
@@ -204,6 +239,10 @@ const Evaluation = () => {
               <p>
                 Matière:{' '}
                 {matieres.find((m) => m.id === quiz.matiere_id)?.nom || 'Inconnue'}
+              </p>
+              <p>
+                Niveau:{' '}
+                {levelOptions.find((opt) => opt.value === niveau)?.label || 'Inconnu'}
               </p>
               <p>Durée: {quiz.setDuration} minutes</p>
             </div>

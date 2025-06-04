@@ -5,7 +5,7 @@ import { MortarboardFill, Gear, BoxArrowRight, Bell } from 'react-bootstrap-icon
 import axios from 'axios';
 import defaultProfil from '../images/graduated.png';
 import './student.css';
-import { getSessionId } from '../Auth/session';
+
 
 function StudentNavbar() {
   const [profile, setProfile] = useState({
@@ -22,13 +22,13 @@ function StudentNavbar() {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [matieres, setMatieres] = useState([]);
   const navigate = useNavigate();
- const sessionId = getSessionId();
+
   // Fetch profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
       
-const token = localStorage.getItem(`token_${sessionId}`);
+const token = localStorage.getItem(`token`);
         if (!token) {
           console.warn('No token found in localStorage');
           setNotificationError('Veuillez vous connecter');
@@ -255,9 +255,8 @@ const token = localStorage.getItem(`token_${sessionId}`);
 
   // Handle logout
   const handleLogout = () => {
-localStorage.removeItem(`token_${sessionId}`);
-localStorage.removeItem(`role_${sessionId}`);
-sessionStorage.removeItem('sessionId');
+localStorage.removeItem(`token`);
+
     window.location.href = '/';
   };
 

@@ -37,11 +37,7 @@ const Footer = () => {
             </ul>
           </Col>
         </Row>
-        <Row className="mt-3">
-          <Col className="text-center">
-            <p>© 2021 Class Technologies Inc.</p>
-          </Col>
-        </Row>
+ 
       </Container>
     </footer>
   );

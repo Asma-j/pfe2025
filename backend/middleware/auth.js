@@ -1,3 +1,4 @@
+// backend/middleware/auth.js
 const jwt = require('jsonwebtoken');
 const Utilisateur = require('../models/Utilisateur');
 const Role = require('../models/Role');
@@ -35,6 +36,9 @@ const authMiddleware = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth error:', error);
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expiré, veuillez vous reconnecter' });
+    }
     res.status(401).json({ message: 'Token invalide', error: error.message });
   }
 };

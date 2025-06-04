@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import image from '../images/auth.jpg';
 import './auth.css';
-import { getSessionId } from './session';
+
 
 function Login({ show = true, onClose }) {
   const [email, setEmail] = useState('');
@@ -22,11 +22,13 @@ const handleLogin = async (e) => {
       mot_de_passe: motDePasse,
     });
     const { token, role, userId } = response.data;
-    const sessionId = getSessionId();
-    localStorage.setItem(`token_${sessionId}`, token);
-    localStorage.setItem(`role_${sessionId}`, role);
-    localStorage.setItem(`userId_${sessionId}`, userId);
-    sessionStorage.setItem('sessionId', sessionId); // Persist sessionId
+
+    
+    // Set new session data
+    localStorage.setItem(`token`, token);
+    localStorage.setItem(`role`, role);
+    localStorage.setItem(`userId`, userId);
+  
     if (role === 'admin') {
       navigate('/admin');
     } else if (role === 'Etudiant') {

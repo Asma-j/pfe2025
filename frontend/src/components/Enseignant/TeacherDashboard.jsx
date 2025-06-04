@@ -19,7 +19,7 @@ import {
 } from 'react-bootstrap-icons';
 import Background3D from '../Admin/Background3D';
 import axios from 'axios';
-import { getSessionId } from '../Auth/session';
+
 
 function TeacherDashboard() {
     const [currentView, setCurrentView] = useState('dashboard');
@@ -28,14 +28,14 @@ function TeacherDashboard() {
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]); // State for notifications
     const [showNotificationsModal, setShowNotificationsModal] = useState(false); // State for notification modal
-     const sessionId = getSessionId();
+   
     // Fetch teacher profile and notifications on mount
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 setLoading(true);
            
-const token = localStorage.getItem(`token_${sessionId}`);
+const token = localStorage.getItem(`token`);
                 if (!token) {
                     setError('Veuillez vous connecter');
                     return;
@@ -77,9 +77,8 @@ const token = localStorage.getItem(`token_${sessionId}`);
         }
     };
    const handleLogout = () => {
-localStorage.removeItem(`token_${sessionId}`);
-localStorage.removeItem(`role_${sessionId}`);
-sessionStorage.removeItem('sessionId');
+localStorage.removeItem(`token`);
+
     window.location.href = '/';
   };
 
