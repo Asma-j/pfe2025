@@ -18,9 +18,13 @@ const TeacherCalendar = () => {
     const fetchPlannings = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Utilisateur non authentifié. Veuillez vous connecter.');
+        }
         const response = await axios.get('http://localhost:5000/api/plannings', {
           params: { include: 'Cours,Classe' },
           headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         });
 
         const calendarEvents = response.data.map((planning) => ({
@@ -34,7 +38,15 @@ const TeacherCalendar = () => {
         setEvents(calendarEvents);
       } catch (err) {
         console.error('Erreur lors de la récupération des plannings:', err);
-        setError('Impossible de charger les plannings.');
+        setError(
+          err.response?.status === 401
+            ? 'Session invalide. Veuillez vous reconnecter.'
+            : err.response?.data?.message || 'Impossible de charger les plannings.'
+        );
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
       }
     };
 
@@ -66,21 +78,30 @@ const TeacherCalendar = () => {
         const response = await axios.post(
           'http://localhost:5000/api/zoom/create-meeting',
           {},
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
         );
         meetingDetails = response.data;
 
         await axios.put(
           `http://localhost:5000/api/plannings/${planning.id}`,
           meetingDetails,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }
         );
       }
 
       await axios.put(
         `http://localhost:5000/api/plannings/${planning.id}/status`,
         { statut: 'En cours' },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        }
       );
 
       setMeetingDetails(meetingDetails);
@@ -90,8 +111,17 @@ const TeacherCalendar = () => {
       await joinMeeting(meetingDetails);
     } catch (err) {
       console.error('Error starting meeting:', err.response?.data || err.message);
-      const errorMessage = err.response?.data?.error || err.message;
-      setError(`Impossible de créer la réunion Zoom: ${errorMessage}`);
+      setError(
+        err.response?.status === 401
+          ? 'Session invalide. Veuillez vous reconnecter.'
+          : err.response?.status === 400
+          ? `Erreur de validation: ${err.response?.data?.message}`
+          : `Impossible de créer la réunion Zoom: ${err.response?.data?.message || err.message}`
+      );
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
   };
 
@@ -101,7 +131,10 @@ const TeacherCalendar = () => {
       await axios.post(
         `http://localhost:5000/api/zoom/end-meeting/${meetingId}`,
         { planningId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        }
       );
       setShowModal(false);
       setEvents((prevEvents) =>
@@ -113,7 +146,15 @@ const TeacherCalendar = () => {
       );
     } catch (err) {
       console.error('Error ending meeting:', err.response?.data || err.message);
-      setError(`Impossible de mettre fin à la réunion: ${err.response?.data?.message || err.message}`);
+      setError(
+        err.response?.status === 401
+          ? 'Session invalide. Veuillez vous reconnecter.'
+          : `Impossible de mettre fin à la réunion: ${err.response?.data?.message || err.message}`
+      );
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
   };
 
@@ -136,7 +177,7 @@ const TeacherCalendar = () => {
             `http://localhost:5000/api/zoom/meeting-participants/${meetingNumber}`,
             {
               headers: { Authorization: `Bearer ${token}` },
-              params: { isOngoing: true },
+              withCredentials: true,
             }
           );
           const participants = response.data.participants || [];
@@ -178,7 +219,7 @@ const TeacherCalendar = () => {
         {error && (
           <div className="error-alert">
             <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11a1 1 0 112 0v4a1 1 0 11-2 0V7zm1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11v4a1 1 0 112-2V7zm1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
             </svg>
             {error}
           </div>
@@ -223,7 +264,7 @@ const TeacherCalendar = () => {
             <div className="modal-body">
               <p>Vous êtes sur le point de rejoindre la réunion pour : <strong>{selectedPlanning?.titre}</strong></p>
               <p className="text-warning">
-                Rappel : Veuillez activer l'option "Masquer les participants les uns des autres" dans Zoom pour que les étudiants ne voient que vous.
+                Rappel : Veuillez activer l'option "Masquer les participants des uns des autres" dans Zoom pour que les étudiants ne se voient que vous.
               </p>
               {meetingDetails ? (
                 <div>

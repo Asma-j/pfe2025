@@ -24,7 +24,7 @@ router.post('/students/classe', addStudentToClasse);
 router.get('/teachers', getTeachers);
 router.post('/addUser', addUser);
 router.get('/approved', getApprovedUsers);
-router.put('/users/:id', updateUser);
+router.put('/:id', updateUser);
 router.delete('/:id', deleteUser);
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, profileUpload, updateProfile);

@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './Evaluation.css';
 
 const Evaluation = () => {
   const [matieres, setMatieres] = useState([]);
   const [selectedMatiere, setSelectedMatiere] = useState('');
-  const [quizDuration, setQuizDuration] = useState(30); // Default duration in minutes
-  const [niveau, setNiveau] = useState(''); // New state for level
+  const [quizDuration, setQuizDuration] = useState(30);
+  const [niveau, setNiveau] = useState('');
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  // Define level options
   const levelOptions = [
     { value: '1', label: 'Beginner' },
     { value: '2', label: 'Intermediate' },
@@ -20,28 +22,29 @@ const Evaluation = () => {
   useEffect(() => {
     const fetchMatieres = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/matieres', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+        const response = await axios.get('http://localhost:5000/api/matieres', {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        const data = await response.json();
-        if (response.ok) {
-          setMatieres(data);
-          if (data.length > 0) {
-            setSelectedMatiere(data[0].id);
-            setNiveau('1'); // Default to Beginner
-          }
-        } else {
-          setError(data.message || 'Erreur lors du chargement des matières');
+        setMatieres(response.data);
+        if (response.data.length > 0) {
+          setSelectedMatiere(response.data[0].id);
+          setNiveau('1');
         }
       } catch (err) {
-        setError('Erreur réseau lors du chargement des matières');
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userId');
+          navigate('/login');
+        } else {
+          setError(err.response?.data?.message || 'Erreur lors du chargement des matières');
+        }
       }
     };
 
     fetchMatieres();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (!selectedMatiere || !niveau) return;
@@ -52,36 +55,38 @@ const Evaluation = () => {
       setQuiz(null);
 
       try {
-        const response = await fetch(`http://localhost:5000/api/quiz/matiere/${selectedMatiere}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+        const response = await axios.get(`http://localhost:5000/api/quiz/matiere/${selectedMatiere}`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        const data = await response.json();
-        if (response.ok) {
-          if (data.QuizQuestions) {
-            data.QuizQuestions = data.QuizQuestions.map((question) => ({
-              ...question,
-              options: Array.isArray(question.options)
-                ? question.options
-                : typeof question.options === 'string'
-                ? JSON.parse(question.options)
-                : [{ text: 'Default Option', isCorrect: false }],
-            }));
-          }
-          setQuiz(data);
-        } else {
-          setError(data.message || 'Erreur lors du chargement du quiz');
+        const data = response.data;
+        if (data.QuizQuestions) {
+          data.QuizQuestions = data.QuizQuestions.map((question) => ({
+            ...question,
+            options: Array.isArray(question.options)
+              ? question.options
+              : typeof question.options === 'string'
+              ? JSON.parse(question.options)
+              : [{ text: 'Default Option', isCorrect: false }],
+          }));
         }
+        setQuiz(data);
       } catch (err) {
-        setError('Erreur réseau lors du chargement du quiz');
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userId');
+          navigate('/login');
+        } else {
+          setError(err.response?.data?.message || 'Erreur lors du chargement du quiz');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchQuiz();
-  }, [selectedMatiere, niveau]); // Add niveau to dependencies
+  }, [selectedMatiere, niveau, navigate]);
 
   const handleGenerateQuiz = async () => {
     if (!selectedMatiere) {
@@ -97,46 +102,39 @@ const Evaluation = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/quiz/generate', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          matiere_id: selectedMatiere,
-          setDuration: quizDuration,
-          niveau, // Include niveau in the request
-        }),
+      const response = await axios.post('http://localhost:5000/api/quiz/generate', {
+        matiere_id: selectedMatiere,
+        setDuration: quizDuration,
+        niveau,
+      }, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      const data = await response.json();
-      if (response.ok) {
-        const quizResponse = await fetch(`http://localhost:5000/api/quiz/matiere/${selectedMatiere}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const quizData = await quizResponse.json();
-        if (quizResponse.ok) {
-          if (quizData.QuizQuestions) {
-            quizData.QuizQuestions = quizData.QuizQuestions.map((question) => ({
-              ...question,
-              options: Array.isArray(question.options)
-                ? question.options
-                : typeof question.options === 'string'
-                ? JSON.parse(question.options)
-                : [{ text: 'Default Option', isCorrect: false }],
-            }));
-          }
-          setQuiz(quizData);
-        } else {
-          setError(quizData.message || 'Erreur lors du chargement du quiz généré');
-        }
-      } else {
-        setError(data.message || 'Erreur lors de la génération du quiz');
+      const quizResponse = await axios.get(`http://localhost:5000/api/quiz/matiere/${selectedMatiere}`, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      const quizData = quizResponse.data;
+      if (quizData.QuizQuestions) {
+        quizData.QuizQuestions = quizData.QuizQuestions.map((question) => ({
+          ...question,
+          options: Array.isArray(question.options)
+            ? question.options
+            : typeof question.options === 'string'
+            ? JSON.parse(question.options)
+            : [{ text: 'Default Option', isCorrect: false }],
+        }));
       }
+      setQuiz(quizData);
     } catch (err) {
-      setError('Erreur réseau lors de la génération du quiz');
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de la génération du quiz');
+      }
     } finally {
       setLoading(false);
     }

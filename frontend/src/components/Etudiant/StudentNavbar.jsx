@@ -6,7 +6,6 @@ import axios from 'axios';
 import defaultProfil from '../images/graduated.png';
 import './student.css';
 
-
 function StudentNavbar() {
   const [profile, setProfile] = useState({
     prenom: '',
@@ -23,19 +22,15 @@ function StudentNavbar() {
   const [matieres, setMatieres] = useState([]);
   const navigate = useNavigate();
 
-  // Fetch profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-      
-const token = localStorage.getItem(`token`);
+        const token = localStorage.getItem('token');
         if (!token) {
-          console.warn('No token found in localStorage');
-          setNotificationError('Veuillez vous connecter');
-          navigate('/login');
-          return;
+          throw new Error('Veuillez vous connecter.');
         }
         const response = await axios.get('http://localhost:5000/api/users/profile', {
+          withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile({
@@ -46,42 +41,34 @@ const token = localStorage.getItem(`token`);
           id: response.data.id,
         });
       } catch (err) {
-        console.error('Error fetching profile:', err.response?.data || err.message);
-        setNotificationError('Erreur lors de la récupération du profil');
-        if (err.response?.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/login');
-        }
+        setNotificationError(err.response?.data?.message || 'Erreur lors de la récupération du profil.');
+        navigate('/login');
       }
     };
 
     fetchProfile();
   }, [navigate]);
 
-  // Fetch matieres (subjects)
   useEffect(() => {
     const fetchMatieres = async () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          console.warn('No token found for fetching matieres');
-          return;
+          throw new Error('Veuillez vous connecter.');
         }
         const response = await axios.get('http://localhost:5000/api/matieres', {
+          withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('Fetched matieres data:', response.data);
         setMatieres(response.data);
       } catch (err) {
-        console.error('Error fetching matieres:', err.response?.data || err.message);
-        setNotificationError('Erreur lors de la récupération des matières');
+        setNotificationError(err.response?.data?.message || 'Erreur lors de la récupération des matières.');
       }
     };
 
     fetchMatieres();
   }, []);
 
-  // Fetch notifications
   useEffect(() => {
     if (!profile.id) return;
 
@@ -90,27 +77,20 @@ const token = localStorage.getItem(`token`);
         setNotificationLoading(true);
         const token = localStorage.getItem('token');
         if (!token) {
-          setNotificationError('Veuillez vous connecter');
-          setNotificationLoading(false);
-          return;
+          throw new Error('Veuillez vous connecter.');
         }
         const response = await axios.get('http://localhost:5000/api/notifications', {
+          withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
           params: { userId: profile.id },
         });
-        console.log('Fetched notifications:', response.data);
-        // Filter for unread quiz notifications
         const evaluationNotifications = response.data.filter(
-          (notification) =>
-            !notification.read &&
-            notification.message.toLowerCase().includes('évaluation')
+          (notification) => !notification.read && notification.message.toLowerCase().includes('évaluation')
         );
-        console.log('Filtered evaluation notifications:', evaluationNotifications);
         setNotifications(evaluationNotifications);
-        setNotificationLoading(false);
       } catch (err) {
-        console.error('Notification fetch error:', err.response?.data || err.message);
-        setNotificationError('Erreur lors de la récupération des notifications');
+        setNotificationError(err.response?.data?.message || 'Erreur lors de la récupération des notifications.');
+      } finally {
         setNotificationLoading(false);
       }
     };
@@ -120,53 +100,44 @@ const token = localStorage.getItem(`token`);
     return () => clearInterval(interval);
   }, [profile.id]);
 
-  // Fetch quiz details for modal
   const fetchQuizDetails = async (matiereId) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        setNotificationError('Veuillez vous connecter');
-        return null;
+        throw new Error('Veuillez vous connecter.');
+        navigate('/login');
       }
       const response = await axios.get(`http://localhost:5000/api/quiz/matiere/${matiereId}`, {
+        withCredentials: true,
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     } catch (err) {
-      console.error('Error fetching quiz details:', err.response?.data || err.message);
       setNotificationError(
         err.response?.status === 404
           ? 'Aucun quiz disponible pour cette matière. Veuillez contacter votre enseignant.'
-          : err.response?.status === 401
-          ? 'Session expirée. Veuillez vous reconnecter.'
-          : err.response?.status === 400
-          ? 'La matière sélectionnée est invalide.'
-          : 'Erreur lors de la récupération des détails du quiz.'
+          : err.response?.data?.message || 'Erreur lors de la récupération des détails du quiz.'
       );
       return null;
     }
   };
 
-  // Open modal and fetch quiz details
   const openQuizModal = async (notification) => {
-    console.log('Processing notification:', notification);
-
     let matiereId = notification.matiereId;
 
     if (!matiereId) {
-      const subjectMatch = notification.message.match(/pour la matière "([^"]+)"/);
+      const subjectMatch = notification.message.match(/pour la matière "([^"]+)"/i);
       const subjectName = subjectMatch ? subjectMatch[1] : null;
-      console.log('Extracted subject name:', subjectName);
       if (subjectName) {
-        const matchedMatiere = matieres.find((matiere) => matiere.nom === subjectName);
+        const matchedMatiere = matieres.find(
+          (matiere) => matiere.nom.toLowerCase() === subjectName.toLowerCase()
+        );
         matiereId = matchedMatiere ? matchedMatiere.id : null;
-        console.log('Matched matiere:', matchedMatiere, 'matiereId:', matiereId);
       }
     }
 
     if (!matiereId || isNaN(matiereId)) {
       setNotificationError('Identifiant de matière invalide pour ce quiz.');
-      console.error('Invalid matiereId:', matiereId);
       return;
     }
 
@@ -181,11 +152,9 @@ const token = localStorage.getItem(`token`);
     }
   };
 
-  // Handle confirm (navigate to quiz page and mark as read)
   const handleConfirm = async () => {
     if (!selectedQuiz) {
-      console.error('No selected quiz');
-      setNotificationError('Aucun quiz sélectionné');
+      setNotificationError('Aucun quiz sélectionné.');
       setShowModal(false);
       return;
     }
@@ -193,86 +162,51 @@ const token = localStorage.getItem(`token`);
     try {
       setNotificationLoading(true);
       const token = localStorage.getItem('token');
-      const matiereId = selectedQuiz.matiereId;
-      const notificationId = selectedQuiz.notificationId;
-      console.log('Confirming quiz for matiereId:', matiereId, 'notificationId:', notificationId);
+      const { matiereId, notificationId } = selectedQuiz;
 
-      if (!matiereId || isNaN(matiereId)) {
-        console.error('Invalid matiereId:', matiereId);
-        setNotificationError('Identifiant de matière invalide.');
-        setShowModal(false);
-        setNotificationLoading(false);
-        return;
+      if (!matiereId || !notificationId) {
+        throw new Error('Identifiant de matière ou de notification invalide.');
       }
 
-      if (!notificationId) {
-        console.error('Invalid notificationId:', notificationId);
-        setNotificationError('Identifiant de notification invalide.');
-        setShowModal(false);
-        setNotificationLoading(false);
-        return;
-      }
+      await axios.patch(`http://localhost:5000/api/notifications/${notificationId}/read`, {}, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      // Mark notification as read
-      console.log('Marking notification as read:', notificationId);
-      await axios.patch(
-        `http://localhost:5000/api/notifications/${notificationId}/read`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Remove notification from state
-      console.log('Current notifications:', notifications);
-      const updatedNotifications = notifications.filter((n) => n.id !== notificationId);
-      console.log('Updated notifications:', updatedNotifications);
-      setNotifications(updatedNotifications);
-
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       setShowModal(false);
       setSelectedQuiz(null);
-
-      // Navigate to the quiz page
-      console.log('Navigating to quiz:', `/quiz/matiere/${matiereId}`);
       navigate(`/quiz/matiere/${matiereId}`);
     } catch (err) {
-      console.error('Error in handleConfirm:', err.response?.data || err.message);
       setNotificationError(
         err.response?.status === 404
           ? 'Notification non trouvée.'
-          : err.response?.status === 401
-          ? 'Session expirée. Veuillez vous reconnecter.'
-          : 'Erreur lors de la mise à jour de la notification.'
+          : err.response?.status === 0
+          ? 'Erreur réseau : impossible de contacter le serveur. Vérifiez votre connexion ou contactez l\'administrateur.'
+          : err.response?.data?.message || 'Erreur lors de la mise à jour de la notification.'
       );
     } finally {
       setNotificationLoading(false);
     }
   };
 
-  // Handle cancel (close modal)
   const handleCancel = () => {
     setShowModal(false);
     setSelectedQuiz(null);
+    setNotificationError(null);
   };
 
-  // Handle logout
   const handleLogout = () => {
-localStorage.removeItem(`token`);
-
-    window.location.href = '/';
+    localStorage.removeItem('token');
+    navigate('/');
   };
 
   return (
     <>
-      <BootstrapNavbar
-        expand="lg"
-        fixed="top"
-        className="bg-white shadow-sm"
-      >
+      <BootstrapNavbar expand="lg" fixed="top" className="bg-white shadow-sm">
         <Container>
           <BootstrapNavbar.Brand href="#home" className="d-flex align-items-center">
-            <MortarboardFill
-              style={{ width: '32px', height: '32px', color: '#3b82f6' }}
-              className="me-2"
-            />
+            <MortarboardFill style={{ width: '32px', height: '32px', color: '#3b82f6' }} className="me-2" />
             <span className="fw-bold fs-4" style={{ color: '#3b82f6' }}>EduLearn</span>
           </BootstrapNavbar.Brand>
 
@@ -280,7 +214,6 @@ localStorage.removeItem(`token`);
             <Link to="/" className="nav-link">Accueil</Link>
             <Link to="/cours" className="nav-link">Cours</Link>
 
-            {/* Notification Dropdown */}
             <Dropdown align="end">
               <Dropdown.Toggle variant="link" id="dropdown-notifications" className="p-0 border-0 position-relative text-dark">
                 <Bell style={{ width: '24px', height: '24px', color: '#3b82f6' }} />
@@ -320,46 +253,25 @@ localStorage.removeItem(`token`);
               </Dropdown.Menu>
             </Dropdown>
 
-            {/* Profile Dropdown */}
             <Dropdown align="end">
               <Dropdown.Toggle variant="link" id="dropdown-profile" className="p-0 border-0 text-dark">
                 <img
-                  src={
-                    profile.photo
-                      ? `http://localhost:5000/Uploads/${profile.photo}?t=${Date.now()}`
-                      : defaultProfil
-                  }
+                  src={profile.photo ? `http://localhost:5000/Uploads/${profile.photo}?t=${Date.now()}` : defaultProfil}
                   alt="Profile"
                   className="rounded-circle border shadow"
-                  style={{
-                    width: '45px',
-                    height: '40px',
-                    objectFit: 'cover',
-                    transition: '0.3s ease-in-out',
-                  }}
+                  style={{ width: '40px', height: '40px', objectFit: 'cover', transition: '0.3s ease-in-out' }}
                 />
               </Dropdown.Toggle>
               <Dropdown.Menu className="shadow-sm p-3 rounded border-0" style={{ minWidth: '200px', background: '#f1f5f9' }}>
-                <div className="d-flex align-items-center px-3 py-3 bg-light rounded">
+                <div className="d-flex align-items-center px-3 py-2 bg-light rounded">
                   <img
-                    src={
-                      profile.photo
-                        ? `http://localhost:5000/Uploads/${profile.photo}?t=${Date.now()}`
-                        : defaultProfil
-                    }
+                    src={profile.photo ? `http://localhost:5000/Uploads/${profile.photo}?t=${Date.now()}` : defaultProfil}
                     alt="Profile"
                     className="rounded-circle border me-2"
-                    style={{
-                      width: '55px',
-                      height: '55px',
-                      objectFit: 'cover',
-                      border: '2px solid #3b82f6',
-                    }}
+                    style={{ width: '50px', height: '50px', objectFit: 'cover', border: '2px solid #3b82f6' }}
                   />
                   <div>
-                    <div className="fw-bold fs-6">
-                      {profile.prenom} {profile.nom}
-                    </div>
+                    <div className="fw-bold fs-6">{profile.prenom} {profile.nom}</div>
                     <small className="text-muted">{profile.role || 'Étudiant'}</small>
                   </div>
                 </div>
@@ -375,7 +287,6 @@ localStorage.removeItem(`token`);
         </Container>
       </BootstrapNavbar>
 
-      {/* Quiz Modal */}
       <Modal show={showModal} onHide={handleCancel} centered>
         <Modal.Header closeButton style={{ background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)', color: '#ffffff' }}>
           <Modal.Title>Détails du Quiz</Modal.Title>

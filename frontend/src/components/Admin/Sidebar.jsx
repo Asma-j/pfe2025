@@ -24,7 +24,7 @@ const Sidebar = ({ setCurrentView, currentView, setActiveTab }) => {
         { icon: Speedometer, label: 'Tableau de bord', view: 'dashboard' },
         { icon: Book, label: 'Cours', view: 'courses' },
         { icon: Calendar, label: 'Emploi du temps', view: 'schedule' },
-        { icon: Gear, label: 'Paramètres', view: 'settings' },
+     
       ].map(({ icon: Icon, label, view, tab }) => (
         <Button
           key={label}

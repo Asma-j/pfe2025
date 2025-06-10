@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Table, Button } from 'react-bootstrap';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const StudentList = () => {
   const [classes, setClasses] = useState([]);
@@ -11,6 +12,7 @@ const StudentList = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const API_URL = 'http://localhost:5000';
 
@@ -19,19 +21,29 @@ const StudentList = () => {
     const fetchClasses = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_URL}/api/classes`);
+        const response = await axios.get(`${API_URL}/api/classes`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
         setClasses(response.data);
         if (response.data.length > 0) {
           setSelectedClass(response.data[0].id);
         }
         setLoading(false);
       } catch (err) {
-        setError('Erreur lors de la récupération des classes');
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userId');
+          navigate('/login');
+        } else {
+          setError('Erreur lors de la récupération des classes');
+        }
         setLoading(false);
       }
     };
     fetchClasses();
-  }, []);
+  }, [navigate]);
 
   // Fetch completed plannings
   useEffect(() => {
@@ -39,17 +51,27 @@ const StudentList = () => {
     const fetchCompletedPlannings = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_URL}/api/plannings/completed/classe/${selectedClass}`);
+        const response = await axios.get(`${API_URL}/api/plannings/completed/classe/${selectedClass}`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
         setCompletedPlannings(response.data);
         setSelectedPlanning(response.data.length > 0 ? response.data[0].id : '');
         setLoading(false);
       } catch (err) {
-        setError('Erreur lors de la récupération des plannings terminés');
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userId');
+          navigate('/login');
+        } else {
+          setError('Erreur lors de la récupération des plannings terminés');
+        }
         setLoading(false);
       }
     };
     fetchCompletedPlannings();
-  }, [selectedClass]);
+  }, [selectedClass, navigate]);
 
   // Fetch students
   useEffect(() => {
@@ -57,16 +79,26 @@ const StudentList = () => {
     const fetchStudents = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_URL}/api/users/students/classe/${selectedClass}`);
+        const response = await axios.get(`${API_URL}/api/users/students/classe/${selectedClass}`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
         setStudents(response.data);
         setLoading(false);
       } catch (err) {
-        setError('Erreur lors de la récupération des étudiants');
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userId');
+          navigate('/login');
+        } else {
+          setError('Erreur lors de la récupération des étudiants');
+        }
         setLoading(false);
       }
     };
     fetchStudents();
-  }, [selectedClass]);
+  }, [selectedClass, navigate]);
 
   // Fetch attendance
   useEffect(() => {
@@ -75,26 +107,32 @@ const StudentList = () => {
       try {
         setLoading(true);
         const response = await axios.get(`${API_URL}/api/presence/${selectedPlanning}`, {
+          withCredentials: true,
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAttendance(response.data);
         setLoading(false);
       } catch (err) {
-        const errorMessage =
-          err.response?.status === 401
-            ? 'Session expirée, veuillez vous reconnecter'
-            : err.response?.status === 403
-            ? 'Accès non autorisé'
-            : err.response?.status === 404
-            ? 'Aucune présence enregistrée pour ce planning'
-            : 'Erreur lors de la récupération de la présence';
-        setError(errorMessage);
-        setAttendance([]);
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userId');
+          navigate('/login');
+        } else {
+          const errorMessage =
+            err.response?.status === 403
+              ? 'Accès non autorisé'
+              : err.response?.status === 404
+              ? 'Aucune présence enregistrée pour ce planning'
+              : 'Erreur lors de la récupération de la présence';
+          setError(errorMessage);
+          setAttendance([]);
+        }
         setLoading(false);
       }
     };
     fetchAttendance();
-  }, [selectedPlanning]);
+  }, [selectedPlanning, navigate]);
 
   // Handle manual attendance marking
   const toggleAttendance = (studentId) => {
@@ -129,18 +167,26 @@ const StudentList = () => {
             present: a.present,
           })),
         },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
       );
       setLoading(false);
       alert('Présence enregistrée avec succès');
     } catch (err) {
-      const errorMessage =
-        err.response?.status === 401
-          ? 'Session expirée, veuillez vous reconnecter'
-          : err.response?.status === 403
-          ? 'Accès non autorisé'
-          : 'Erreur lors de l\'enregistrement de la présence';
-      setError(errorMessage);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      } else {
+        const errorMessage =
+          err.response?.status === 403
+            ? 'Accès non autorisé'
+            : 'Errreur lors de l\'enregistrement de la présence';
+        setError(errorMessage);
+      }
       setLoading(false);
     }
   };
@@ -152,20 +198,28 @@ const StudentList = () => {
       const response = await axios.post(
         `${API_URL}/api/presence/notify-quiz`,
         { planningId: selectedPlanning },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
       );
       setLoading(false);
       alert(response.data.message);
     } catch (err) {
-      const errorMessage =
-        err.response?.status === 401
-          ? 'Session expirée, veuillez vous reconnecter'
-          : err.response?.status === 403
-          ? 'Accès non autorisé'
-          : err.response?.status === 404
-          ? err.response.data.message
-          : 'Erreur lors de l\'envoi des notifications';
-      setError(errorMessage);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      } else {
+        const errorMessage =
+          err.response?.status === 403
+            ? 'Accès non autorisé'
+            : err.response?.status === 404
+            ? err.response.data.message
+            : 'Erreur lors de l\'envoi des notifications';
+        setError(errorMessage);
+      }
       setLoading(false);
     }
   };

@@ -3,6 +3,7 @@ const axios = require('axios');
 const Matiere = require('../models/Matiere');
 const Utilisateur = require('../models/Utilisateur');
 const Niveau = require('../models/Niveau');
+const CoursUtilisateur = require('../models/CoursUtilisateur');
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -176,6 +177,7 @@ exports.getCourseById = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la récupération du cours', error: error.message });
   }
 };
+
 exports.updateCourse = async (req, res) => {
   try {
     const { id } = req.params;

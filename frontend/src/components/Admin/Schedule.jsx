@@ -82,7 +82,7 @@ function Schedule() {
 
   const fetchPlannings = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/plannings', {
+      const response = await axios.get('http://localhost:5000/api/plannings', { withCredentials: true }, {
         params: { include: 'Cours,Classe' }, // Inclure Cours et Classe
       });
       setPlannings(response.data);
@@ -122,10 +122,10 @@ function Schedule() {
     try {
       if (formData.id) {
         // Update existing planning
-        await axios.put(`http://localhost:5000/api/plannings/${formData.id}`, formData);
+        await axios.put(`http://localhost:5000/api/plannings/${formData.id}`, { withCredentials: true }, formData);
       } else {
         // Create new planning
-        await axios.post('http://localhost:5000/api/plannings', formData);
+        await axios.post('http://localhost:5000/api/plannings', { withCredentials: true }, formData);
       }
       fetchPlannings();
       handleClose();
@@ -165,7 +165,7 @@ function Schedule() {
   const handleDelete = async (id) => {
     if (window.confirm('Voulez-vous vraiment supprimer ce planning ?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/plannings/${id}`);
+        await axios.delete(`http://localhost:5000/api/plannings/${id}`, { withCredentials: true });
         fetchPlannings();
       } catch (err) {
         console.error('Erreur lors de la suppression du planning:', err);

@@ -51,8 +51,9 @@ const token = localStorage.getItem(`token`);
     // Récupérer les statistiques du tableau de bord
     const fetchStats = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/statistics/dashboard', {
+        const response = await axios.get('http://localhost:5000/api/statistics/dashboard', { withCredentials: true }, {
           headers: { Authorization: `Bearer ${token}` },
+          
         });
         setStats(response.data);
       } catch (error) {
@@ -63,7 +64,7 @@ const token = localStorage.getItem(`token`);
     // Récupérer les notifications
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/notifications/inscription', {
+        const response = await axios.get('http://localhost:5000/api/notifications/inscription', { withCredentials: true }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setNotifications(response.data);
@@ -79,7 +80,7 @@ const token = localStorage.getItem(`token`);
     // Récupérer le profil utilisateur
     const fetchProfile = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/users/profile', {
+        const response = await axios.get('http://localhost:5000/api/users/profile', { withCredentials: true }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserPhoto(response.data.photo);
@@ -106,17 +107,17 @@ const token = localStorage.getItem(`token`);
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/auth/approve',
+        'http://localhost:5000/api/auth/approve', { withCredentials: true },
         { userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Récupérer à nouveau les notifications
-      const updatedNotifications = await axios.get('http://localhost:5000/api/notifications/inscription', {
+      const updatedNotifications = await axios.get('http://localhost:5000/api/notifications/inscription', { withCredentials: true }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(updatedNotifications.data);
       // Récupérer à nouveau les statistiques pour mettre à jour les nouvelles inscriptions
-      const statsResponse = await axios.get('http://localhost:5000/api/statistics/dashboard', {
+      const statsResponse = await axios.get('http://localhost:5000/api/statistics/dashboard', { withCredentials: true }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStats(statsResponse.data);

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import poster from"../images/website-8305451_1280.jpg"
 import {
   Card,
   ListGroup,
@@ -36,18 +35,15 @@ const CourseContent = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          setPlanningsError("Utilisateur non authentifié. Veuillez vous connecter.");
-          setPlanningsLoading(false);
-          return;
+          throw new Error("Utilisateur non authentifié. Veuillez vous connecter.");
         }
         const response = await axios.get('http://localhost:5000/api/users/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` },
         });
         const profileData = response.data;
         if (!profileData.prenom || !profileData.nom || !profileData.email) {
-          throw new Error("Profil utilisateur incomplet : prénom, nom ou email manquant.");
+          throw new Error("Profil utilisateur incomplet.");
         }
         setUserProfile({
           id: profileData.id,
@@ -62,7 +58,7 @@ const CourseContent = () => {
         }
       } catch (err) {
         console.error("Fetch User Profile Error:", err);
-        setPlanningsError("Erreur lors de la récupération du profil utilisateur: " + err.message);
+        setPlanningsError(err.response?.data?.message || "Erreur lors de la récupération du profil utilisateur.");
         setPlanningsLoading(false);
       }
     };
@@ -75,24 +71,18 @@ const CourseContent = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          setError("Utilisateur non authentifié. Veuillez vous connecter.");
-          setLoading(false);
-          return;
+          throw new Error("Utilisateur non authentifié. Veuillez vous connecter.");
         }
-        const response = await axios.get(
-          `http://localhost:5000/api/cours/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get(`http://localhost:5000/api/cours/${id}`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` },
+        });
         console.log('Course data:', response.data);
         setCourse(response.data);
         setLoading(false);
       } catch (err) {
         console.error("Fetch Error:", err);
-        setError("Erreur lors de la récupération du contenu du cours");
+        setError(err.response?.data?.message || "Erreur lors de la récupération du contenu du cours.");
         setLoading(false);
       }
     };
@@ -106,20 +96,17 @@ const CourseContent = () => {
     const fetchPlannings = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `http://localhost:5000/api/plannings?cours_id=${id}&utilisateur_id=${userProfile.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get(`http://localhost:5000/api/plannings`, {
+          withCredentials: true,
+          params: { cours_id: id, utilisateur_id: userProfile.id },
+          headers: { Authorization: `Bearer ${token}` },
+        });
         console.log('Plannings data:', response.data);
         setPlannings(response.data);
         setPlanningsLoading(false);
       } catch (err) {
         console.error("Fetch Plannings Error:", err);
-        setPlanningsError("Erreur lors de la récupération des plannings: " + err.message);
+        setPlanningsError(err.response?.data?.message || "Erreur lors de la récupération des plannings.");
         setPlanningsLoading(false);
       }
     };
@@ -150,13 +137,9 @@ const CourseContent = () => {
 
   const isMeetingActive = (planning) => {
     if (planning.statut !== 'En cours') return false;
-    const now = new Date().getTime();
-    const start = new Date(planning.date_debut).getTime();
-    const end = new Date(planning.date_fin).getTime();
-    console.log('Current time (UTC ms):', now);
-    console.log('Start time (UTC ms):', start);
-    console.log('End time (UTC ms):', end);
-    console.log('Is active:', now >= start && now <= end);
+    const now = new Date();
+    const start = new Date(planning.date_debut);
+    const end = new Date(planning.date_fin);
     return now >= start && now <= end;
   };
 
@@ -169,7 +152,6 @@ const CourseContent = () => {
       alert("Erreur : Profil utilisateur incomplet. Veuillez vérifier vos informations de profil.");
       return;
     }
-    console.log('Original joinUrl:', joinUrl);
     setSelectedJoinUrl(joinUrl);
     setShowJoinModal(true);
   };
@@ -182,85 +164,58 @@ const CourseContent = () => {
     try {
       const userName = encodeURIComponent(`${userProfile.prenom} ${userProfile.nom}`);
       const userEmail = encodeURIComponent(userProfile.email);
-  
+
       const meetingIdMatch = selectedJoinUrl.match(/\/j\/(\d+)/);
       if (!meetingIdMatch) {
-        throw new Error('Impossible d\'extraire l\'ID de la réunion à partir du lien.');
+        throw new Error('Impossible d\'extraire l\'ID de la réunion.');
       }
       const meetingId = meetingIdMatch[1];
-  
-      let meetingDetails = null;
+
       const token = localStorage.getItem('token');
-      try {
-        const meetingResponse = await axios.get(
-          `http://localhost:5000/api/zoom/meeting-details/${meetingId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        meetingDetails = meetingResponse.data;
-        console.log('Meeting details:', meetingDetails);
-        console.log('Meeting status:', meetingDetails.status);
-  
-        if (meetingDetails.status !== 'started' && meetingDetails.status !== 'waiting') {
-          throw new Error('La réunion n\'est pas active. Veuillez attendre que l\'hôte démarre la réunion.');
-        }
-      } catch (meetingError) {
-        console.error('Failed to fetch meeting details:', meetingError.response?.data || meetingError.message);
-        throw new Error('Impossible de vérifier l\'état de la réunion.');
+      const meetingResponse = await axios.get(`http://localhost:5000/api/zoom/meeting-details/${meetingId}`, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const meetingDetails = meetingResponse.data;
+      if (meetingDetails.status !== 'started' && meetingDetails.status !== 'waiting') {
+        throw new Error('La réunion n\'est pas active.');
       }
-  
-      let finalJoinUrl = selectedJoinUrl;
+
       const urlObj = new URL(selectedJoinUrl);
       urlObj.searchParams.set('userName', `${userProfile.prenom} ${userProfile.nom}`);
       urlObj.searchParams.set('userEmail', userProfile.email);
-      finalJoinUrl = urlObj.toString();
-  
-      console.log('Joining meeting with URL:', finalJoinUrl);
-      console.log('Student profile used:', {
-        prenom: userProfile.prenom,
-        nom: userProfile.nom,
-        email: userProfile.email,
-      });
-  
+      const finalJoinUrl = urlObj.toString();
+
       const newWindow = window.open(finalJoinUrl, '_blank');
       if (!newWindow) {
-        throw new Error('Échec de l\'ouverture de la réunion Zoom. Vérifiez les paramètres de votre navigateur.');
+        throw new Error('Échec de l\'ouverture de la réunion Zoom.');
       }
-  
+
       setTimeout(async () => {
         try {
-          const participantsResponse = await axios.get(
-            `http://localhost:5000/api/zoom/meeting-participants/${meetingId}?isOngoing=true`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const participantsResponse = await axios.get(`http://localhost:5000/api/zoom/meeting-participants/${meetingId}`, {
+            withCredentials: true,
+            params: { isOngoing: true },
+            headers: { Authorization: `Bearer ${token}` },
+          });
           const participants = participantsResponse.data.participants || [];
-          console.log('Current participants:', participants);
           const studentJoined = participants.some(participant =>
             participant.email === userProfile.email ||
             participant.name === `${userProfile.prenom} ${userProfile.nom}`
           );
           if (!studentJoined) {
-            alert('Vous n\'avez pas été ajouté à la réunion. Vérifiez les paramètres Zoom.');
-          } else {
-            console.log('Student successfully joined the meeting.');
+            alert('Vous n\'avez pas été ajouté à la réunion.');
           }
         } catch (error) {
-          console.error('Error checking participants:', error.message);
-          alert('Erreur lors de la vérification des participants: ' + error.message);
+          console.error('Error checking participants:', error);
+          alert('Erreur lors de la vérification des participants.');
         }
       }, 5000);
-  
+
       setShowJoinModal(false);
     } catch (error) {
-      console.error('Error joining meeting:', error.message);
-      alert('Erreur lors de la tentative de rejoindre la réunion: ' + error.message);
+      console.error('Error joining meeting:', error);
+      alert(error.response?.data?.message || 'Erreur lors de la tentative de rejoindre la réunion.');
     }
   };
 
@@ -271,55 +226,53 @@ const CourseContent = () => {
   return (
     <div className="course-content-container">
       <StudentNavbar />
-
       <div className="course-header">
         <h2>{course.titre || "Titre non disponible"}</h2>
       </div>
 
       <Row>
         <Col md={8}>
-       <Card className="video-card mb-4">
-  <Card.Body>
-    <h4 className="section-title">
-      <FaPlayCircle className="me-2" /> Vidéo du cours
-    </h4>
-    {course.video ? (
-      <>
-        {videoLoading && !videoError && (
-          <div className="text-center">
-            <Spinner animation="border" variant="primary" />
-            <p>Chargement de la vidéo...</p>
-          </div>
-        )}
-        {videoError ? (
-          <p className="text-danger">{videoError}</p>
-        ) : (
-          <video
-            width="100%"
-            height="400"
-            controls
-            className="video-player"
-            poster={poster} 
-            onCanPlay={() => setVideoLoading(false)}
-            onError={() => {
-              setVideoLoading(false);
-              setVideoError("Erreur lors du chargement de la vidéo.");
-            }}
-            style={{ display: videoLoading || videoError ? 'none' : 'block' }}
-          >
-            <source
-              src={`${baseUploadUrl}${course.video}`}
-              type="video/mp4"
-            />
-            Votre navigateur ne supporte pas la lecture de vidéos.
-          </video>
-        )}
-      </>
-    ) : (
-      <p className="text-muted">Aucune vidéo disponible pour ce cours.</p>
-    )}
-  </Card.Body>
-</Card>
+          <Card className="video-card mb-4">
+            <Card.Body>
+              <h4 className="section-title">
+                <FaPlayCircle className="me-2" /> Vidéo du cours
+              </h4>
+              {course.video ? (
+                <>
+                  {videoLoading && !videoError && (
+                    <div className="text-center">
+                      <Spinner animation="border" variant="primary" />
+                      <p>Chargement de la vidéo...</p>
+                    </div>
+                  )}
+                  {videoError ? (
+                    <p className="text-danger">{videoError}</p>
+                  ) : (
+                    <video
+                      width="100%"
+                      height="400"
+                      controls
+                      className="video-player"
+                      onCanPlay={() => setVideoLoading(false)}
+                      onError={() => {
+                        setVideoLoading(false);
+                        setVideoError("Erreur lors du chargement de la vidéo.");
+                      }}
+                      style={{ display: videoLoading || videoError ? 'none' : 'block' }}
+                    >
+                      <source
+                        src={`${baseUploadUrl}${course.video}`}
+                        type="video/mp4"
+                      />
+                      Votre navigateur ne supporte pas la lecture de vidéos.
+                    </video>
+                  )}
+                </>
+              ) : (
+                <p className="text-muted">Aucune vidéo disponible pour ce cours.</p>
+              )}
+            </Card.Body>
+          </Card>
 
           <Card className="description-card mb-4">
             <Card.Body>
@@ -351,78 +304,74 @@ const CourseContent = () => {
             </Card.Body>
           </Card>
         </Col>
-<Col md={4}>
-  <Card className="schedule-card shadow-sm border-0">
-    <Card.Body>
-      <h4 className="mb-4 d-flex align-items-center text-primary fw-bold">
-        <FaCalendarAlt className="me-2" /> Planning du cours
-      </h4>
-
-      {planningsLoading ? (
-        <div className="text-center">
-          <Spinner animation="border" variant="primary" />
-          <p>Chargement des plannings...</p>
-        </div>
-      ) : planningsError ? (
-        <p className="text-danger">{planningsError}</p>
-      ) : plannings.length > 0 ? (
-        plannings.map((planning, index) => {
-          const date = new Date(planning.date_debut);
-          const startTime = new Date(planning.date_debut).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          });
-          const endTime = new Date(planning.date_fin).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          });
-
-          return (
-            <div
-              key={index}
-              className="planning-entry mb-4 p-3 rounded-4 shadow-sm position-relative bg-light border-start border-4 border-primary"
-            >
-              <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div className="d-flex align-items-center">
-                  <div className="date-badge text-center me-3">
-                    <div className="day">{String(date.getDate()).padStart(2, '0')}</div>
-                    <div className="month">{date.toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <h6 className="mb-1 fw-bold">{planning.titre}</h6>
-                    <small className="text-muted">
-                      Classe : {planning.Classe?.nom || 'Inconnue'}
-                    </small>
-                  </div>
+        <Col md={4}>
+          <Card className="schedule-card shadow-sm border-0">
+            <Card.Body>
+              <h4 className="mb-4 d-flex align-items-center text-primary fw-bold">
+                <FaCalendarAlt className="me-2" /> Planning du cours
+              </h4>
+              {planningsLoading ? (
+                <div className="text-center">
+                  <Spinner animation="border" variant="primary" />
+                  <p>Chargement des plannings...</p>
                 </div>
+              ) : planningsError ? (
+                <p className="text-danger">{planningsError}</p>
+              ) : plannings.length > 0 ? (
+                plannings.map((planning, index) => {
+                  const date = new Date(planning.date_debut);
+                  const startTime = date.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
+                  const endTime = new Date(planning.date_fin).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
 
-                <div className="text-end">
-                  <div className="time-range fw-semibold">
-                    {startTime} - {endTime}
-                  </div>
-                  {isMeetingActive(planning) && planning.joinUrl ? (
-                    <Button
-                      variant="outline-success"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => handleJoinMeeting(planning.joinUrl)}
+                  return (
+                    <div
+                      key={index}
+                      className="planning-entry mb-4 p-3 rounded-4 shadow-sm bg-light border-start border-4 border-primary"
                     >
-                      <FaVideo className="me-1" /> Rejoindre
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          );
-        })
-      ) : (
-        <p className="text-muted">Aucun planning disponible pour votre classe.</p>
-      )}
-    </Card.Body>
-  </Card>
-</Col>
-
-
+                      <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div className="d-flex align-items-center">
+                          <div className="date-badge text-center me-3">
+                            <div className="day">{String(date.getDate()).padStart(2, '0')}</div>
+                            <div className="month">{date.toLocaleString('default', { month: 'short' }).toUpperCase()}</div>
+                          </div>
+                          <div>
+                            <h6 className="mb-1 fw-bold">{planning.titre}</h6>
+                            <small className="text-muted">
+                              Classe : {planning.Classe?.nom || 'Inconnue'}
+                            </small>
+                          </div>
+                        </div>
+                        <div className="text-end">
+                          <div className="time-range fw-semibold">
+                            {startTime} - {endTime}
+                          </div>
+                          {isMeetingActive(planning) && planning.joinUrl ? (
+                            <Button
+                              variant="outline-success"
+                              size="sm"
+                              className="mt-2"
+                              onClick={() => handleJoinMeeting(planning.joinUrl)}
+                            >
+                              <FaVideo className="me-1" /> Rejoindre
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-muted">Aucun planning disponible pour votre classe.</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
       </Row>
 
       <Modal show={showJoinModal} onHide={() => setShowJoinModal(false)} centered>
@@ -460,7 +409,7 @@ const CourseContent = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Footer/>
+      <Footer />
     </div>
   );
 };

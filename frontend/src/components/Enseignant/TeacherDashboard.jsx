@@ -42,7 +42,7 @@ const token = localStorage.getItem(`token`);
                 }
 
                 const [profileResponse, notificationsResponse] = await Promise.all([
-                    axios.get('http://localhost:5000/api/users/profile', {
+                    axios.get('http://localhost:5000/api/users/profile', { withCredentials: true }, {
                         headers: { Authorization: `Bearer ${token}` },
                     }),
               
@@ -65,7 +65,7 @@ const token = localStorage.getItem(`token`);
     const handleNotificationAction = async (notificationId) => {
         try {
             await axios.post(
-                `http://localhost:5000/api/notifications/${notificationId}/read`,
+                `http://localhost:5000/api/notifications/${notificationId}/read`, { withCredentials: true },
                 {},
                 {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },

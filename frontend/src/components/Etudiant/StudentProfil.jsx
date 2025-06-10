@@ -32,7 +32,7 @@ const StudentProfile = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/users/profile', {
+        const response = await axios.get('http://localhost:5000/api/users/profile', { withCredentials: true }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile(response.data);
@@ -102,7 +102,7 @@ const StudentProfile = () => {
       }
 
       const response = await axios.put(
-        'http://localhost:5000/api/users/profile',
+        'http://localhost:5000/api/users/profile', { withCredentials: true },
         formData,
         {
           headers: {

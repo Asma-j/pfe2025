@@ -4,7 +4,6 @@ import axios from 'axios';
 import image from '../images/auth.jpg';
 import './auth.css';
 
-
 function Login({ show = true, onClose }) {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
@@ -13,34 +12,37 @@ function Login({ show = true, onClose }) {
 
   if (!show) return null;
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  setError('');
-  try {
-    const response = await axios.post('http://localhost:5000/api/auth/login', {
-      email,
-      mot_de_passe: motDePasse,
-    });
-    const { token, role, userId } = response.data;
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        email,
+        mot_de_passe: motDePasse,
+      }, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const { token, role, userId } = response.data;
 
-    
-    // Set new session data
-    localStorage.setItem(`token`, token);
-    localStorage.setItem(`role`, role);
-    localStorage.setItem(`userId`, userId);
-  
-    if (role === 'admin') {
-      navigate('/admin');
-    } else if (role === 'Etudiant') {
-      navigate('/cours');
-    } else {
-      navigate('/teacher');
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+      localStorage.setItem('userId', userId);
+
+      console.log('Login successful:', { token, role, userId });
+
+      if (role.toLowerCase() === 'admin') {
+        navigate('/admin');
+      } else if (role.toLowerCase() === 'etudiant') {
+        navigate('/cours');
+      } else {
+        navigate('/teacher');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.error || 'Échec de la connexion au serveur. Vérifiez votre connexion réseau ou le statut du serveur.');
     }
-  } catch (err) {
-    setError(err.response?.data?.error || "Une erreur s'est produite");
-  }
-};
-  
+  };
 
   return (
     <div className="modal-overlay">
@@ -68,14 +70,6 @@ const handleLogin = async (e) => {
                   value={motDePasse}
                   onChange={(e) => setMotDePasse(e.target.value)}
                 />
-              {/*<div className="auth-remember">
-                  <label>
-                    <input type="checkbox" /> Remember me
-                  </label>
-                  <Link to="/forgot" className="auth-forgot">
-                    Forgot Password?
-                  </Link>
-                </div>*/}
                 <button type="submit" className="auth-submit">
                   Login
                 </button>

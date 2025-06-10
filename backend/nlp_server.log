@@ -753,3 +753,183 @@ magick.exe: NoDecodeDelegateForThisImageFormat `TXT' @ error/constitute.c/ReadIm
 2025-06-04 11:05:23,732 - INFO - Generating placeholder video
 2025-06-04 11:05:24,391 - INFO - Video generated: nodejs_course_video_1749027923.mp4
 2025-06-04 11:05:24,391 - INFO - Course content generation completed
+2025-06-10 21:03:08,802 - INFO - Loading distilgpt2 model
+2025-06-10 21:03:09,948 - INFO - Model loaded successfully
+2025-06-10 21:03:09,949 - INFO - Starting course content generation
+2025-06-10 21:03:09,993 - INFO - Extracted matiere: html, niveau: 2
+2025-06-10 21:03:09,993 - INFO - Using template for matiere: html, niveau: 2
+2025-06-10 21:03:09,994 - INFO - Generating text with distilgpt2
+2025-06-10 21:03:24,963 - INFO - Raw generated text: 
+        Génère 3 à 5 commentaires d'étudiants pour un cours intitulé "Approfondissement et Bonnes Pratiques" avec la description "Ce cours de niveau intermédiaire s’adresse aux développeurs ayant déjà des bases en React (JSX, composants, props, state). Il permet de consolider les acquis tout en introduisant des concepts avancés comme le routing, le state management avec Redux ou Context API, les hooks personnalisés, et l’optimisation des performances. Le but est de construire des applications React robustes, modulaires et maintenables." dans la matière "HTML" au niveau "2". Chaque commentaire doit inclure :
+        - Un texte de commentaire réaliste (50-100 mots) reflétant une expérience d'étudiant.
+        - Une note (1 à 5 étoiles).
+        - Un nom d'étudiant fictif.
+        Retourne le résultat en JSON sous la forme :
+        {
+          "comments": [
+            { "studentName": "", "comment": "", "rating": 0 },
+            ...
+          ],
+          "averageRating": 0
+        }
+             
+            
+            
+                 
+              
+                 
+                   
+                      
+                                                                     
+2025-06-10 21:03:24,963 - ERROR - JSON decode error: Expecting ',' delimiter: line 3 column 62 (char 87)
+2025-06-10 21:03:24,963 - INFO - Generating PDF
+2025-06-10 21:03:24,971 - INFO - PDF generated: html_course_pdf_1749582204.pdf
+2025-06-10 21:03:24,971 - INFO - Generating placeholder image
+2025-06-10 21:03:25,043 - INFO - Image generated: html_course_image_1749582204.png
+2025-06-10 21:03:25,043 - INFO - Generating placeholder video
+2025-06-10 21:03:26,441 - INFO - Video generated: html_course_video_1749582205.mp4
+2025-06-10 21:03:26,442 - INFO - Course content generation completed
+2025-06-10 21:06:50,489 - INFO - Loading distilgpt2 model
+2025-06-10 21:06:51,444 - INFO - Model loaded successfully
+2025-06-10 21:06:51,445 - INFO - Starting course content generation
+2025-06-10 21:06:51,448 - INFO - Extracted matiere: html, niveau: 2
+2025-06-10 21:06:51,448 - INFO - Using template for matiere: html, niveau: 2
+2025-06-10 21:06:51,448 - INFO - Generating text with distilgpt2
+2025-06-10 21:07:05,990 - INFO - Raw generated text: 
+        Génère 3 à 5 commentaires d'étudiants pour un cours intitulé "Approfondissement et Bonnes Pratiques" avec la description "Ce cours de niveau intermédiaire s’adresse aux développeurs ayant déjà des bases en React (JSX, composants, props, state). Il permet de consolider les acquis tout en introduisant des concepts avancés comme le routing, le state management avec Redux ou Context API, les hooks personnalisés, et l’optimisation des performances. Le but est de construire des applications React robustes, modulaires et maintenables." dans la matière "HTML" au niveau "2". Chaque commentaire doit inclure :
+        - Un texte de commentaire réaliste (50-100 mots) reflétant une expérience d'étudiant.
+        - Une note (1 à 5 étoiles).
+        - Un nom d'étudiant fictif.
+        Retourne le résultat en JSON sous la forme :
+        {
+          "comments": [
+            { "studentName": "", "comment": "", "rating": 0 },
+            ...
+          ],
+          "averageRating": 0
+        }
+             
+            
+            
+                 
+              
+                 
+                   
+                      
+                                                                     
+2025-06-10 21:07:05,991 - ERROR - JSON decode error: Expecting ',' delimiter: line 3 column 62 (char 87)
+2025-06-10 21:07:05,991 - INFO - Generating PDF
+2025-06-10 21:07:06,005 - INFO - PDF generated: html_course_pdf_1749582425.pdf
+2025-06-10 21:07:06,006 - INFO - Generating placeholder image
+2025-06-10 21:07:06,050 - INFO - Image generated: html_course_image_1749582426.png
+2025-06-10 21:07:06,051 - INFO - Generating placeholder video
+2025-06-10 21:07:06,941 - INFO - Video generated: html_course_video_1749582426.mp4
+2025-06-10 21:07:06,941 - INFO - Course content generation completed
+2025-06-10 21:07:10,917 - INFO - Loading distilgpt2 model
+2025-06-10 21:07:11,825 - INFO - Model loaded successfully
+2025-06-10 21:07:11,825 - INFO - Starting course content generation
+2025-06-10 21:07:11,829 - INFO - Extracted matiere: html, niveau: 2
+2025-06-10 21:07:11,829 - INFO - Using template for matiere: html, niveau: 2
+2025-06-10 21:07:11,829 - INFO - Generating text with distilgpt2
+2025-06-10 21:07:14,562 - INFO - Loading distilgpt2 model
+2025-06-10 21:07:14,840 - INFO - Loading distilgpt2 model
+2025-06-10 21:07:15,655 - INFO - Model loaded successfully
+2025-06-10 21:07:15,655 - INFO - Starting course content generation
+2025-06-10 21:07:15,659 - INFO - Extracted matiere: html, niveau: 2
+2025-06-10 21:07:15,659 - INFO - Using template for matiere: html, niveau: 2
+2025-06-10 21:07:15,659 - INFO - Generating text with distilgpt2
+2025-06-10 21:07:15,992 - INFO - Model loaded successfully
+2025-06-10 21:07:15,992 - INFO - Starting course content generation
+2025-06-10 21:07:15,997 - INFO - Extracted matiere: html, niveau: 2
+2025-06-10 21:07:15,997 - INFO - Using template for matiere: html, niveau: 2
+2025-06-10 21:07:15,997 - INFO - Generating text with distilgpt2
+2025-06-10 21:07:37,960 - INFO - Raw generated text: 
+        Génère 3 à 5 commentaires d'étudiants pour un cours intitulé "Approfondissement et Bonnes Pratiques" avec la description "Ce cours de niveau intermédiaire s’adresse aux développeurs ayant déjà des bases en React (JSX, composants, props, state). Il permet de consolider les acquis tout en introduisant des concepts avancés comme le routing, le state management avec Redux ou Context API, les hooks personnalisés, et l’optimisation des performances. Le but est de construire des applications React robustes, modulaires et maintenables." dans la matière "HTML" au niveau "2". Chaque commentaire doit inclure :
+        - Un texte de commentaire réaliste (50-100 mots) reflétant une expérience d'étudiant.
+        - Une note (1 à 5 étoiles).
+        - Un nom d'étudiant fictif.
+        Retourne le résultat en JSON sous la forme :
+        {
+          "comments": [
+            { "studentName": "", "comment": "", "rating": 0 },
+            ...
+          ],
+          "averageRating": 0
+        }
+             
+            
+            
+                 
+              
+                 
+                   
+                      
+                                                                     
+2025-06-10 21:07:37,960 - ERROR - JSON decode error: Expecting ',' delimiter: line 3 column 62 (char 87)
+2025-06-10 21:07:37,961 - INFO - Generating PDF
+2025-06-10 21:07:37,976 - INFO - PDF generated: html_course_pdf_1749582457.pdf
+2025-06-10 21:07:37,976 - INFO - Generating placeholder image
+2025-06-10 21:07:38,038 - INFO - Image generated: html_course_image_1749582457.png
+2025-06-10 21:07:38,039 - INFO - Generating placeholder video
+2025-06-10 21:07:40,148 - INFO - Video generated: html_course_video_1749582458.mp4
+2025-06-10 21:07:40,148 - INFO - Course content generation completed
+2025-06-10 21:07:40,931 - INFO - Raw generated text: 
+        Génère 3 à 5 commentaires d'étudiants pour un cours intitulé "Approfondissement et Bonnes Pratiques" avec la description "Ce cours de niveau intermédiaire s’adresse aux développeurs ayant déjà des bases en React (JSX, composants, props, state). Il permet de consolider les acquis tout en introduisant des concepts avancés comme le routing, le state management avec Redux ou Context API, les hooks personnalisés, et l’optimisation des performances. Le but est de construire des applications React robustes, modulaires et maintenables." dans la matière "HTML" au niveau "2". Chaque commentaire doit inclure :
+        - Un texte de commentaire réaliste (50-100 mots) reflétant une expérience d'étudiant.
+        - Une note (1 à 5 étoiles).
+        - Un nom d'étudiant fictif.
+        Retourne le résultat en JSON sous la forme :
+        {
+          "comments": [
+            { "studentName": "", "comment": "", "rating": 0 },
+            ...
+          ],
+          "averageRating": 0
+        }
+             
+            
+            
+                 
+              
+                 
+                   
+                      
+                                                                     
+2025-06-10 21:07:40,932 - ERROR - JSON decode error: Expecting ',' delimiter: line 3 column 62 (char 87)
+2025-06-10 21:07:40,933 - INFO - Generating PDF
+2025-06-10 21:07:40,947 - INFO - PDF generated: html_course_pdf_1749582460.pdf
+2025-06-10 21:07:40,947 - INFO - Generating placeholder image
+2025-06-10 21:07:40,998 - INFO - Image generated: html_course_image_1749582460.png
+2025-06-10 21:07:40,999 - INFO - Generating placeholder video
+2025-06-10 21:07:41,161 - INFO - Raw generated text: 
+        Génère 3 à 5 commentaires d'étudiants pour un cours intitulé "Approfondissement et Bonnes Pratiques" avec la description "Ce cours de niveau intermédiaire s’adresse aux développeurs ayant déjà des bases en React (JSX, composants, props, state). Il permet de consolider les acquis tout en introduisant des concepts avancés comme le routing, le state management avec Redux ou Context API, les hooks personnalisés, et l’optimisation des performances. Le but est de construire des applications React robustes, modulaires et maintenables." dans la matière "HTML" au niveau "2". Chaque commentaire doit inclure :
+        - Un texte de commentaire réaliste (50-100 mots) reflétant une expérience d'étudiant.
+        - Une note (1 à 5 étoiles).
+        - Un nom d'étudiant fictif.
+        Retourne le résultat en JSON sous la forme :
+        {
+          "comments": [
+            { "studentName": "", "comment": "", "rating": 0 },
+            ...
+          ],
+          "averageRating": 0
+        }
+             
+            
+            
+                 
+              
+                 
+                   
+                      
+                                                                     
+2025-06-10 21:07:41,161 - ERROR - JSON decode error: Expecting ',' delimiter: line 3 column 62 (char 87)
+2025-06-10 21:07:41,162 - INFO - Generating PDF
+2025-06-10 21:07:41,173 - INFO - PDF generated: html_course_pdf_1749582461.pdf
+2025-06-10 21:07:41,173 - INFO - Generating placeholder image
+2025-06-10 21:07:41,220 - INFO - Image generated: html_course_image_1749582461.png
+2025-06-10 21:07:41,220 - INFO - Generating placeholder video
+2025-06-10 21:07:42,605 - INFO - Video generated: html_course_video_1749582460.mp4
+2025-06-10 21:07:42,605 - INFO - Course content generation completed
+2025-06-10 21:07:42,650 - INFO - Video generated: html_course_video_1749582461.mp4
+2025-06-10 21:07:42,651 - INFO - Course content generation completed

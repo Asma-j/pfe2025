@@ -1,156 +1,166 @@
 import React, { useEffect, useState } from 'react';
-import { FaUsers, FaClock, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { Button, Card, ProgressBar, Modal, Form  } from 'react-bootstrap';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { Button, Card, Modal, Form } from 'react-bootstrap';
 import axios from 'axios';
-import'./Course.css'
-
-function CourseCard({ course }) {
-  return (
-    <Card className="course-card shadow-sm border-0 rounded-4 overflow-hidden ">
-      <Card.Img 
-        variant="top" 
-        src={`http://localhost:5000/uploads/${course.image}`} 
-        alt={course.titre} 
-        className="course-card-img"
-      />
-
-      <Card.Body className="p-4">
-        <Card.Title className="mb-1 fw-bold fs-4 ">{course.titre}</Card.Title>
-        <Card.Subtitle className="mb-3 text-muted">{course.instructor || 'Instructeur inconnu'}</Card.Subtitle>
-
-        <div className="d-flex justify-content-between mb-3 text-secondary small">
-          <div className="d-flex align-items-center gap-2">
-            <FaUsers className="text-info" />
-            <span>{course.students || 0} étudiants</span>
-          </div>
-      
-        </div>
-
-      
-
-        <div className="d-flex justify-content-end gap-2">
-          <Button variant="outline-info" size="sm">Voir les détails</Button>
-          <Button variant="info" size="sm">Modifier</Button>
-        </div>
-      </Card.Body>
-    </Card>
-  );
-}
-
-
+import CourseCard from './CourseCard';
+import './Course.css';
 
 function Courses() {
-  const [matieres, setMatieres] = useState([]); 
-  const [loading, setLoading] = useState(true); 
-  const [showModal, setShowModal] = useState(false); 
-  const [editModal, setEditModal] = useState(false); 
-  const [newMatiere, setNewMatiere] = useState({ nom: '', description: '', image: null });
-  const [editMatiere, setEditMatiere] = useState({ id: '', nom: '', description: '', image: null }); 
+  const [matieres, setMatieres] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [editCourse, setEditCourse] = useState({
+    id: '',
+    titre: '',
+    description: '',
+    prix: 0,
+    module: '',
+    status: 'Gratuit',
+    matiere_id: '',
+    niveau_id: '',
+    image: null,
+    files: [],
+    video: null,
+  });
 
   useEffect(() => {
     axios
       .get('http://localhost:5000/api/matieres')
       .then(async (response) => {
-        console.log('Matieres Data:', response.data);
         const matieresData = response.data;
         const matieresWithCourses = await Promise.all(
           matieresData.map(async (matiere) => {
             const coursResponse = await axios.get(`http://localhost:5000/api/cours?matiere_id=${matiere.id}`);
-            return { ...matiere, courses: coursResponse.data, isCoursesCollapsed: false };
+            // Ensure files is an array for each course
+            const courses = coursResponse.data.map((course) => ({
+              ...course,
+              files: Array.isArray(course.files)
+                ? course.files
+                : typeof course.files === 'string'
+                ? JSON.parse(course.files)
+                : [],
+            }));
+            return { ...matiere, courses, isCoursesCollapsed: false };
           })
         );
         setMatieres(matieresWithCourses);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Erreur lors de la récupération des matières:", error);
+        console.error('Erreur lors de la récupération des matières:', error);
         setLoading(false);
       });
   }, []);
 
-  // Handle modal open/close for adding
-  const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
-
-  // Handle modal open/close for editing
-  const handleShowEditModal = (matiere) => {
-    setEditMatiere({ id: matiere.id, nom: matiere.nom, description: matiere.description, image: null });
-    setEditModal(true);
-  };
-  const handleCloseEditModal = () => setEditModal(false);
-
-  // Handle form input changes for adding
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewMatiere((prev) => ({ ...prev, [name]: value }));
+  // Handle course details modal
+  const handleShowDetails = (course) => {
+    // Ensure files is an array
+    const normalizedCourse = {
+      ...course,
+      files: Array.isArray(course.files)
+        ? course.files
+        : typeof course.files === 'string'
+        ? JSON.parse(course.files)
+        : [],
+    };
+    setSelectedCourse(normalizedCourse);
+    setShowDetailsModal(true);
   };
 
-  // Handle form input changes for editing
+  const handleCloseDetails = () => {
+    setShowDetailsModal(false);
+    setSelectedCourse(null);
+  };
+
+  // Handle course edit modal
+  const handleShowEdit = (course) => {
+    setEditCourse({
+      id: course.id,
+      titre: course.titre,
+      description: course.description,
+      prix: course.prix,
+      module: course.module,
+      status: course.status,
+      matiere_id: course.matiere_id,
+      niveau_id: course.niveau_id,
+      image: null,
+      files: Array.isArray(course.files)
+        ? course.files
+        : typeof course.files === 'string'
+        ? JSON.parse(course.files)
+        : [],
+      video: null,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleCloseEdit = () => {
+    setShowEditModal(false);
+    setEditCourse({
+      id: '',
+      titre: '',
+      description: '',
+      prix: 0,
+      module: '',
+      status: 'Gratuit',
+      matiere_id: '',
+      niveau_id: '',
+      image: null,
+      files: [],
+      video: null,
+    });
+  };
+
+  // Handle edit form input changes
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
-    setEditMatiere((prev) => ({ ...prev, [name]: value }));
+    setEditCourse((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle image file upload for adding
-  const handleImageChange = (e) => {
-    setNewMatiere((prev) => ({ ...prev, image: e.target.files[0] }));
-  };
-
-  // Handle image file upload for editing
-  const handleEditImageChange = (e) => {
-    setEditMatiere((prev) => ({ ...prev, image: e.target.files[0] }));
-  };
-
-  // Submit new matiere
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('nom', newMatiere.nom);
-    formData.append('description', newMatiere.description);
-    if (newMatiere.image) formData.append('image', newMatiere.image);
-
-    try {
-      const response = await axios.post('http://localhost:5000/api/matieres', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setMatieres((prev) => [...prev, { ...response.data.matiere, courses: [], isCoursesCollapsed: false }]);
-      setNewMatiere({ nom: '', description: '', image: null });
-      handleCloseModal();
-    } catch (error) {
-      console.error("Erreur lors de la création de la matière:", error);
+  // Handle file uploads
+  const handleEditFileChange = (e) => {
+    const { name, files } = e.target;
+    if (name === 'files') {
+      setEditCourse((prev) => ({ ...prev, files: Array.from(files) }));
+    } else {
+      setEditCourse((prev) => ({ ...prev, [name]: files[0] }));
     }
   };
 
-  // Submit updated matiere
+  // Submit edited course
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('nom', editMatiere.nom);
-    formData.append('description', editMatiere.description);
-    if (editMatiere.image) formData.append('image', editMatiere.image);
+    formData.append('titre', editCourse.titre);
+    formData.append('description', editCourse.description);
+    formData.append('prix', editCourse.prix);
+    formData.append('module', editCourse.module);
+    formData.append('status', editCourse.status);
+    formData.append('matiere_id', editCourse.matiere_id);
+    formData.append('niveau_id', editCourse.niveau_id);
+    if (editCourse.image) formData.append('image', editCourse.image);
+    editCourse.files.forEach((file) => formData.append('files', file));
+    if (editCourse.video) formData.append('video', editCourse.video);
 
     try {
-      const response = await axios.put(`http://localhost:5000/api/matieres/${editMatiere.id}`, formData, {
+      const response = await axios.put(`http://localhost:5000/api/cours/${editCourse.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setMatieres((prev) =>
-        prev.map((m) => (m.id === editMatiere.id ? { ...m, ...response.data.matiere } : m))
+        prev.map((matiere) => ({
+          ...matiere,
+          courses: matiere.courses.map((course) =>
+            course.id === editCourse.id
+              ? { ...course, ...response.data.course, files: Array.isArray(response.data.course.files) ? response.data.course.files : JSON.parse(response.data.course.files || '[]') }
+              : course
+          ),
+        }))
       );
-      handleCloseEditModal();
+      handleCloseEdit();
     } catch (error) {
-      console.error("Erreur lors de la mise à jour de la matière:", error);
-    }
-  };
-
-  // Delete matiere
-  const handleDelete = async (id) => {
-    if (window.confirm("Voulez-vous vraiment supprimer cette matière ?")) {
-      try {
-        await axios.delete(`http://localhost:5000/api/matieres/${id}`);
-        setMatieres((prev) => prev.filter((m) => m.id !== id));
-      } catch (error) {
-        console.error("Erreur lors de la suppression de la matière:", error);
-      }
+      console.error('Erreur lors de la mise à jour du cours:', error);
     }
   };
 
@@ -167,11 +177,7 @@ function Courses() {
 
   return (
     <div className="container my-4">
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-        <div>
-          <h2 className="">📚Cours</h2>
-        </div>
-      </div>
+      <h2 className="mb-4">📚 Cours</h2>
 
       {matieres.map((matiere) => (
         <div key={matiere.id} className="mb-5">
@@ -197,8 +203,7 @@ function Courses() {
                   <small className="text-light">{matiere.description || 'Aucune description disponible'}</small>
                 </div>
               </div>
-              <div className="d-flex gap-2">
-                
+              <div>
                 {matiere.isCoursesCollapsed ? (
                   <FaChevronDown
                     className="text-white cursor-pointer"
@@ -223,10 +228,14 @@ function Courses() {
               <h4>Cours associés :</h4>
               {!matiere.isCoursesCollapsed ? (
                 matiere.courses.length > 0 ? (
-                  <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                  <div className="row row-cols-1 row-cols-md-Born row-cols-lg-3 g-4">
                     {matiere.courses.map((course) => (
                       <div className="col" key={course.id}>
-                        <CourseCard course={course} />
+                        <CourseCard
+                          course={course}
+                          onShowDetails={handleShowDetails}
+                          onShowEdit={handleShowEdit}
+                        />
                       </div>
                     ))}
                   </div>
@@ -241,9 +250,161 @@ function Courses() {
         </div>
       ))}
 
+      {/* Course Details Modal */}
+      <Modal show={showDetailsModal} onHide={handleCloseDetails} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Détails du cours</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedCourse && (
+            <div>
+              <h4>{selectedCourse.titre}</h4>
+              <p><strong>Description :</strong> {selectedCourse.description}</p>
+              <p><strong>Instructeur :</strong> {selectedCourse.Creator ? `${selectedCourse.Creator.prenom} ${selectedCourse.Creator.nom}` : 'Inconnu'}</p>
+              <p><strong>Prix :</strong> {selectedCourse.prix} €</p>
+              <p><strong>Statut :</strong> {selectedCourse.status}</p>
+              <p><strong>Module :</strong> {selectedCourse.module}</p>
+              <p><strong>Niveau :</strong> {selectedCourse.Niveau?.nom || 'N/A'}</p>
+              {Array.isArray(selectedCourse.files) && selectedCourse.files.length > 0 ? (
+                <div>
+                  <strong>Fichiers :</strong>
+                  <ul>
+                    {selectedCourse.files.map((file, index) => (
+                      <li key={index}>
+                        <a href={`http://localhost:5000/uploads/${file}`} target="_blank" rel="noopener noreferrer">
+                          {file}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p><strong>Fichiers :</strong> Aucun fichier disponible</p>
+              )}
+              {selectedCourse.video && (
+                <div>
+                  <strong>Vidéo :</strong>
+                  <video controls width="100%">
+                    <source src={`http://localhost:5000/uploads/${selectedCourse.video}`} type="video/mp4" />
+                    Votre navigateur ne supporte pas la lecture de vidéos.
+                  </video>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDetails}>
+            Fermer
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-
- 
+      {/* Course Edit Modal */}
+      <Modal show={showEditModal} onHide={handleCloseEdit} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Modifier le cours</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleEditSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Titre</Form.Label>
+              <Form.Control
+                type="text"
+                name="titre"
+                value={editCourse.titre}
+                onChange={handleEditInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                name="description"
+                value={editCourse.description}
+                onChange={handleEditInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Prix</Form.Label>
+              <Form.Control
+                type="number"
+                name="prix"
+                value={editCourse.prix}
+                onChange={handleEditInputChange}
+                min="0"
+                step="0.01"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Module</Form.Label>
+              <Form.Control
+                type="text"
+                name="module"
+                value={editCourse.module}
+                onChange={handleEditInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Statut</Form.Label>
+              <Form.Select
+                name="status"
+                value={editCourse.status}
+                onChange={handleEditInputChange}
+              >
+                <option value="Gratuit">Gratuit</option>
+                <option value="Payé">Payé</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Image</Form.Label>
+              <Form.Control
+                type="file"
+                name="image"
+                accept="image/*"
+                onChange={handleEditFileChange}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Fichiers (PDF, etc.)</Form.Label>
+              <Form.Control
+                type="file"
+                name="files"
+                accept=".pdf"
+                multiple
+                onChange={handleEditFileChange}
+              />
+              {editCourse.files.length > 0 && (
+                <ul>
+                  {editCourse.files.map((file, index) => (
+                    <li key={index}>{typeof file === 'string' ? file : file.name}</li>
+                  ))}
+                </ul>
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Vidéo</Form.Label>
+              <Form.Control
+                type="file"
+                name="video"
+                accept="video/*"
+                onChange={handleEditFileChange}
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              Enregistrer
+            </Button>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseEdit}>
+            Annuler
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

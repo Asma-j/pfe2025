@@ -23,7 +23,7 @@ const Courses = () => {
   useEffect(() => {
     const fetchUserNiveau = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/users/profile", {
+        const response = await axios.get("http://localhost:5000/api/users/profile", { withCredentials: true }, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         setNiveauId(response.data.niveau_id);
@@ -45,7 +45,7 @@ const Courses = () => {
       }
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/matieres/niveau/${niveauId}`);
+        const response = await axios.get(`http://localhost:5000/api/matieres/niveau/${niveauId}`, { withCredentials: true });
         setMatieres(response.data);
       } catch (err) {
         setError("Erreur lors du chargement des matières.");

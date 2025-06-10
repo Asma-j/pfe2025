@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Form, Modal } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './Course.css';
 
 const CourseManager = () => {
@@ -28,29 +29,31 @@ const CourseManager = () => {
   const [editCourse, setEditCourse] = useState(null);
   const [error, setError] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  // Set axios default headers
-  const token = localStorage.getItem('token');
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  }
+  const navigate = useNavigate();
 
   // Fetch matières and niveaux
   useEffect(() => {
     const fetchMatieresAndNiveaux = async () => {
       try {
         const [matieresResponse, niveauxResponse] = await Promise.all([
-          axios.get('http://localhost:5000/api/matieres'),
-          axios.get('http://localhost:5000/api/niveaux'),
+          axios.get('http://localhost:5000/api/matieres', { withCredentials: true }),
+          axios.get('http://localhost:5000/api/niveaux', { withCredentials: true }),
         ]);
         setMatieres(matieresResponse.data);
         setNiveaux(niveauxResponse.data);
       } catch (err) {
-        setError(err.response?.data?.message || err.message);
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userId');
+          navigate('/login');
+        } else {
+          setError(err.response?.data?.message || 'Erreur lors du chargement des données');
+        }
       }
     };
     fetchMatieresAndNiveaux();
-  }, []);
+  }, [navigate]);
 
   // Fetch courses
   useEffect(() => {
@@ -59,20 +62,27 @@ const CourseManager = () => {
         const url = selectedMatiereId
           ? `http://localhost:5000/api/cours?matiere_id=${selectedMatiereId}`
           : 'http://localhost:5000/api/cours';
-        const response = await axios.get(url);
+        const response = await axios.get(url, { withCredentials: true });
         setCourses(response.data);
 
         const selectedMatiere = matieres.find((matiere) => matiere.id === parseInt(selectedMatiereId));
         setSelectedMatiereName(selectedMatiere ? selectedMatiere.nom : '');
       } catch (err) {
-        setError(err.response?.data?.message || err.message);
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userId');
+          navigate('/login');
+        } else {
+          setError(err.response?.data?.message || 'Erreur lors du chargement des cours');
+        }
       }
     };
 
     if (matieres.length > 0) {
       fetchCourses();
     }
-  }, [selectedMatiereId, matieres]);
+  }, [selectedMatiereId, matieres, navigate]);
 
   const generateAICourseContent = async () => {
     if (!newCourse.matiere_id || !newCourse.niveau_id) {
@@ -90,15 +100,11 @@ const CourseManager = () => {
           niveau_id: parseInt(newCourse.niveau_id),
         },
         {
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          timeout: 120000, // 2-minute timeout
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 120000,
         }
       );
-
-      console.log('Backend NLP response:', response.data);
 
       const aiContent = response.data;
 
@@ -110,7 +116,6 @@ const CourseManager = () => {
       let pdfFile = null;
       let videoFile = null;
 
-      // Fetch and create File object for image if image_path exists
       if (aiContent.image_path) {
         const imgResponse = await fetch(`http://localhost:5000/Uploads/${aiContent.image_path}`);
         if (!imgResponse.ok) throw new Error('Failed to fetch generated image');
@@ -118,7 +123,6 @@ const CourseManager = () => {
         imageFile = new File([imgBlob], aiContent.image_path, { type: 'image/png' });
       }
 
-      // Fetch and create File object for PDF if pdf_path exists
       if (aiContent.pdf_path) {
         const pdfResponse = await fetch(`http://localhost:5000/Uploads/${aiContent.pdf_path}`);
         if (!pdfResponse.ok) throw new Error('Failed to fetch generated PDF');
@@ -126,7 +130,6 @@ const CourseManager = () => {
         pdfFile = new File([pdfBlob], aiContent.pdf_path, { type: 'application/pdf' });
       }
 
-      // Fetch and create File object for video if video_path exists
       if (aiContent.video_path) {
         const videoResponse = await fetch(`http://localhost:5000/Uploads/${aiContent.video_path}`);
         if (!videoResponse.ok) throw new Error('Failed to fetch generated video');
@@ -134,30 +137,34 @@ const CourseManager = () => {
         videoFile = new File([videoBlob], aiContent.video_path, { type: 'video/mp4' });
       }
 
-      // Update newCourse with the generated content and files
       setNewCourse((prev) => ({
         ...prev,
         titre: aiContent.titre.substring(0, 255),
         description: aiContent.description,
         module: aiContent.module,
-        image: imageFile || prev.image, // Use generated image if available
-        files: pdfFile ? [pdfFile] : prev.files, // Use generated PDF if available
-        video: videoFile || prev.video, // Use generated video if available
+        image: imageFile || prev.image,
+        files: pdfFile ? [pdfFile] : prev.files,
+        video: videoFile || prev.video,
       }));
     } catch (err) {
-      console.error('NLP generation error:', err);
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        'Erreur inconnue lors de la génération du contenu NLP';
-      const rawOutput = err.response?.data?.rawOutput || 'Aucune sortie brute disponible';
-      setError(`Erreur: ${errorMessage}. Détails: ${rawOutput}`);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      } else {
+        const errorMessage =
+          err.response?.data?.message ||
+          err.message ||
+          'Erreur inconnue lors de la génération du contenu NLP';
+        const rawOutput = err.response?.data?.rawOutput || 'Aucune sortie brute disponible';
+        setError(`Erreur: ${errorMessage}. Détails: ${rawOutput}`);
+      }
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Handle file changes
   const handleImageChange = (e) => {
     setNewCourse((prev) => ({ ...prev, image: e.target.files[0] }));
   };
@@ -170,7 +177,6 @@ const CourseManager = () => {
     setNewCourse((prev) => ({ ...prev, video: e.target.files[0] }));
   };
 
-  // Add course
   const handleAddCourse = async () => {
     try {
       const formData = new FormData();
@@ -192,6 +198,7 @@ const CourseManager = () => {
       }
 
       const response = await axios.post('http://localhost:5000/api/cours', formData, {
+        withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -213,11 +220,17 @@ const CourseManager = () => {
       setShowModal(false);
       setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de l’ajout du cours');
+      }
     }
   };
 
-  // Edit course
   const handleEditCourse = (course) => {
     let filesArray = [];
     if (course.files) {
@@ -253,7 +266,6 @@ const CourseManager = () => {
     setShowModal(true);
   };
 
-  // Update course
   const handleUpdateCourse = async () => {
     try {
       const formData = new FormData();
@@ -281,6 +293,7 @@ const CourseManager = () => {
       }
 
       const response = await axios.put(`http://localhost:5000/api/cours/${editCourse.id}`, formData, {
+        withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -307,21 +320,33 @@ const CourseManager = () => {
       setShowModal(false);
       setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de la mise à jour du cours');
+      }
     }
   };
 
-  // Delete course
   const handleDeleteCourse = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/cours/${id}`);
+      await axios.delete(`http://localhost:5000/api/cours/${id}`, { withCredentials: true });
       setCourses(courses.filter((course) => course.id !== id));
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de la suppression du cours');
+      }
     }
   };
 
-  // Reset modal
   const handleCloseModal = () => {
     setShowModal(false);
     setNewCourse({
@@ -445,7 +470,6 @@ const CourseManager = () => {
           </Modal.Header>
           <Modal.Body>
             <Form>
-              {/* AI Generate Button */}
               <Button
                 variant="info"
                 onClick={generateAICourseContent}
@@ -455,11 +479,8 @@ const CourseManager = () => {
                 {isGenerating ? 'Génération en cours...' : 'Générer contenu avec AI'}
               </Button>
 
-              {/* Row 1: Titre */}
               <div className="row mb-3">
-                <Form.Group className="col-.
-
-12">
+                <Form.Group className="col-12">
                   <Form.Label>Titre du cours</Form.Label>
                   <Form.Control
                     type="text"
@@ -469,7 +490,6 @@ const CourseManager = () => {
                 </Form.Group>
               </div>
 
-              {/* Row 2: Description */}
               <div className="row mb-3">
                 <Form.Group className="col-12">
                   <Form.Label>Description</Form.Label>
@@ -482,7 +502,6 @@ const CourseManager = () => {
                 </Form.Group>
               </div>
 
-              {/* Row 3: Prix and Module */}
               <div className="row mb-3">
                 <Form.Group className="col-md-6">
                   <Form.Label>Prix</Form.Label>
@@ -503,7 +522,6 @@ const CourseManager = () => {
                 </Form.Group>
               </div>
 
-              {/* Row 4: Statut and Matière */}
               <div className="row mb-3">
                 <Form.Group className="col-md-6">
                   <Form.Label>Statut</Form.Label>
@@ -532,7 +550,6 @@ const CourseManager = () => {
                 </Form.Group>
               </div>
 
-              {/* Row 5: Niveau and Image */}
               <div className="row mb-3">
                 <Form.Group className="col-md-6">
                   <Form.Label>Niveau</Form.Label>
@@ -578,7 +595,6 @@ const CourseManager = () => {
                 </Form.Group>
               </div>
 
-              {/* Row 6: Fichiers and Vidéo */}
               <div className="row mb-3">
                 <Form.Group className="col-md-6">
                   <Form.Label>Fichiers (PDF, Word, etc.)</Form.Label>

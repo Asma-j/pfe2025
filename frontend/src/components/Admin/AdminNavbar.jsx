@@ -132,9 +132,7 @@ localStorage.removeItem(`token`);
                 <small>{userProfile ? userProfile.role : 'admin'}</small>
               </Dropdown.ItemText>
               <Dropdown.Divider />
-              <Dropdown.Item onClick={() => handleManageUsers('teachers')}>
-                <Gear className="me-2" size={16} /> Gestion des utilisateurs
-              </Dropdown.Item>
+             
               <Dropdown.Item onClick={handleLogout}>Déconnexion</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>

@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/static/css/main.f24bf898.css",
+    "main.js": "/static/js/main.002a81d6.js",
+    "static/js/239.5a2921ae.chunk.js": "/static/js/239.5a2921ae.chunk.js",
+    "static/js/977.1761e2ad.chunk.js": "/static/js/977.1761e2ad.chunk.js",
+    "static/js/455.7a73dbb4.chunk.js": "/static/js/455.7a73dbb4.chunk.js",
+    "static/media/online.jpg": "/static/media/online.bb39f3d9366fa1317af8.jpg",
+    "static/media/auth.jpg": "/static/media/auth.104c662dc1e7d52b25e1.jpg",
+    "static/media/never-stop-learning-3653430_1920.jpg": "/static/media/never-stop-learning-3653430_1920.5cbfd4d0b7b9c76dc9c2.jpg",
+    "static/media/businessman-310819_1280.png": "/static/media/businessman-310819_1280.f93f2fd17faf1de83f15.png",
+    "static/media/side.jpg": "/static/media/side.23b865b76b6e192cb098.jpg",
+    "static/media/graduated.png": "/static/media/graduated.7f8a8190579f264e1bb1.png",
+    "index.html": "/index.html",
+    "main.f24bf898.css.map": "/static/css/main.f24bf898.css.map",
+    "main.002a81d6.js.map": "/static/js/main.002a81d6.js.map",
+    "239.5a2921ae.chunk.js.map": "/static/js/239.5a2921ae.chunk.js.map",
+    "977.1761e2ad.chunk.js.map": "/static/js/977.1761e2ad.chunk.js.map",
+    "455.7a73dbb4.chunk.js.map": "/static/js/455.7a73dbb4.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f24bf898.css",
+    "static/js/main.002a81d6.js"
+  ]
+}

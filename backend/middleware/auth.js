@@ -1,4 +1,3 @@
-// backend/middleware/auth.js
 const jwt = require('jsonwebtoken');
 const Utilisateur = require('../models/Utilisateur');
 const Role = require('../models/Role');
@@ -6,8 +5,15 @@ const Role = require('../models/Role');
 const authMiddleware = async (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   
+  console.log('Auth Middleware - Token:', token);
+  console.log('Auth Middleware - Session:', req.session.user);
+
   if (!token) {
-    return res.status(401).json({ message: 'Authentification requise' });
+    return res.status(401).json({ message: 'Authentification requise: token manquant' });
+  }
+
+  if (!req.session.user) {
+    return res.status(401).json({ message: 'Authentification requise: session invalide' });
   }
 
   if (!process.env.JWT_SECRET) {
@@ -26,6 +32,10 @@ const authMiddleware = async (req, res, next) => {
 
     if (!user) {
       return res.status(401).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    if (req.session.user.id !== user.id || req.session.user.role !== user.Role.nom_role) {
+      return res.status(401).json({ message: 'Session et token non correspondants' });
     }
 
     req.user = {

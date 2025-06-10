@@ -7,7 +7,7 @@ const { Op } = require('sequelize');
 const he = require('he');
 const { pipeline } = require('transformers'); 
 
-
+ 
 axiosRetry(axios, {
   retries: 3,
   retryDelay: (retryCount) => {
