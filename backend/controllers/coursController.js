@@ -3,6 +3,7 @@ const axios = require('axios');
 const Matiere = require('../models/Matiere');
 const Utilisateur = require('../models/Utilisateur');
 const Niveau = require('../models/Niveau');
+const { Quiz } = require('../models/association')();
 const CoursUtilisateur = require('../models/CoursUtilisateur');
 const fs = require('fs');
 const path = require('path');
@@ -292,9 +293,7 @@ exports.deleteCourse = async (req, res) => {
     // Handle course.files
     let files = [];
     if (course.files) {
-      // If files is a JSON string, parse it; otherwise, ensure it's an array
       files = typeof course.files === 'string' ? JSON.parse(course.files) : course.files;
-      // Ensure files is an array
       files = Array.isArray(files) ? files : [files];
       files.forEach(file => {
         const filePath = path.join(__dirname, '../Uploads', file);
@@ -312,6 +311,10 @@ exports.deleteCourse = async (req, res) => {
       }
     }
 
+    // Delete associated quizzes
+    await Quiz.destroy({ where: { cours_id: id } }); // Updated to cours_id
+
+    // Delete the course
     await Course.destroy({ where: { id } });
     res.status(200).json({ message: 'Cours supprimé avec succès' });
   } catch (error) {
